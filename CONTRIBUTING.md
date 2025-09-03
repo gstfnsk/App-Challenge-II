@@ -1,10 +1,11 @@
 # Contributing to the Project
 
 ## General Requirements
-- Always create a **branch** from `main` or from the branch you are working
+- Always create a **branch** from `dev` 
 - Name your branch following the convention below.
 - Write clear and objective commits.
 - If possible, keep PRs small and focused.
+- Merge your branch with dev
 
 ## Branch Naming
 
@@ -43,23 +44,23 @@ Accepted types:
 
 ## PR Template:
 
-# Description
+**Description**
 
 Describe clearly and concisely what this pull request does.
 
-# Relates to:
+**Relates to:**
 
-# US# - User Story Name
+**US# - User Story Name**
 
 - TK# - Task Name
 - TK# - Task Name
 
-# Screenshots or Evidence
+**Screenshots or Evidence**
 
 Provide screenshots or evidence of the changes made, if applicable.
 ![Screenshot](https://placehold.co/150)
 
-# Notes or Known Issues
+**Notes or Known Issues**
 
 - Validation is only partially implemented (waiting on backend).
 - Error handling still to be reviewed.
