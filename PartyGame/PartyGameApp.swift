@@ -8,10 +8,12 @@
 import SwiftUI
 
 @main
-struct PartyGameApp: App {
+struct GameCenterPOCApp: App {
+    @StateObject private var gameCenter = GameCenterHelper()
+    
     var body: some Scene {
         WindowGroup {
-            ContentView()
+            ContentView(gameCenter: gameCenter)
         }
     }
 }
