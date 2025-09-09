@@ -13,7 +13,7 @@ extension UIApplication {
 }
 
 // MARK: - Game Center Helper
-class GameCenterHelper: NSObject, ObservableObject {
+class GameCenterService: NSObject, ObservableObject {
     @Published var isAuthenticated = false
     @Published var messages: [String] = []
     var match: GKMatch?
@@ -156,7 +156,7 @@ class GameCenterHelper: NSObject, ObservableObject {
 }
 
 // MARK: - Delegates
-extension GameCenterHelper: GKMatchmakerViewControllerDelegate, GKMatchDelegate {
+extension GameCenterService: GKMatchmakerViewControllerDelegate, GKMatchDelegate {
     func matchmakerViewControllerWasCancelled(_ viewController: GKMatchmakerViewController) {
         viewController.dismiss(animated: true)
         print("❌ Matchmaking cancelado")
@@ -204,7 +204,7 @@ extension GameCenterHelper: GKMatchmakerViewControllerDelegate, GKMatchDelegate 
 }
 
 // MARK: - Listener de convites
-extension GameCenterHelper: GKLocalPlayerListener {
+extension GameCenterService: GKLocalPlayerListener {
     // Quando um convite é aceito pelo usuário FORA do app
     func player(_ player: GKPlayer, didAccept invite: GKInvite) {
         print("📩 Convite recebido de \(invite.sender.displayName)")
