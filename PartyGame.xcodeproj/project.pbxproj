@@ -10,9 +10,22 @@
 		D879AA4C2E68AC2A005944AC /* PartyGame.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = PartyGame.app; sourceTree = BUILT_PRODUCTS_DIR; };
 /* End PBXFileReference section */
 
+/* Begin PBXFileSystemSynchronizedBuildFileExceptionSet section */
+		758CF8202E71E5510094DA59 /* Exceptions for "PartyGame" folder in "PartyGame" target */ = {
+			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
+			membershipExceptions = (
+				Info.plist,
+			);
+			target = D879AA4B2E68AC2A005944AC /* PartyGame */;
+		};
+/* End PBXFileSystemSynchronizedBuildFileExceptionSet section */
+
 /* Begin PBXFileSystemSynchronizedRootGroup section */
 		D879AA4E2E68AC2A005944AC /* PartyGame */ = {
 			isa = PBXFileSystemSynchronizedRootGroup;
+			exceptions = (
+				758CF8202E71E5510094DA59 /* Exceptions for "PartyGame" folder in "PartyGame" target */,
+			);
 			path = PartyGame;
 			sourceTree = "<group>";
 		};
@@ -260,6 +273,7 @@
 				"DEVELOPMENT_TEAM[sdk=iphoneos*]" = U666F887F4;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = PartyGame/Info.plist;
 				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
 				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
@@ -294,6 +308,7 @@
 				"DEVELOPMENT_TEAM[sdk=iphoneos*]" = U666F887F4;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = PartyGame/Info.plist;
 				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
 				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
