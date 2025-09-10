@@ -9,42 +9,21 @@ import SwiftUI
 
 struct PhraseSelectorView: View {
     
-    let phrases = [
-        "Quando o Wi-Fi cai bjn asdkjsand asjdnsado asjndas kdjsand as kjdnas",
-        "Segunda-feira de manhã",
-        "Eu depois da academia",
-        "A cara que você faz quando...",
-        "Esperando a pizza chegar",
-        "Quando o professor diz: prova surpresa",
-        "A reunião que podia ser um e-mail",
-        "Quando seu time perde nos acréscimos",
-        "Acordei assim",
-        "Tentando parecer ocupado",
-        "Quando o crush visualiza e não responde",
-        "Sexta-feira finalmente",
-        "Quando o alarme toca",
-        "Só observando",
-        "Tentando economizar",
-        "Quando acaba a luz no meio do jogo",
-        "Eu tentando ser fitness",
-        "Quando seu amigo diz: 'confia em mim'",
-        "Deu ruim",
-        "Quando a fofoca é boa demais"
-    ]
-    
-    @State var selectedPhrase: String = ""
-    @State var displayedPhrases: [String] = []
+    @State var selectedPhrase: Phrase = .init(text: "", category: .action)
+    @State var displayedPhrases: [Phrase] = []
     
     let columns = [GridItem(.flexible())]
     var body: some View {
         VStack (spacing: 400) {
-            VStack(spacing: 32){
+            VStack(spacing: 64){
                 ZStack(alignment: .trailing){
                     TextField(
                         "Write down a phrase or select one",
-                        text: $selectedPhrase)
+                        text: $selectedPhrase.text)
+                    
                     .padding(.vertical, 12)
                     .padding(.horizontal, 16)
+                    .frame(maxWidth: .infinity)
                     
                     .overlay(
                         RoundedRectangle(cornerRadius: 16)
@@ -52,7 +31,7 @@ struct PhraseSelectorView: View {
                     )
                     Button{
                         print("Selected random phrase")
-                        displayedPhrases = Array(phrases.shuffled().prefix(4))
+                        displayedPhrases = Array(Phrases.all.shuffled().prefix(4))
                     } label:{
                         Image(systemName: "dice.fill")
                             .foregroundStyle(.black)
@@ -72,7 +51,6 @@ struct PhraseSelectorView: View {
                 }
                 Button {
                     print("Submitted phrase: \(selectedPhrase)")
-                    
                 }label: {
                     Text("Submit Phrase")
                 }
@@ -81,13 +59,13 @@ struct PhraseSelectorView: View {
                     RoundedRectangle(cornerRadius: 16)
                         .fill(.tertiary)
                         .frame(width: 356, height: 42)
-                    
                 )
+                
             }
             .padding(.horizontal, 16)
             .padding(.vertical, 16)
             .onAppear() {
-                displayedPhrases = Array(phrases.shuffled().prefix(4))
+                displayedPhrases = Array(Phrases.all.shuffled().prefix(4))
             }
         }
     }
