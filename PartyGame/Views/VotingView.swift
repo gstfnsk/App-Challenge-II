@@ -6,19 +6,28 @@
 //
 
 import SwiftUI
-import SwiftData
+import UIKit
 
 struct VotingView: View {
-    @State var selectedImage: String = ""
+    @State var selectedImage: UUID?
     @Bindable var viewModel: VotingViewModel
     let columns = [
         GridItem(.flexible(), spacing: 16),
         GridItem(.flexible(), spacing: 16)
     ]
-    let photos = [
-        "photo1", "photo2", "photo3", "photo4",
-        "photo5", "photo6", "photo7", "photo8",
-        "photo9", "photo10"
+    let imageSubmissions: [ImageSubmission] = [
+        ImageSubmission(
+            image: UIImage(named: "img-placeholder16x9")!.jpegData(compressionQuality: 1.0)!,
+            submissionTime: Date()
+        ),
+        ImageSubmission(
+            image: UIImage(named: "img-placeholder1x1")!.jpegData(compressionQuality: 1.0)!,
+            submissionTime: Date()
+        ),
+        ImageSubmission(
+            image: UIImage(named: "img-placeholder9x16")!.jpegData(compressionQuality: 1.0)!,
+            submissionTime: Date()
+        )
     ]
     var body: some View {
         ScrollView {
@@ -26,20 +35,22 @@ struct VotingView: View {
                 Text("Vote!")
                 Text("Vote the image for the phrase \"Example\" ")
                 LazyVGrid(columns: columns, spacing: 8) {
-                    ForEach(photos, id: \.self) { photo in
+                    ForEach(imageSubmissions) { photo in
                         Button {
-                            viewModel.voteImage(image: photo)
-                            selectedImage = photo
+                            viewModel.voteImage(id: photo.id) // depois passar UUID da imagem
+                            selectedImage = photo.id
                         } label: {
-                            if let image = viewModel.loadImage(name: photo) {
-                                Image(uiImage: image)
+                            //                            if let image = viewModel.loadImage(id: photo.id) {
+                            if let data = photo.image, let uiImage = UIImage(data: data) {
+                                Image(uiImage: uiImage)
                                     .resizable()
                                     .scaledToFill()
+                                    .scaledToFit()
                                     .clipped()
                                     .cornerRadius(8)
                                     .overlay(
                                         RoundedRectangle(cornerRadius: 8)
-                                            .stroke(selectedImage == photo ? Color.blue : Color.clear, lineWidth: 4)
+                                            .stroke(selectedImage == photo.id ? Color.blue : Color.clear, lineWidth: 4)
                                     )
                             } else {
                                 Rectangle()
@@ -52,7 +63,7 @@ struct VotingView: View {
                     }
                 }.padding(8)
             }
-            if selectedImage != "" {
+            if let selectedImage {
                 Text("You voted \(selectedImage)")
             }
             ButtonView(title: "Confirm")
