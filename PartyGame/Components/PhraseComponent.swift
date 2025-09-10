@@ -8,29 +8,28 @@
 import SwiftUI
 
 struct PhraseComponent: View {
-    @State var phrase: String
-    @State var isSelected: Bool = false
-    
-    init(phrase: String) {
-        self.phrase = phrase
-    }
+    var phrase: String
+    var isSelected: Bool = false
+    let onSelect: () -> Void
+
     
     var body: some View {
         Button {
-            isSelected.toggle()
+            onSelect()
             
         } label: {
             Text(phrase)
                 .foregroundStyle(.background)
                 .padding(.vertical, 5)
                 .padding(.horizontal)
-                .font(.system(size: 12)
-                )
+                .font(.system(size: 17))
+                .lineLimit(10)
                 .background(
                     RoundedRectangle(cornerRadius: 16)
                         .fill(isSelected ? .black : .gray)
                         .foregroundStyle(.tertiary)
-                        .frame(width: 184, height: 36)
+                        .frame(width: 356)
+                        .frame(maxHeight: .infinity)
                     
                 )
                 .padding(.horizontal, 12)
@@ -39,6 +38,4 @@ struct PhraseComponent: View {
     }
 }
 
-#Preview {
-    PhraseComponent(phrase: "Random Phrase")
-}
+
