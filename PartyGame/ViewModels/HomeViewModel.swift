@@ -5,20 +5,19 @@
 //  Created by Fernando Sulzbach on 09/09/25.
 //
 import SwiftUI
+import GameKit
 
 class HomeViewModel: ObservableObject {
     
-    @Published var messages: [String] = []
     @Published var isAuthenticated: Bool = false
+    
+    private var pendingInvite: GKInvite?
+    private var pendingPlayersToInvite: [GKPlayer]?
     
     private let service: GameCenterService
     
     init(service: GameCenterService = GameCenterService()) {
         self.service = service
-        
-        service.$messages
-            .receive(on: DispatchQueue.main)
-            .assign(to: &$messages)
         
         service.$isAuthenticated
             .receive(on: DispatchQueue.main)
