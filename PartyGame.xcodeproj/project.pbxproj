@@ -6,6 +6,10 @@
 	objectVersion = 77;
 	objects = {
 
+/* Begin PBXBuildFile section */
+		D87500BC2E736272009D7A99 /* PinterestLikeGrid in Frameworks */ = {isa = PBXBuildFile; productRef = D87500BB2E736272009D7A99 /* PinterestLikeGrid */; };
+/* End PBXBuildFile section */
+
 /* Begin PBXFileReference section */
 		D879AA4C2E68AC2A005944AC /* PartyGame.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = PartyGame.app; sourceTree = BUILT_PRODUCTS_DIR; };
 /* End PBXFileReference section */
@@ -36,6 +40,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				D87500BC2E736272009D7A99 /* PinterestLikeGrid in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -78,6 +83,7 @@
 			);
 			name = PartyGame;
 			packageProductDependencies = (
+				D87500BB2E736272009D7A99 /* PinterestLikeGrid */,
 			);
 			productName = PartyGame;
 			productReference = D879AA4C2E68AC2A005944AC /* PartyGame.app */;
@@ -107,6 +113,9 @@
 			);
 			mainGroup = D879AA432E68AC2A005944AC;
 			minimizedProjectReferenceProxies = 1;
+			packageReferences = (
+				D87500BA2E736272009D7A99 /* XCRemoteSwiftPackageReference "PinterestLikeGrid" */,
+			);
 			preferredProjectObjectVersion = 77;
 			productRefGroup = D879AA4D2E68AC2A005944AC /* Products */;
 			projectDirPath = "";
@@ -353,6 +362,25 @@
 			defaultConfigurationName = Release;
 		};
 /* End XCConfigurationList section */
+
+/* Begin XCRemoteSwiftPackageReference section */
+		D87500BA2E736272009D7A99 /* XCRemoteSwiftPackageReference "PinterestLikeGrid" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/thaisrfernandes/PinterestLikeGrid";
+			requirement = {
+				branch = main;
+				kind = branch;
+			};
+		};
+/* End XCRemoteSwiftPackageReference section */
+
+/* Begin XCSwiftPackageProductDependency section */
+		D87500BB2E736272009D7A99 /* PinterestLikeGrid */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = D87500BA2E736272009D7A99 /* XCRemoteSwiftPackageReference "PinterestLikeGrid" */;
+			productName = PinterestLikeGrid;
+		};
+/* End XCSwiftPackageProductDependency section */
 	};
 	rootObject = D879AA442E68AC2A005944AC /* Project object */;
 }

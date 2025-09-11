@@ -7,66 +7,83 @@
 
 import SwiftUI
 import UIKit
+import PinterestLikeGrid
 
 struct VotingView: View {
     @State var selectedImage: UUID?
-    var viewModel: VotingViewModel = VotingViewModel(service: GameCenterService())
+    var viewModel: VotingViewModel = VotingViewModel(
+        service: GameCenterService()
+    )
     let columns = [
-        GridItem(.flexible(), spacing: 16),
-        GridItem(.flexible(), spacing: 16)
+        GridItem(.flexible()),
+        GridItem(.flexible()),
     ]
-    let imageSubmissions: [ImageSubmission] = [
+    @State var imageSubmissions: [ImageSubmission] = [
         ImageSubmission(
-            image: UIImage(named: "img-placeholder16x9")!.jpegData(compressionQuality: 1.0)!,
+            image: UIImage(named: "img-placeholder16x9")!.jpegData(
+                compressionQuality: 1.0
+            )!,
             submissionTime: Date()
         ),
         ImageSubmission(
-            image: UIImage(named: "img-placeholder1x1")!.jpegData(compressionQuality: 1.0)!,
+            image: UIImage(named: "img-placeholder1x1")!.jpegData(
+                compressionQuality: 1.0
+            )!,
             submissionTime: Date()
         ),
         ImageSubmission(
-            image: UIImage(named: "img-placeholder9x16")!.jpegData(compressionQuality: 1.0)!,
+            image: UIImage(named: "img-placeholder9x16")!.jpegData(
+                compressionQuality: 1.0
+            )!,
             submissionTime: Date()
-        )
+        ),
+        ImageSubmission(
+            image: UIImage(named: "img-placeholder3x4")!.jpegData(
+                compressionQuality: 1.0
+            )!,
+            submissionTime: Date()
+        ),
     ]
     var body: some View {
         ScrollView {
-            VStack(alignment: .center) {
-                Text("Vote!")
-                Text("Vote the image for the phrase \"Example\" ")
-                LazyVGrid(columns: columns, spacing: 8) {
-                    ForEach(imageSubmissions) { photo in
-                        Button {
-                            viewModel.voteImage(id: photo.id) // depois passar UUID da imagem
-                            selectedImage = photo.id
-                        } label: {
-                            //                            if let image = viewModel.loadImage(id: photo.id) {
-                            if let data = photo.image, let uiImage = UIImage(data: data) {
-                                Image(uiImage: uiImage)
-                                    .resizable()
-                                    .scaledToFill()
-                                    .scaledToFit()
-                                    .clipped()
-                                    .cornerRadius(8)
-                                    .overlay(
-                                        RoundedRectangle(cornerRadius: 8)
-                                            .stroke(selectedImage == photo.id ? Color.blue : Color.clear, lineWidth: 4)
-                                    )
-                            } else {
-                                Rectangle()
-                                    .fill(Color.gray.opacity(0.3))
-                                    .overlay(Text("No Img"))
-                                    .cornerRadius(8)
-                            }
+            VStack(alignment: .leading) {
+                Text("vote for the best")
+                Spacer()
+                Text("a moment in nature")
+                PinterestLikeGrid($imageSubmissions, columns: 2, spacing: 16) { photo, index in
+                    Button {
+                        viewModel.voteImage(id: photo.id) // depois passar UUID da imagem
+                        selectedImage = photo.id
+                    } label: {
+                        if let data = photo.image, let uiImage = UIImage(data: data)
+                        {
+                            Image(uiImage: uiImage)
+                                .resizable()
+                                .scaledToFit()
+                                .cornerRadius(28)
+                                .overlay(RoundedRectangle(cornerRadius: 28)
+                                    .stroke(Color.white, lineWidth: 4))
+                                .overlay(
+                                    RoundedRectangle(cornerRadius: 28)
+                                        .stroke(
+                                            selectedImage == photo.id
+                                            ? Color.green : Color.white,
+                                            lineWidth: 4
+                                        )
+                                )
+                        } else {
+                            Rectangle()
+                                .fill(Color.gray.opacity(0.3))
+                                .overlay(Text("No Img"))
+                                .cornerRadius(28)
                         }
-                        .buttonStyle(.plain)
                     }
-                }.padding(8)
+                }
             }
             if let selectedImage {
-                Text("You voted \(selectedImage)")
+                Text("you voted \(selectedImage)")
             }
-            ButtonView(title: "Confirm")
+            ButtonView(title: "confirm vote")
         }
     }
 }
