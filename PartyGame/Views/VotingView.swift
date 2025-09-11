@@ -10,7 +10,7 @@ import UIKit
 
 struct VotingView: View {
     @State var selectedImage: UUID?
-    @Bindable var viewModel: VotingViewModel
+    var viewModel: VotingViewModel = VotingViewModel(service: GameCenterService())
     let columns = [
         GridItem(.flexible(), spacing: 16),
         GridItem(.flexible(), spacing: 16)
