@@ -8,7 +8,7 @@
 import SwiftUI
 
 struct PhraseComponent: View {
-    var phrase: String
+    var phrase: Phrase
     var isSelected: Bool = false
     let onSelect: () -> Void
 
@@ -18,7 +18,7 @@ struct PhraseComponent: View {
             onSelect()
             
         } label: {
-            Text(phrase)
+            Text(phrase.text)
                 .foregroundStyle(.background)
                 .padding(.vertical, 5)
                 .padding(.horizontal)
