@@ -12,9 +12,27 @@ extension UIApplication {
     }
 }
 
+private struct LobbyPacket: Codable {
+    enum PacketType: String, Codable { case chat, ready }
+    let type: PacketType
+    let senderID: String
+    let text: String?
+    let ready: Bool?
+
+    static func chat(senderID: String, text: String) -> LobbyPacket {
+        .init(type: .chat, senderID: senderID, text: text, ready: nil)
+    }
+    static func ready(senderID: String, ready: Bool) -> LobbyPacket {
+        .init(type: .ready, senderID: senderID, text: nil, ready: ready)
+    }
+}
+
 // MARK: - Game Center Helper
 class GameCenterService: NSObject, ObservableObject {
     @Published var isAuthenticated = false
+    @Published var isInMatch = false
+    @Published var players: [GKPlayer] = []
+    @Published var readyMap: [String: Bool] = [:]
     @Published var messages: [String] = []
     var match: GKMatch?
     private var pendingInvite: GKInvite?
@@ -140,17 +158,60 @@ class GameCenterService: NSObject, ObservableObject {
             print("⚠️ Nenhuma partida ativa")
             return
         }
-        
-        if let data = text.data(using: .utf8) {
-            do {
-                try match.sendData(toAllPlayers: data, with: .reliable)
-                print("📤 Enviado: \(text)")
-                DispatchQueue.main.async {
-                    self.messages.append("Você: \(text)")
-                }
-            } catch {
-                print("❌ Erro ao enviar mensagem: \(error)")
+        let senderID = GKLocalPlayer.local.gamePlayerID
+        let packet = LobbyPacket.chat(senderID: senderID, text: text)
+
+        do {
+            let data = try JSONEncoder().encode(packet)
+            try match.sendData(toAllPlayers: data, with: .reliable)
+            DispatchQueue.main.async { self.messages.append("Você: \(text)") }
+        } catch {
+            print("❌ Erro ao enviar mensagem: \(error)")
+        }
+    }
+    
+    func toggleReady() {
+        let id = GKLocalPlayer.local.gamePlayerID
+        let newValue = !(readyMap[id] ?? false)
+        setReady(newValue)
+    }
+    
+    private func setReady(_ value: Bool) {
+        let id = GKLocalPlayer.local.gamePlayerID
+        DispatchQueue.main.async { self.readyMap[id] = value }
+
+        guard let match = match else { return }
+        let packet = LobbyPacket.ready(senderID: id, ready: value)
+
+        do {
+            let data = try JSONEncoder().encode(packet)
+            try match.sendData(toAllPlayers: data, with: .reliable)
+        } catch {
+            print("❌ Erro ao enviar READY: \(error)")
+        }
+    }
+
+    private func refreshPlayers() {
+        var everyone: [GKPlayer] = [GKLocalPlayer.local as GKPlayer]
+        if let remotes = match?.players { everyone.append(contentsOf: remotes) }
+        DispatchQueue.main.async {
+            self.players = everyone
+            var map = self.readyMap
+            for p in everyone {
+                if map[p.gamePlayerID] == nil { map[p.gamePlayerID] = false }
             }
+            self.readyMap = map
+        }
+    }
+
+    func leaveMatch() {
+        match?.disconnect()
+        match = nil
+        DispatchQueue.main.async {
+            self.isInMatch = false
+            self.players.removeAll()
+            self.readyMap.removeAll()
+            self.messages.removeAll()
         }
     }
 }
@@ -175,16 +236,35 @@ extension GameCenterService: GKMatchmakerViewControllerDelegate, GKMatchDelegate
         match.delegate = self
         print("✅ Match encontrado com \(match.players.count) jogadores")
         
-        // Limpar mensagens antigas e enviar mensagem de boas-vindas
+        refreshPlayers()
+        let localID = GKLocalPlayer.local.gamePlayerID
         DispatchQueue.main.async {
-            self.messages.removeAll()
+            self.isInMatch = true
+            var map: [String: Bool] = [:]
+            map[localID] = false
+            for p in match.players { map[p.gamePlayerID] = false }
+            self.readyMap = map
         }
+
         sendMessage("Olá, galera!")
     }
     
     func match(_ match: GKMatch, didReceive data: Data, fromRemotePlayer player: GKPlayer) {
-        if let text = String(data: data, encoding: .utf8) {
-            print("📥 Recebido de \(player.displayName): \(text)")
+        if let packet = try? JSONDecoder().decode(LobbyPacket.self, from: data) {
+            switch packet.type {
+            case .chat:
+                if let text = packet.text {
+                    DispatchQueue.main.async {
+                        self.messages.append("\(player.displayName): \(text)")
+                    }
+                }
+            case .ready:
+                let value = packet.ready ?? false
+                DispatchQueue.main.async {
+                    self.readyMap[player.gamePlayerID] = value
+                }
+            }
+        } else if let text = String(data: data, encoding: .utf8) {
             DispatchQueue.main.async {
                 self.messages.append("\(player.displayName): \(text)")
             }
@@ -195,11 +275,18 @@ extension GameCenterService: GKMatchmakerViewControllerDelegate, GKMatchDelegate
         switch state {
         case .connected:
             print("✅ \(player.displayName) conectado")
+            refreshPlayers()
         case .disconnected:
             print("❌ \(player.displayName) desconectado")
-        @unknown default:
+            refreshPlayers()
+        default:
             print("⚠️ Estado desconhecido para \(player.displayName)")
         }
+    }
+    
+    func match(_ match: GKMatch, didFailWithError error: Error?) {
+        print("❌ Erro no match: \(error?.localizedDescription ?? "desconhecido")")
+        leaveMatch()
     }
 }
 

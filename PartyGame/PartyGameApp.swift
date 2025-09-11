@@ -10,10 +10,10 @@ import SwiftUI
 @main
 struct GameCenterPOCApp: App {
     @StateObject private var gameCenter = GameCenterService()
-    
+
     var body: some Scene {
         WindowGroup {
-            HomeView(viewModel: HomeViewModel())
+            HomeView(viewModel: HomeViewModel(service: gameCenter))
         }
     }
 }
