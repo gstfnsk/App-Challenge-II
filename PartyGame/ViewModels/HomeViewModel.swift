@@ -4,24 +4,30 @@
 //
 //  Created by Fernando Sulzbach on 09/09/25.
 //
+
 import SwiftUI
 import GameKit
 
 class HomeViewModel: ObservableObject {
     
     @Published var isAuthenticated: Bool = false
+    @Published var isInMatch: Bool = false
     
     private var pendingInvite: GKInvite?
     private var pendingPlayersToInvite: [GKPlayer]?
     
     private let service: GameCenterService
     
-    init(service: GameCenterService = GameCenterService()) {
+    init(service: GameCenterService) {
         self.service = service
         
         service.$isAuthenticated
             .receive(on: DispatchQueue.main)
             .assign(to: &$isAuthenticated)
+        
+        service.$isInMatch
+            .receive(on: DispatchQueue.main)
+            .assign(to: &$isInMatch)
     }
         
     func startMatchmaking() {
@@ -34,5 +40,9 @@ class HomeViewModel: ObservableObject {
     
     func processPendingInvite() {
         service.processPendingInvite()
+    }
+    
+    func makeLobbyViewModel() -> LobbyViewModel {
+        return LobbyViewModel(service: service)
     }
 }

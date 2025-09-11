@@ -1,10 +1,3 @@
-////
-////  ImageVotingList.swift
-////  PartyGame
-////
-////  Created by Fernando Sulzbach on 09/09/25.
-////
-//
 //import SwiftUI
 //
 //struct ImageVotingList: View {
