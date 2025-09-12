@@ -36,7 +36,7 @@ struct ImageSelectionView: View {
 
             Spacer()
         }
-        .navigationTitle("Frase")
+        .navigationTitle("Imagem")
         .navigationBarTitleDisplayMode(.inline)
 
         .confirmationDialog("Escolher origem", isPresented: $showSourceMenu, titleVisibility: .visible) {
@@ -48,11 +48,13 @@ struct ImageSelectionView: View {
         .sheet(isPresented: $viewModel.isShowingCamera) {
             ImagePicker(sourceType: .camera, allowsEditing: false) { img in
                 viewModel.handlePickedImage(img)
+                dismiss()
             }
         }
         .sheet(isPresented: $viewModel.isShowingLibrary) {
             ImagePicker(sourceType: .photoLibrary, allowsEditing: false) { img in
                 viewModel.handlePickedImage(img)
+                dismiss()
             }
         }
     }
