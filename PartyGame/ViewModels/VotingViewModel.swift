@@ -16,6 +16,8 @@ final class VotingViewModel {
     init(service: GameCenterService) {
         self.service = service
     }
+    
+    var images: [ImageSubmission] = []
     var players: [GKPlayer] {
         service.players
     }
@@ -38,10 +40,7 @@ final class VotingViewModel {
         print(" \(voter.displayName) voted \(submission.player.displayName)")
     }
     
-    func loadImage(id: UUID) -> UIImage? { // ainda não usada
-        guard let submission = submissions.first(where: { $0.id == id }) else {
-            return nil
-        }
-        return submission.imageSubmission.uiImage
+    func loadImages() {
+        images = submissions.map { $0.imageSubmission }
     }
 }
