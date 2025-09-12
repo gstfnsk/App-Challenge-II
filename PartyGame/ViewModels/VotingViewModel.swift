@@ -11,8 +11,17 @@ import GameKit
 
 @Observable
 final class VotingViewModel {
+    private let service: GameCenterService
+
+    init(service: GameCenterService) {
+        self.service = service
+    }
+    var players: [GKPlayer] {
+        service.players
+    }
+
     var submissions: [PlayerSubmission] = []
-    var players: [Player] = []
+    
     var voter: GKPlayer {
         GKLocalPlayer.local
     }
@@ -35,5 +44,4 @@ final class VotingViewModel {
         }
         return submission.imageSubmission.uiImage
     }
-    
 }
