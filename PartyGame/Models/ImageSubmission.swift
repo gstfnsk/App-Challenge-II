@@ -25,7 +25,7 @@ class ImageSubmission: Identifiable, Hashable, Equatable {
         return UIImage(data: image)
     }
     
-    init(image: Data, submissionTime: Date) {
+    init(image: Data?, submissionTime: Date) {
         self.image = image
         self.submissionTime = submissionTime
     }

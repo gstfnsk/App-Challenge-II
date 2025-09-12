@@ -15,7 +15,7 @@ class Player: Identifiable {
     var submissions: [PlayerSubmission]
 //    let ready: Bool
     
-    init (player: GKPlayer, submissions: [PlayerSubmission] = [], ready: Bool) {
+    init (player: GKPlayer, submissions: [PlayerSubmission] = []) {
         self.player = player
         self.submissions = submissions
 //        self.ready = ready

@@ -11,16 +11,16 @@
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
-		D879AA4C2E68AC2A005944AC /* PartyGame.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = PartyGame.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		D879AA4C2E68AC2A005944AC /* Pickture.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = Pickture.app; sourceTree = BUILT_PRODUCTS_DIR; };
 /* End PBXFileReference section */
 
 /* Begin PBXFileSystemSynchronizedBuildFileExceptionSet section */
-		219A94A82E733BAD00F239E9 /* Exceptions for "PartyGame" folder in "PartyGame" target */ = {
+		758CF8272E71F3C20094DA59 /* Exceptions for "PartyGame" folder in "PartyGame" target */ = {
 			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
 			membershipExceptions = (
 				Info.plist,
 			);
-			target = D879AA4B2E68AC2A005944AC /* PartyGame */;
+			target = D879AA4B2E68AC2A005944AC /* Pickture */;
 		};
 /* End PBXFileSystemSynchronizedBuildFileExceptionSet section */
 
@@ -28,7 +28,7 @@
 		D879AA4E2E68AC2A005944AC /* PartyGame */ = {
 			isa = PBXFileSystemSynchronizedRootGroup;
 			exceptions = (
-				219A94A82E733BAD00F239E9 /* Exceptions for "PartyGame" folder in "PartyGame" target */,
+				758CF8272E71F3C20094DA59 /* Exceptions for "PartyGame" folder in "PartyGame" target */,
 			);
 			path = PartyGame;
 			sourceTree = "<group>";
@@ -58,7 +58,7 @@
 		D879AA4D2E68AC2A005944AC /* Products */ = {
 			isa = PBXGroup;
 			children = (
-				D879AA4C2E68AC2A005944AC /* PartyGame.app */,
+				D879AA4C2E68AC2A005944AC /* Pickture.app */,
 			);
 			name = Products;
 			sourceTree = "<group>";
@@ -66,9 +66,9 @@
 /* End PBXGroup section */
 
 /* Begin PBXNativeTarget section */
-		D879AA4B2E68AC2A005944AC /* PartyGame */ = {
+		D879AA4B2E68AC2A005944AC /* Pickture */ = {
 			isa = PBXNativeTarget;
-			buildConfigurationList = D879AA572E68AC2B005944AC /* Build configuration list for PBXNativeTarget "PartyGame" */;
+			buildConfigurationList = D879AA572E68AC2B005944AC /* Build configuration list for PBXNativeTarget "Pickture" */;
 			buildPhases = (
 				D879AA482E68AC2A005944AC /* Sources */,
 				D879AA492E68AC2A005944AC /* Frameworks */,
@@ -81,12 +81,12 @@
 			fileSystemSynchronizedGroups = (
 				D879AA4E2E68AC2A005944AC /* PartyGame */,
 			);
-			name = PartyGame;
+			name = Pickture;
 			packageProductDependencies = (
 				D87500BB2E736272009D7A99 /* PinterestLikeGrid */,
 			);
 			productName = PartyGame;
-			productReference = D879AA4C2E68AC2A005944AC /* PartyGame.app */;
+			productReference = D879AA4C2E68AC2A005944AC /* Pickture.app */;
 			productType = "com.apple.product-type.application";
 		};
 /* End PBXNativeTarget section */
@@ -104,7 +104,7 @@
 					};
 				};
 			};
-			buildConfigurationList = D879AA472E68AC2A005944AC /* Build configuration list for PBXProject "PartyGame" */;
+			buildConfigurationList = D879AA472E68AC2A005944AC /* Build configuration list for PBXProject "Pickture" */;
 			developmentRegion = en;
 			hasScannedForEncodings = 0;
 			knownRegions = (
@@ -121,7 +121,7 @@
 			projectDirPath = "";
 			projectRoot = "";
 			targets = (
-				D879AA4B2E68AC2A005944AC /* PartyGame */,
+				D879AA4B2E68AC2A005944AC /* Pickture */,
 			);
 		};
 /* End PBXProject section */
@@ -347,7 +347,7 @@
 /* End XCBuildConfiguration section */
 
 /* Begin XCConfigurationList section */
-		D879AA472E68AC2A005944AC /* Build configuration list for PBXProject "PartyGame" */ = {
+		D879AA472E68AC2A005944AC /* Build configuration list for PBXProject "Pickture" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
 				D879AA552E68AC2B005944AC /* Debug */,
@@ -356,7 +356,7 @@
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;
 		};
-		D879AA572E68AC2B005944AC /* Build configuration list for PBXNativeTarget "PartyGame" */ = {
+		D879AA572E68AC2B005944AC /* Build configuration list for PBXNativeTarget "Pickture" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
 				D879AA582E68AC2B005944AC /* Debug */,
