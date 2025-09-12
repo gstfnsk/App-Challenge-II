@@ -8,16 +8,16 @@
 import SwiftUI
 
 final class ImageSelectionViewModel: ObservableObject {
-    @Published var selectedImage: UIImage?
     @Published var errorMessage: String?
-
     @Published var isShowingCamera = false
     @Published var isShowingLibrary = false
 
-    private let onImageSelected: (Data) -> Void
+    @Published var selectedImage: UIImage?
 
-    init(onImageSelected: @escaping (Data) -> Void) {
-        self.onImageSelected = onImageSelected
+    private let onSubmit: (ImageSubmission) -> Void
+
+    init(onSubmit: @escaping (ImageSubmission) -> Void) {
+        self.onSubmit = onSubmit
     }
 
     func chooseCamera() {
@@ -35,6 +35,14 @@ final class ImageSelectionViewModel: ObservableObject {
     func handlePickedImage(_ image: UIImage) {
         selectedImage = image
         errorMessage = nil
+
+        guard let data = image.jpegData(compressionQuality: 0.7) else {
+            errorMessage = "Falha ao preparar a imagem."
+            return
+        }
+
+        let submission = ImageSubmission(image: data, submissionTime: Date())
+        onSubmit(submission)
     }
 
     func send() {
@@ -46,7 +54,8 @@ final class ImageSelectionViewModel: ObservableObject {
             errorMessage = "Falha ao preparar a imagem."
             return
         }
-        onImageSelected(data)
+        let submission = ImageSubmission(image: data, submissionTime: Date())
+        onSubmit(submission)
     }
 
     func clear() {
