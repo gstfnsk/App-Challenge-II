@@ -20,13 +20,13 @@ final class ImageSelectionViewModel: ObservableObject {
     @Published private(set) var isLocalReady = false
 
     private let service: GameCenterService
-    private let onSubmit: (ImageSubmission) -> Void
+  //  private let onSubmit: (ImageSubmission) -> Void
     private var cancellables: Set<AnyCancellable> = []
 
-    init(service: GameCenterService,
-         onSubmit: @escaping (ImageSubmission) -> Void) {
+    init(service: GameCenterService) {
+        // onSubmit: @escaping (ImageSubmission) -> Void) {
         self.service = service
-        self.onSubmit = onSubmit
+     //   self.onSubmit = onSubmit
 
         service.$readyMap
             .receive(on: DispatchQueue.main)
@@ -61,7 +61,7 @@ final class ImageSelectionViewModel: ObservableObject {
         }
 
         let submission = ImageSubmission(image: data, submissionTime: Date())
-        onSubmit(submission)
+     //   onSubmit(submission)
         hasSubmitted = true
     }
 
@@ -75,7 +75,7 @@ final class ImageSelectionViewModel: ObservableObject {
             return
         }
         let submission = ImageSubmission(image: data, submissionTime: Date())
-        onSubmit(submission)
+       // onSubmit(submission)
         hasSubmitted = true
     }
 

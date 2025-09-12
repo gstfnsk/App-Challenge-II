@@ -11,9 +11,13 @@ import GameKit
 struct ImageSelectionView: View {
     @ObservedObject var viewModel: ImageSelectionViewModel
     @State private var showSourceMenu = false
+    @State var selectedPhrase: Phrase
 
     var body: some View {
         VStack(spacing: 20) {
+            
+            Text(selectedPhrase.text)
+            
             Group {
                 if let image = viewModel.selectedImage {
                     Image(uiImage: image)
@@ -92,3 +96,4 @@ struct ImageSelectionView: View {
         }
     }
 }
+
