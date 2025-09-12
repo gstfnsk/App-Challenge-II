@@ -6,6 +6,8 @@
 //
 
 import SwiftUI
+import GameKit
+import Combine
 
 final class ImageSelectionViewModel: ObservableObject {
     @Published var errorMessage: String?
@@ -14,11 +16,28 @@ final class ImageSelectionViewModel: ObservableObject {
 
     @Published var selectedImage: UIImage?
 
-    private let onSubmit: (ImageSubmission) -> Void
+    @Published private(set) var hasSubmitted = false
+    @Published private(set) var isLocalReady = false
 
-    init(onSubmit: @escaping (ImageSubmission) -> Void) {
+    private let service: GameCenterService
+    private let onSubmit: (ImageSubmission) -> Void
+    private var cancellables: Set<AnyCancellable> = []
+
+    init(service: GameCenterService,
+         onSubmit: @escaping (ImageSubmission) -> Void) {
+        self.service = service
         self.onSubmit = onSubmit
+
+        service.$readyMap
+            .receive(on: DispatchQueue.main)
+            .sink { [weak self] map in
+                guard let self = self else { return }
+                let localID = GKLocalPlayer.local.gamePlayerID
+                self.isLocalReady = map[localID] ?? false
+            }
+            .store(in: &cancellables)
     }
+
 
     func chooseCamera() {
         guard UIImagePickerController.isSourceTypeAvailable(.camera) else {
@@ -43,6 +62,7 @@ final class ImageSelectionViewModel: ObservableObject {
 
         let submission = ImageSubmission(image: data, submissionTime: Date())
         onSubmit(submission)
+        hasSubmitted = true
     }
 
     func send() {
@@ -56,10 +76,16 @@ final class ImageSelectionViewModel: ObservableObject {
         }
         let submission = ImageSubmission(image: data, submissionTime: Date())
         onSubmit(submission)
+        hasSubmitted = true
+    }
+
+    func toggleReady() {
+        service.toggleReady()
     }
 
     func clear() {
         selectedImage = nil
+        hasSubmitted = false
         errorMessage = nil
     }
 }

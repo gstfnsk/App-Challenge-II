@@ -16,9 +16,9 @@
             <BuildableReference
                BuildableIdentifier = "primary"
                BlueprintIdentifier = "D879AA4B2E68AC2A005944AC"
-               BuildableName = "PartyGame.app"
-               BlueprintName = "PartyGame"
-               ReferencedContainer = "container:PartyGame.xcodeproj">
+               BuildableName = "Pickture.app"
+               BlueprintName = "Pickture"
+               ReferencedContainer = "container:Pickture.xcodeproj">
             </BuildableReference>
          </BuildActionEntry>
       </BuildActionEntries>
@@ -45,9 +45,9 @@
          <BuildableReference
             BuildableIdentifier = "primary"
             BlueprintIdentifier = "D879AA4B2E68AC2A005944AC"
-            BuildableName = "PartyGame.app"
-            BlueprintName = "PartyGame"
-            ReferencedContainer = "container:PartyGame.xcodeproj">
+            BuildableName = "Pickture.app"
+            BlueprintName = "Pickture"
+            ReferencedContainer = "container:Pickture.xcodeproj">
          </BuildableReference>
       </BuildableProductRunnable>
    </LaunchAction>
@@ -62,9 +62,9 @@
          <BuildableReference
             BuildableIdentifier = "primary"
             BlueprintIdentifier = "D879AA4B2E68AC2A005944AC"
-            BuildableName = "PartyGame.app"
-            BlueprintName = "PartyGame"
-            ReferencedContainer = "container:PartyGame.xcodeproj">
+            BuildableName = "Pickture.app"
+            BlueprintName = "Pickture"
+            ReferencedContainer = "container:Pickture.xcodeproj">
          </BuildableReference>
       </BuildableProductRunnable>
    </ProfileAction>
