@@ -18,7 +18,7 @@ class ImageSubmission: Identifiable {
             return UIImage(data: image)
         }
     
-    init(image: Data, submissionTime: Date) {
+    init(image: Data?, submissionTime: Date) {
         self.image = image
         self.submissionTime = submissionTime
     }

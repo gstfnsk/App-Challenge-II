@@ -11,7 +11,7 @@
 /* End PBXFileReference section */
 
 /* Begin PBXFileSystemSynchronizedBuildFileExceptionSet section */
-		758CF8202E71E5510094DA59 /* Exceptions for "PartyGame" folder in "PartyGame" target */ = {
+		758CF8272E71F3C20094DA59 /* Exceptions for "PartyGame" folder in "PartyGame" target */ = {
 			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
 			membershipExceptions = (
 				Info.plist,
@@ -24,7 +24,7 @@
 		D879AA4E2E68AC2A005944AC /* PartyGame */ = {
 			isa = PBXFileSystemSynchronizedRootGroup;
 			exceptions = (
-				758CF8202E71E5510094DA59 /* Exceptions for "PartyGame" folder in "PartyGame" target */,
+				758CF8272E71F3C20094DA59 /* Exceptions for "PartyGame" folder in "PartyGame" target */,
 			);
 			path = PartyGame;
 			sourceTree = "<group>";

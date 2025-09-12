@@ -197,7 +197,7 @@ extension GameCenterService: GKMatchmakerViewControllerDelegate, GKMatchDelegate
             print("✅ \(player.displayName) conectado")
         case .disconnected:
             print("❌ \(player.displayName) desconectado")
-        @unknown default:
+        default:
             print("⚠️ Estado desconhecido para \(player.displayName)")
         }
     }

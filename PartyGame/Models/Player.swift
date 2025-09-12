@@ -13,11 +13,10 @@ class Player: Identifiable {
     let id = UUID()
     let player: GKPlayer
     var submissions: [PlayerSubmission]
-    let ready: Bool
+    let ready: Bool = false
     
-    init (player: GKPlayer, submissions: [PlayerSubmission] = [], ready: Bool) {
+    init (player: GKPlayer, submissions: [PlayerSubmission] = []) {
         self.player = player
         self.submissions = submissions
-        self.ready = ready
     }
 }
