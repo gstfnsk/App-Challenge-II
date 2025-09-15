@@ -22,7 +22,7 @@ struct HomeView: View {
                         Spacer()
 
                         Button("Iniciar Partida") {
-                            viewModel.startMatchmaking()
+                            viewModel.startSinglePlayerGame()
                         }
                     } else {
                         Text("Autenticando no Game Center...")

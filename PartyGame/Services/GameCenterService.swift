@@ -34,6 +34,7 @@ class GameCenterService: NSObject, ObservableObject {
     @Published var players: [GKPlayer] = []
     @Published var readyMap: [String: Bool] = [:]
     @Published var messages: [String] = []
+    @Published var isSinglePlayer = false
     var match: GKMatch?
     private var pendingInvite: GKInvite?
     private var pendingPlayersToInvite: [GKPlayer]?
@@ -136,9 +137,15 @@ class GameCenterService: NSObject, ObservableObject {
     }
     
     // Matchmaking manual (botão Iniciar Partida)
-    func startMatchmaking(minPlayers: Int = 2, maxPlayers: Int = 4) {
+    func startMatchmaking(minPlayers: Int = 1, maxPlayers: Int = 4, singlePlayerMode: Bool = false) {
         guard isAuthenticated else {
             print("⚠️ Usuário não está autenticado")
+            return
+        }
+        
+        // Handle single player mode
+        if singlePlayerMode || minPlayers == 1 {
+            createSinglePlayerMatch()
             return
         }
         
@@ -151,13 +158,37 @@ class GameCenterService: NSObject, ObservableObject {
             UIApplication.shared.currentRootViewController?.present(vc, animated: true)
         }
     }
+
+    
+    // Create a single player match
+    private func createSinglePlayerMatch() {
+        print("✅ Starting single player match")
+        
+        DispatchQueue.main.async {
+            self.isInMatch = true
+            self.isSinglePlayer = true
+            self.match = nil // No actual GKMatch for single player
+            self.players = [GKLocalPlayer.local as GKPlayer]
+            self.readyMap = [GKLocalPlayer.local.gamePlayerID: false]
+            self.messages = ["Welcome to single player mode!"]
+        }
+    }
     
     // Enviar mensagem
     func sendMessage(_ text: String) {
+        if isSinglePlayer {
+            // In single player, just add to local messages
+            DispatchQueue.main.async {
+                self.messages.append("You: \(text)")
+            }
+            return
+        }
+        
         guard let match = match else {
             print("⚠️ Nenhuma partida ativa")
             return
         }
+        
         let senderID = GKLocalPlayer.local.gamePlayerID
         let packet = LobbyPacket.chat(senderID: senderID, text: text)
 
@@ -173,7 +204,25 @@ class GameCenterService: NSObject, ObservableObject {
     func toggleReady() {
         let id = GKLocalPlayer.local.gamePlayerID
         let newValue = !(readyMap[id] ?? false)
-        setReady(newValue)
+        
+        DispatchQueue.main.async {
+            self.readyMap[id] = newValue
+        }
+        
+        // In single player, don't try to send data
+        if isSinglePlayer {
+            return
+        }
+        
+        guard let match = match else { return }
+        let packet = LobbyPacket.ready(senderID: id, ready: newValue)
+
+        do {
+            let data = try JSONEncoder().encode(packet)
+            try match.sendData(toAllPlayers: data, with: .reliable)
+        } catch {
+            print("❌ Erro ao enviar READY: \(error)")
+        }
     }
     
     private func setReady(_ value: Bool) {
@@ -205,15 +254,20 @@ class GameCenterService: NSObject, ObservableObject {
     }
 
     func leaveMatch() {
-        match?.disconnect()
+        if !isSinglePlayer {
+            match?.disconnect()
+        }
+        
         match = nil
         DispatchQueue.main.async {
             self.isInMatch = false
+            self.isSinglePlayer = false
             self.players.removeAll()
             self.readyMap.removeAll()
             self.messages.removeAll()
         }
     }
+
 }
 
 // MARK: - Delegates
