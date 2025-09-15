@@ -8,9 +8,13 @@ class Game: Identifiable {
     var currentRound: Int
     var phrases: [String] = []
     
-    init(totalRounds: Int, currentRound: Int, phrases: [String]) {
-        self.totalRounds = totalRounds
-        self.currentRound = currentRound
-        self.phrases = phrases
+    init(playersCount: Int) {
+        self.totalRounds = playersCount
+        self.currentRound = 0
+        self.phrases = []
+    }
+    
+    func addPhrase(_ phrase: String) {
+        phrases.append(phrase)
     }
 }

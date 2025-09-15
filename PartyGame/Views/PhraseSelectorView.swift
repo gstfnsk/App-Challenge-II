@@ -11,9 +11,10 @@ struct PhraseSelectorView: View {
     
     @State var selectedPhrase: Phrase = .init(text: "", category: .action)
     @State var displayedPhrases: [Phrase] = []
+    var viewModel = PhraseViewModel()
     
     @State var nextScreen: Bool = false
-        
+    
     let columns = [GridItem(.flexible())]
     var body: some View {
         NavigationStack {
@@ -45,7 +46,7 @@ struct PhraseSelectorView: View {
                     LazyVGrid(columns: columns, spacing: 16){
                         ForEach(displayedPhrases, id: \.self) { phrase in
                             PhraseComponent(phrase: phrase,
-                            isSelected: phrase == selectedPhrase,
+                                            isSelected: phrase == selectedPhrase,
                                             onSelect: {
                                 selectedPhrase = phrase
                             })
@@ -53,6 +54,7 @@ struct PhraseSelectorView: View {
                         
                     }
                     Button {
+                        viewModel.savePhrase(selectedPhrase)
                         nextScreen = true
                         print("Submitted phrase: \(selectedPhrase)")
                     }label: {
@@ -74,8 +76,13 @@ struct PhraseSelectorView: View {
             }
         }
         .navigationBarBackButtonHidden(true)
+        .onChange(of: viewModel.haveAllPlayersSubmitted) { allSubmitted in
+            if allSubmitted {
+                nextScreen = true
+            }
+        }
         .navigationDestination(isPresented: $nextScreen) {
-            ImageSelectionView(viewModel: ImageSelectionViewModel(service: GameCenterService()), selectedPhrase: selectedPhrase)
+            ImageSelectionView(selectedPhrase: selectedPhrase)
         }
         
     }

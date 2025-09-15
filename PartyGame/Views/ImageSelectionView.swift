@@ -9,9 +9,10 @@ import SwiftUI
 import GameKit
 
 struct ImageSelectionView: View {
-    @ObservedObject var viewModel: ImageSelectionViewModel
+    @ObservedObject var viewModel = ImageSelectionViewModel()
     @State private var showSourceMenu = false
     @State var selectedPhrase: Phrase
+    @State var goToVotingView: Bool = false
 
     var body: some View {
         VStack(spacing: 20) {
@@ -56,6 +57,7 @@ struct ImageSelectionView: View {
             .padding(.horizontal)
 
             Button {
+                goToVotingView = true
                 viewModel.toggleReady()
             } label: {
                 Text(viewModel.isLocalReady ? "Cancelar ready" : "Ready")
@@ -78,6 +80,9 @@ struct ImageSelectionView: View {
         }
         .navigationTitle("Imagem")
         .navigationBarTitleDisplayMode(.inline)
+        .navigationDestination(isPresented: $goToVotingView) {
+            VotingView()
+        }
 
         .confirmationDialog("Escolher origem", isPresented: $showSourceMenu, titleVisibility: .visible) {
             Button("Tirar foto") { viewModel.chooseCamera() }

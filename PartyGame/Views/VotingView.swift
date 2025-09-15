@@ -11,39 +11,37 @@ import PinterestLikeGrid
 
 struct VotingView: View {
     @State var selectedImage: UUID?
-    var viewModel: VotingViewModel = VotingViewModel(
-        service: GameCenterService()
-    )
+    var viewModel: VotingViewModel = VotingViewModel()
     let columns = [
         GridItem(.flexible()),
         GridItem(.flexible()),
     ]
     @State var imageSubmissions: [ImageSubmission] = [
-        ImageSubmission(
-            image: UIImage(named: "img-placeholder16x9")!.jpegData(
-                compressionQuality: 1.0
-            )!,
-            submissionTime: Date()
-        ),
-        ImageSubmission(
-            image: UIImage(named: "img-placeholder1x1")!.jpegData(
-                compressionQuality: 1.0
-            )!,
-            submissionTime: Date()
-        ),
-        ImageSubmission(
-            image: UIImage(named: "img-placeholder9x16")!.jpegData(
-                compressionQuality: 1.0
-            )!,
-            submissionTime: Date()
-        ),
-        ImageSubmission(
-            image: UIImage(named: "img-placeholder3x4")!.jpegData(
-                compressionQuality: 1.0
-            )!,
-            submissionTime: Date()
-        ),
-    ]
+            ImageSubmission(
+                image: UIImage(named: "img-placeholder16x9")!.jpegData(
+                    compressionQuality: 1.0
+                )!,
+                submissionTime: Date()
+            ),
+            ImageSubmission(
+                image: UIImage(named: "img-placeholder1x1")!.jpegData(
+                    compressionQuality: 1.0
+                )!,
+                submissionTime: Date()
+            ),
+            ImageSubmission(
+                image: UIImage(named: "img-placeholder9x16")!.jpegData(
+                    compressionQuality: 1.0
+                )!,
+                submissionTime: Date()
+            ),
+            ImageSubmission(
+                image: UIImage(named: "img-placeholder3x4")!.jpegData(
+                    compressionQuality: 1.0
+                )!,
+                submissionTime: Date()
+            ),
+        ]
     var body: some View {
         ScrollView {
             VStack(alignment: .leading) {
@@ -52,7 +50,7 @@ struct VotingView: View {
                 Text("a moment in nature")
                 PinterestLikeGrid($imageSubmissions, columns: 2, spacing: 16) { photo, index in
                     Button {
-                        viewModel.voteImage(id: photo.id) // depois passar UUID da imagem
+//                        viewModel.voteImage(id: photo.id) // depois passar UUID da imagem
                         selectedImage = photo.id
                     } label: {
                         if let data = photo.image, let uiImage = UIImage(data: data)

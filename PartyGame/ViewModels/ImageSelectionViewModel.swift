@@ -19,15 +19,13 @@ final class ImageSelectionViewModel: ObservableObject {
     @Published private(set) var hasSubmitted = false
     @Published private(set) var isLocalReady = false
 
-    private let service: GameCenterService
+    private let service = GameCenterService.shared
   //  private let onSubmit: (ImageSubmission) -> Void
     private var cancellables: Set<AnyCancellable> = []
 
-    init(service: GameCenterService) {
+    init() {
         // onSubmit: @escaping (ImageSubmission) -> Void) {
-        self.service = service
      //   self.onSubmit = onSubmit
-
         service.$readyMap
             .receive(on: DispatchQueue.main)
             .sink { [weak self] map in
@@ -37,7 +35,6 @@ final class ImageSelectionViewModel: ObservableObject {
             }
             .store(in: &cancellables)
     }
-
 
     func chooseCamera() {
         guard UIImagePickerController.isSourceTypeAvailable(.camera) else {
@@ -61,6 +58,7 @@ final class ImageSelectionViewModel: ObservableObject {
         }
 
         let submission = ImageSubmission(image: data, submissionTime: Date())
+        GameCenterService.shared.addSubmission(submission)
      //   onSubmit(submission)
         hasSubmitted = true
     }

@@ -18,7 +18,7 @@ private struct LobbyPacket: Codable {
     let senderID: String
     let text: String?
     let ready: Bool?
-
+    
     static func chat(senderID: String, text: String) -> LobbyPacket {
         .init(type: .chat, senderID: senderID, text: text, ready: nil)
     }
@@ -29,12 +29,18 @@ private struct LobbyPacket: Codable {
 
 // MARK: - Game Center Helper
 class GameCenterService: NSObject, ObservableObject {
+    
+    static let shared = GameCenterService()
+    
     @Published var isAuthenticated = false
     @Published var isInMatch = false
     @Published var players: [GKPlayer] = []
     @Published var readyMap: [String: Bool] = [:]
     @Published var messages: [String] = []
     @Published var isSinglePlayer = false
+    @Published var game: Game?
+    @Published var imageSubmissions: [ImageSubmission] = []
+    
     var match: GKMatch?
     private var pendingInvite: GKInvite?
     private var pendingPlayersToInvite: [GKPlayer]?
@@ -94,6 +100,27 @@ class GameCenterService: NSObject, ObservableObject {
                 }
             }
         }
+    }
+    
+     func addSubmission(_ submission: ImageSubmission) {
+         imageSubmissions.append(submission)
+         print(submission)
+     }
+    
+     //MARK: ainda não está sendo chamada!!
+    func startGame() {
+         let playersCount = players.count
+         game = Game(playersCount: playersCount)
+        //vai pra phrasesView
+        //enquanto nem todos tiverem mandado frase, espera.
+        
+     }
+    
+    // Adiciona frase e envia para todos os jogadores via Game Center
+    func addPhrase(_ phrase: Phrase) {
+        game?.addPhrase(phrase.text)
+        // Envia a frase para os outros jogadores
+        sendMessage("phrase:\(phrase.text)")
     }
     
     // Processar convite pendente (chamado automaticamente)
@@ -158,7 +185,7 @@ class GameCenterService: NSObject, ObservableObject {
             UIApplication.shared.currentRootViewController?.present(vc, animated: true)
         }
     }
-
+    
     
     // Create a single player match
     private func createSinglePlayerMatch() {
@@ -191,7 +218,7 @@ class GameCenterService: NSObject, ObservableObject {
         
         let senderID = GKLocalPlayer.local.gamePlayerID
         let packet = LobbyPacket.chat(senderID: senderID, text: text)
-
+        
         do {
             let data = try JSONEncoder().encode(packet)
             try match.sendData(toAllPlayers: data, with: .reliable)
@@ -216,7 +243,7 @@ class GameCenterService: NSObject, ObservableObject {
         
         guard let match = match else { return }
         let packet = LobbyPacket.ready(senderID: id, ready: newValue)
-
+        
         do {
             let data = try JSONEncoder().encode(packet)
             try match.sendData(toAllPlayers: data, with: .reliable)
@@ -228,10 +255,10 @@ class GameCenterService: NSObject, ObservableObject {
     private func setReady(_ value: Bool) {
         let id = GKLocalPlayer.local.gamePlayerID
         DispatchQueue.main.async { self.readyMap[id] = value }
-
+        
         guard let match = match else { return }
         let packet = LobbyPacket.ready(senderID: id, ready: value)
-
+        
         do {
             let data = try JSONEncoder().encode(packet)
             try match.sendData(toAllPlayers: data, with: .reliable)
@@ -239,7 +266,7 @@ class GameCenterService: NSObject, ObservableObject {
             print("❌ Erro ao enviar READY: \(error)")
         }
     }
-
+    
     private func refreshPlayers() {
         var everyone: [GKPlayer] = [GKLocalPlayer.local as GKPlayer]
         if let remotes = match?.players { everyone.append(contentsOf: remotes) }
@@ -252,7 +279,7 @@ class GameCenterService: NSObject, ObservableObject {
             self.readyMap = map
         }
     }
-
+    
     func leaveMatch() {
         if !isSinglePlayer {
             match?.disconnect()
@@ -267,7 +294,7 @@ class GameCenterService: NSObject, ObservableObject {
             self.messages.removeAll()
         }
     }
-
+    
 }
 
 // MARK: - Delegates
@@ -299,7 +326,7 @@ extension GameCenterService: GKMatchmakerViewControllerDelegate, GKMatchDelegate
             for p in match.players { map[p.gamePlayerID] = false }
             self.readyMap = map
         }
-
+        
         sendMessage("Olá, galera!")
     }
     
@@ -342,6 +369,16 @@ extension GameCenterService: GKMatchmakerViewControllerDelegate, GKMatchDelegate
         print("❌ Erro no match: \(error?.localizedDescription ?? "desconhecido")")
         leaveMatch()
     }
+    
+//    func goToNextRound() {
+//        guard let game = game, game.currentRoundIndex + 1 < game.rounds.count else { return }
+//        self.game?.currentRoundIndex += 1
+//    }
+//    
+//    // Retorna a rodada atual
+//    func getCurrentRound() -> Round? {
+//        return game?.currentRound
+//    }
 }
 
 // MARK: - Listener de convites

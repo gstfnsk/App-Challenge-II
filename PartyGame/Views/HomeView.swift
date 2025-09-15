@@ -26,7 +26,7 @@ struct HomeView: View {
                         }
                     } else {
                         Text("Autenticando no Game Center...")
-                            .foregroundColor(.orangegit )
+                            .foregroundColor(.orange)
                     }
                 }
                 .padding()
