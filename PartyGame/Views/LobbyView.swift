@@ -106,13 +106,7 @@ struct LobbyView: View {
                 } label: { Text("Sair") }
             }
             
-            ToolbarItem(placement: .topBarTrailing) {
-                Button {
-                    viewModel.toggleReady()
-                } label: {
-                    Text(viewModel.isLocalReady ? "Cancelar" : "Ready")
-                }
-            }
+            
         }
     }
     
@@ -296,33 +290,6 @@ struct LobbyView: View {
     
     private var knobColor: Color {
         dragProgress > 0.8 ? .darkGreen : .darkRed
-    }
-}
-#Preview {
-    let mockService = MockGameCenterService()
-    
-    // Mock players
-    let p1 = MockPlayer(id: "1", name: "Alice")
-    let p2 = MockPlayer(id: "2", name: "Bob")
-    let p3 = MockPlayer(id: "3", name: "Charlie")
-    
-    mockService.players = [p1, p2, p3]
-    mockService.readyMap = [
-        p1.gamePlayerID: true,
-        p2.gamePlayerID: false,
-        p3.gamePlayerID: true,
-        GKLocalPlayer.local.gamePlayerID: false
-    ]
-    mockService.messages = [
-        "Alice: Olá 👋",
-        "Bob: Bora jogar?",
-        "Charlie: Ready!"
-    ]
-    
-    let viewModel = LobbyViewModel(service: mockService)
-    
-    return NavigationView {
-        LobbyView(viewModel: viewModel)
     }
 }
 
