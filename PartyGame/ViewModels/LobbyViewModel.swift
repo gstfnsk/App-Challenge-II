@@ -18,7 +18,9 @@ final class LobbyViewModel: ObservableObject {
 
     @Published var isInMatch: Bool = false
     @Published var readyMap: [String: Bool] = [:]
-
+    
+    @Published var isSliderComplete: Bool = false
+    
     private let service: GameCenterService
 
     init(service: GameCenterService) {
@@ -55,7 +57,16 @@ final class LobbyViewModel: ObservableObject {
     func toggleReady() {
         service.toggleReady()
     }
-
+    
+    func markSliderComplete() {
+            isSliderComplete = true
+            toggleReady()
+        }
+    
+    func markSliderIncomplete() {
+        isSliderComplete = false
+    }
+    
     var localPlayerID: String { GKLocalPlayer.local.gamePlayerID }
     var isLocalReady: Bool { readyMap[localPlayerID] ?? false }
     var allReady: Bool {
