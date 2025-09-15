@@ -5,10 +5,6 @@
 //  Created by Rafael Toneto on 10/09/25.
 //
 
-//
-//  LobbyView.swift
-//  PartyGame
-//
 import SwiftUI
 import GameKit
 
@@ -22,7 +18,22 @@ struct LobbyView: View {
     
     var body: some View {
         VStack(spacing: 0) {
-            header
+                HStack(spacing: 12) {
+                    Text("Jogadores conectados")
+                        .font(.headline)
+                    Spacer()
+                    if viewModel.allReady && !viewModel.players.isEmpty {
+                        Text("Todos prontos ✅")
+                            .font(.subheadline)
+                            .foregroundStyle(.green)
+                    } else {
+                        Text("\(viewModel.players.count)")
+                            .font(.subheadline)
+                            .foregroundStyle(.secondary)
+                    }
+                }
+                .padding()
+
             Divider()
             VStack(spacing: 16){
                 playersStrip
@@ -92,7 +103,6 @@ struct LobbyView: View {
             Divider().padding(.top, 8)
             chatArea
             inputBar
-            
         }
         .navigationTitle("Lobby")
         .navigationBarTitleDisplayMode(.inline)
@@ -205,7 +215,7 @@ struct LobbyView: View {
         }
         .padding()
     }
-    
+
     private func initials(of name: String) -> String {
         let parts = name.split(separator: " ")
         let a = parts.first?.first.map(String.init) ?? ""
@@ -239,7 +249,6 @@ struct LobbyView: View {
         }
     }
     
-    // MARK: - Smooth Background Gradient
     private var smoothBackgroundGradient: LinearGradient {
         switch currentGradientState {
         case .initial:
@@ -272,7 +281,6 @@ struct LobbyView: View {
         }
     }
     
-    // MARK: - Supporting Properties
     private var sliderText: String {
         switch currentGradientState {
         case .initial, .startDragging:

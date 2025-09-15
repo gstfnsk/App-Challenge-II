@@ -8,7 +8,7 @@
 import SwiftUI
 
 @main
-struct GameCenterPOCApp: App {
+struct PicktureApp: App {
     @StateObject private var gameCenter = GameCenterService()
 
     var body: some Scene {
