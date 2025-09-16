@@ -18,7 +18,7 @@ final class ImageSelectionViewModel: ObservableObject {
 
     @Published private(set) var hasSubmitted = false
     @Published private(set) var isLocalReady = false
-
+    
     private let service = GameCenterService.shared
   //  private let onSubmit: (ImageSubmission) -> Void
     private var cancellables: Set<AnyCancellable> = []
@@ -46,13 +46,13 @@ final class ImageSelectionViewModel: ObservableObject {
     
     func getRandomPhrase() -> String {
             return service.returnRandomPhrase()
-        }
+    }
 
     func chooseLibrary() {
         isShowingLibrary = true
     }
 
-    func handlePickedImage(_ image: UIImage) {
+    func handlePickedImage(_ image: UIImage, selectedPhrase: String) {
         selectedImage = image
         errorMessage = nil
 
@@ -61,9 +61,11 @@ final class ImageSelectionViewModel: ObservableObject {
             return
         }
 
-        let submission = ImageSubmission(image: data, submissionTime: Date())
-        GameCenterService.shared.addSubmission(submission)
-     //   onSubmit(submission)
+        let imageSubmission = ImageSubmission(image: data, submissionTime: Date())
+        let player = GKLocalPlayer.local
+        let phrase = selectedPhrase
+        GameCenterService.shared.addSubmission(player: player, phrase: phrase, image: imageSubmission)
+        hasSubmitted = true
         hasSubmitted = true
     }
 
@@ -76,7 +78,7 @@ final class ImageSelectionViewModel: ObservableObject {
             errorMessage = "Falha ao preparar a imagem."
             return
         }
-        let submission = ImageSubmission(image: data, submissionTime: Date())
+        _ = ImageSubmission(image: data, submissionTime: Date())
        // onSubmit(submission)
         hasSubmitted = true
     }
