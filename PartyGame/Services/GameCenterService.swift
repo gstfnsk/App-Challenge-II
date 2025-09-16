@@ -41,7 +41,7 @@ class GameCenterService: NSObject, ObservableObject {
     @Published var totalRounds: Int = 10
     @Published var currentRound: Int = 1
     @Published var phrases: [String] = []
-    @Published var imageSubmissions: [ImageSubmission] = []
+    @Published var playerSubmissions: [PlayerSubmission] = []
     
     var match: GKMatch?
     private var pendingInvite: GKInvite?
@@ -104,38 +104,49 @@ class GameCenterService: NSObject, ObservableObject {
         }
     }
     
-     func addSubmission(_ submission: ImageSubmission) {
-         imageSubmissions.append(submission)
-         print(submission)
-     }
+    func addSubmission(player: GKPlayer, phrase: String, image: ImageSubmission) {
+        let submission = PlayerSubmission(player: player, phrase: phrase, imageSubmission: image, votes: 0)
+        playerSubmissions.append(submission)
+        print("Nova submissão adicionada:", submission)
+    }
+    
+    func haveAllPlayersSubmittedPhrase() -> Bool {
+        //        print("players.count", players.count)
+        //        print("phrases.count", phrases.count)
+        if true { // single player:
+            return !phrases.isEmpty
+        }
+        return ((players.count == phrases.count && players.count != 0) ? true : false)
+    }
     
     // Submit a phrase
-     func submitPhrase(phrase: String) {
-         
-//         guard isAuthenticated else {
-//             print("⚠️ Usuário não está autenticado")
-//             return
-//         }
-//         
-//         guard isInMatch else {
-//             print("⚠️ Nenhuma partida ativa")
-//             return
-//         }
-         
-         self.phrases.append(phrase)
-     }
-     
-     func returnRandomPhrase() -> String {
-         if let selectedPhrase = self.phrases.randomElement() {
-             return selectedPhrase
-         } else {
-             return "There are no phrases yet!"
-         }
-     }
-     
-     func getSubmittedPhrases() -> [String] {
-         return self.phrases
-     }
+    func submitPhrase(phrase: String) {
+        
+        //          multiplayer:
+        //         guard isAuthenticated else {
+        //             print("⚠️ Usuário não está autenticado")
+        //             return
+        //         }
+        //
+        //         guard isInMatch else {
+        //             print("⚠️ Nenhuma partida ativa")
+        //             return
+        //         }
+        
+        self.phrases.append(phrase)
+    }
+    
+    func returnRandomPhrase() -> String {
+        if let selectedPhrase = self.phrases.randomElement() {
+            return selectedPhrase
+        } else {
+            return "There are no phrases yet!"
+        }
+    }
+    
+    func getSubmittedPhrases() -> [String] {
+        return self.phrases
+    }
     
     // Processar convite pendente (chamado automaticamente)
     func processPendingInvite() {
@@ -209,9 +220,11 @@ class GameCenterService: NSObject, ObservableObject {
             self.isInMatch = true
             self.isSinglePlayer = true
             self.match = nil // No actual GKMatch for single player
-            self.players = [GKLocalPlayer.local as GKPlayer]
+            self.players = [GKLocalPlayer.local]
             self.readyMap = [GKLocalPlayer.local.gamePlayerID: false]
             self.messages = ["Welcome to single player mode!"]
+            self.phrases = []
+            
         }
     }
     
@@ -338,6 +351,7 @@ extension GameCenterService: GKMatchmakerViewControllerDelegate, GKMatchDelegate
             var map: [String: Bool] = [:]
             map[localID] = false
             for p in match.players { map[p.gamePlayerID] = false }
+            self.phrases = []
             self.readyMap = map
         }
         
@@ -384,15 +398,15 @@ extension GameCenterService: GKMatchmakerViewControllerDelegate, GKMatchDelegate
         leaveMatch()
     }
     
-//    func goToNextRound() {
-//        guard let game = game, game.currentRoundIndex + 1 < game.rounds.count else { return }
-//        self.game?.currentRoundIndex += 1
-//    }
-//    
-//    // Retorna a rodada atual
-//    func getCurrentRound() -> Round? {
-//        return game?.currentRound
-//    }
+    var maxRounds: Int {
+        players.count
+    }
+    
+    func goToNextRound() {
+        if currentRound < maxRounds {
+            currentRound += 1
+        }
+    }
 }
 
 // MARK: - Listener de convites
