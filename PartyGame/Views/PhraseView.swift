@@ -55,7 +55,9 @@ struct PhraseView: View {
                     }
                     Button {
                         viewModel.submitPhrase(phrase: selectedPhrase.text)
-                        nextScreen = true
+                        if viewModel.haveAllPlayersSubmitted {
+                            nextScreen = true
+                        }
                     }label: {
                         Text("Submit Phrase")
                     }
@@ -75,11 +77,6 @@ struct PhraseView: View {
             }
         }
         .navigationBarBackButtonHidden(true)
-        .onChange(of: viewModel.haveAllPlayersSubmitted) { oldValue, allSubmitted in
-            if allSubmitted {
-                nextScreen = true
-            }
-        }
         .navigationDestination(isPresented: $nextScreen) {
             ImageSelectionView()
         }
