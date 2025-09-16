@@ -29,21 +29,20 @@ struct ButtonHighFidelityView: View {
                     .foregroundStyle(enabled ? .darkerPurple : .darkerGray)
             }
             .frame(maxWidth: .infinity)
+            .frame(height: 53)
             .background(
                 RoundedRectangle(cornerRadius: 28)
                     .fill(
                         (enabled ? Color.lilac : Color.lighterGray)
                         .shadow(.inner(color: Color.white, radius: 2, y: 3))
                     )
-                    .frame(height: 53)
             )
             
                 
         }
-        .padding(.horizontal, 16)
     }
 }
 
 #Preview {
-    ButtonHighFidelityView(image:"img-gameController", title:"Confirm vote", action: { print("hi") } )
+    ButtonHighFidelityView(image:"img-gameController", title:"New Match", action: { print("hi") } )
 }
