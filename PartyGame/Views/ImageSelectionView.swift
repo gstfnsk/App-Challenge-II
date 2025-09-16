@@ -84,7 +84,7 @@ struct ImageSelectionView: View {
         .navigationTitle("Imagem")
         .navigationBarTitleDisplayMode(.inline)
         .navigationDestination(isPresented: $goToVotingView) {
-            VotingView()
+            VotingView(phrase: selectedPhrase)
         }
         
         .confirmationDialog("Escolher origem", isPresented: $showSourceMenu, titleVisibility: .visible) {
@@ -95,11 +95,11 @@ struct ImageSelectionView: View {
         
         .sheet(isPresented: $viewModel.isShowingCamera) {
             ImagePicker(sourceType: .camera, allowsEditing: false) { img in
-                viewModel.handlePickedImage(img)             }
+                viewModel.handlePickedImage(img, selectedPhrase: selectedPhrase)             }
         }
         .sheet(isPresented: $viewModel.isShowingLibrary) {
             ImagePicker(sourceType: .photoLibrary, allowsEditing: false) { img in
-                viewModel.handlePickedImage(img)
+                viewModel.handlePickedImage(img, selectedPhrase: selectedPhrase)
             }
         }
     }
