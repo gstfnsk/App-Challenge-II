@@ -38,7 +38,9 @@ class GameCenterService: NSObject, ObservableObject {
     @Published var readyMap: [String: Bool] = [:]
     @Published var messages: [String] = []
     @Published var isSinglePlayer = false
-    @Published var game: Game?
+    @Published var totalRounds: Int = 10
+    @Published var currentRound: Int = 1
+    @Published var phrases: [String] = []
     @Published var imageSubmissions: [ImageSubmission] = []
     
     var match: GKMatch?
@@ -107,21 +109,33 @@ class GameCenterService: NSObject, ObservableObject {
          print(submission)
      }
     
-     //MARK: ainda não está sendo chamada!!
-    func startGame() {
-         let playersCount = players.count
-         game = Game(playersCount: playersCount)
-        //vai pra phrasesView
-        //enquanto nem todos tiverem mandado frase, espera.
-        
+    // Submit a phrase
+     func submitPhrase(phrase: String) {
+         
+//         guard isAuthenticated else {
+//             print("⚠️ Usuário não está autenticado")
+//             return
+//         }
+//         
+//         guard isInMatch else {
+//             print("⚠️ Nenhuma partida ativa")
+//             return
+//         }
+         
+         self.phrases.append(phrase)
      }
-    
-    // Adiciona frase e envia para todos os jogadores via Game Center
-    func addPhrase(_ phrase: Phrase) {
-        game?.addPhrase(phrase.text)
-        // Envia a frase para os outros jogadores
-        sendMessage("phrase:\(phrase.text)")
-    }
+     
+     func returnRandomPhrase() -> String {
+         if let selectedPhrase = self.phrases.randomElement() {
+             return selectedPhrase
+         } else {
+             return "There are no phrases yet!"
+         }
+     }
+     
+     func getSubmittedPhrases() -> [String] {
+         return self.phrases
+     }
     
     // Processar convite pendente (chamado automaticamente)
     func processPendingInvite() {

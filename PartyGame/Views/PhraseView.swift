@@ -7,7 +7,7 @@
 
 import SwiftUI
 
-struct PhraseSelectorView: View {
+struct PhraseView: View {
     
     @State var selectedPhrase: Phrase = .init(text: "", category: .action)
     @State var displayedPhrases: [Phrase] = []
@@ -54,9 +54,8 @@ struct PhraseSelectorView: View {
                         
                     }
                     Button {
-                        viewModel.savePhrase(selectedPhrase)
+                        viewModel.submitPhrase(phrase: selectedPhrase.text)
                         nextScreen = true
-                        print("Submitted phrase: \(selectedPhrase)")
                     }label: {
                         Text("Submit Phrase")
                     }
@@ -76,17 +75,17 @@ struct PhraseSelectorView: View {
             }
         }
         .navigationBarBackButtonHidden(true)
-        .onChange(of: viewModel.haveAllPlayersSubmitted) { allSubmitted in
+        .onChange(of: viewModel.haveAllPlayersSubmitted) { oldValue, allSubmitted in
             if allSubmitted {
                 nextScreen = true
             }
         }
         .navigationDestination(isPresented: $nextScreen) {
-            ImageSelectionView(selectedPhrase: selectedPhrase)
+            ImageSelectionView()
         }
         
     }
 }
 #Preview {
-    PhraseSelectorView()
+    PhraseView()
 }

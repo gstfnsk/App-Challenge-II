@@ -43,6 +43,10 @@ final class ImageSelectionViewModel: ObservableObject {
         }
         isShowingCamera = true
     }
+    
+    func getRandomPhrase() -> String {
+            return service.returnRandomPhrase()
+        }
 
     func chooseLibrary() {
         isShowingLibrary = true
@@ -75,6 +79,10 @@ final class ImageSelectionViewModel: ObservableObject {
         let submission = ImageSubmission(image: data, submissionTime: Date())
        // onSubmit(submission)
         hasSubmitted = true
+    }
+    
+    func getSubmitedPhrases() -> [String] {
+            return service.getSubmittedPhrases()
     }
 
     func toggleReady() {

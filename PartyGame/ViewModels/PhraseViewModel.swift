@@ -11,14 +11,22 @@ import SwiftUI
 @Observable
 final class PhraseViewModel {
     let service = GameCenterService.shared
-    
-    func savePhrase(_ phrase: Phrase) {
-        // Adiciona a frase no game e envia para os outros jogadores
-        service.addPhrase(phrase)
-    }
+     
+     func submitPhrase(phrase: String) {
+         service.submitPhrase(phrase: phrase)
+     }
+     
+     func toggleReady() {
+         service.toggleReady()
+     }
+     
+     func getSubmitedPhrases() -> [String] {
+         return service.getSubmittedPhrases()
+     }
     
     var haveAllPlayersSubmitted: Bool {
-        guard let game = service.game else { return false }
-        return game.phrases.count == game.totalRounds
+//        guard let game = service.game else { return false }
+//        return game.phrases.count == game.totalRounds
+        return true
     }
 }

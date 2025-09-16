@@ -135,7 +135,7 @@ struct LobbyView: View {
         }
         
         .navigationDestination(isPresented: $startGame) {
-            PhraseSelectorView()
+            PhraseView()
         }
     }
 
