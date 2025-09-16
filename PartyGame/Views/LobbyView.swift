@@ -18,24 +18,23 @@ struct LobbyView: View {
     
     
     var body: some View {
-        NavigationStack {
-            VStack(spacing: 0) {
-                    HStack(spacing: 12) {
-                        Text("Jogadores conectados")
-                            .font(.headline)
-                        Spacer()
-                        if viewModel.allReady { //}&& !viewModel.players.isEmpty {
-                            Text("Todos prontos ✅")
-                                .font(.subheadline)
-                                .foregroundStyle(.green)
-                        } else {
-                            Text("\(viewModel.players.count)")
-                                .font(.subheadline)
-                                .foregroundStyle(.secondary)
-                        }
-                    }
-                    .padding()
-
+        VStack(spacing: 0) {
+            HStack(spacing: 12) {
+                Text("Jogadores conectados")
+                    .font(.headline)
+                Spacer()
+                if viewModel.allReady { //}&& !viewModel.players.isEmpty {
+                    Text("Todos prontos ✅")
+                        .font(.subheadline)
+                        .foregroundStyle(.green)
+                } else {
+                    Text("\(viewModel.players.count)")
+                        .font(.subheadline)
+                        .foregroundStyle(.secondary)
+                }
+            }
+            .padding()
+            
             Divider()
             VStack(spacing: 16){
                 playersStrip
@@ -122,7 +121,7 @@ struct LobbyView: View {
         }
     }
     
-    private var header: some View {
+    var header: some View {
         HStack(spacing: 12) {
             Text("Jogadores conectados")
                 .font(.headline)
@@ -140,7 +139,7 @@ struct LobbyView: View {
         .padding()
     }
     
-    private var playersStrip: some View {
+    var playersStrip: some View {
         ScrollView(.horizontal, showsIndicators: false) {
             HStack(spacing: 12) {
                 ForEach(viewModel.players, id: \.gamePlayerID) { p in
@@ -181,7 +180,7 @@ struct LobbyView: View {
         .accessibilityLabel(Text("Lista de jogadores"))
     }
     
-    private var chatArea: some View {
+    var chatArea: some View {
         ScrollViewReader { proxy in
             ScrollView {
                 LazyVStack(alignment: .leading, spacing: 8) {
@@ -203,7 +202,7 @@ struct LobbyView: View {
         }
     }
     
-    private var inputBar: some View {
+    var inputBar: some View {
         HStack(spacing: 8) {
             TextField("Digite sua mensagem...", text: $viewModel.typedMessage)
                 .textFieldStyle(RoundedBorderTextFieldStyle())
@@ -217,22 +216,22 @@ struct LobbyView: View {
         }
         .padding()
     }
-
-    private func initials(of name: String) -> String {
+    
+    func initials(of name: String) -> String {
         let parts = name.split(separator: " ")
         let a = parts.first?.first.map(String.init) ?? ""
         let b = parts.dropFirst().first?.first.map(String.init) ?? ""
         return (a + b).uppercased()
     }
     
-    private enum GradientState: Equatable {
+    enum GradientState: Equatable {
         case initial
         case startDragging
         case midDragging
         case completed
     }
     
-    private var currentGradientState: GradientState {
+    var currentGradientState: GradientState {
         if viewModel.isLocalReady && !isDragging {
             return .completed
         } else if isDragging {
@@ -251,7 +250,7 @@ struct LobbyView: View {
         }
     }
     
-    private var smoothBackgroundGradient: LinearGradient {
+    var smoothBackgroundGradient: LinearGradient {
         switch currentGradientState {
         case .initial:
             return LinearGradient(
@@ -283,7 +282,7 @@ struct LobbyView: View {
         }
     }
     
-    private var sliderText: String {
+    var sliderText: String {
         switch currentGradientState {
         case .initial, .startDragging:
             return "ready?"
@@ -294,13 +293,11 @@ struct LobbyView: View {
         }
     }
     
-    private var knobIcon: String {
+    var knobIcon: String {
         dragProgress > 0.8 ? "checkmark" : "chevron.right"
     }
     
-    private var knobColor: Color {
+    var knobColor: Color {
         dragProgress > 0.8 ? .darkGreen : .darkRed
     }
 }
-
-
