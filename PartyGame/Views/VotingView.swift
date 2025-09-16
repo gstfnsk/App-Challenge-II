@@ -17,7 +17,8 @@ struct VotingView: View {
         GridItem(.flexible()),
         GridItem(.flexible()),
     ]
-    @State var imageSubmissions: [ImageSubmission] = []    var body: some View {
+    @State var imageSubmissions: [ImageSubmission] = []
+    var body: some View {
         ScrollView {
             VStack(alignment: .leading) {
                 Text("vote for the best")
