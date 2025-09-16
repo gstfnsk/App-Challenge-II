@@ -25,8 +25,6 @@ final class PhraseViewModel {
      }
     
     var haveAllPlayersSubmitted: Bool {
-//        guard let game = service.game else { return false }
-//        return game.phrases.count == game.totalRounds
-        return true
+        service.haveAllPlayersSubmittedPhrase()
     }
 }
