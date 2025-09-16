@@ -95,7 +95,6 @@ struct LobbyView: View {
                             .foregroundStyle(knobColor)
                             .fontWeight(.black)
                         
-                        
                     }
                 )
                 .padding(.horizontal, 16)
@@ -105,9 +104,18 @@ struct LobbyView: View {
             chatArea
             inputBar
         }
+        .onChange(of: viewModel.allReady) { oldValue, newValue in
+            // Se todos prontos, avança para PhraseView
+            if newValue && !viewModel.players.isEmpty {
+                startGame = true
+            }
+        }
         .navigationTitle("Lobby")
         .navigationBarTitleDisplayMode(.inline)
         .navigationBarBackButtonHidden(true)
+        .navigationDestination(isPresented: $startGame) {
+            PhraseView()
+        }
         .toolbar {
             ToolbarItem(placement: .topBarLeading) {
                 Button(role: .cancel) {
@@ -130,6 +138,7 @@ struct LobbyView: View {
                 Text("Todos prontos ✅")
                     .font(.subheadline)
                     .foregroundStyle(.green)
+                
             } else {
                 Text("\(viewModel.players.count)")
                     .font(.subheadline)
