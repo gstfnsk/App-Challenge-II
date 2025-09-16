@@ -29,7 +29,10 @@ final class VotingViewModel {
     }
 
     func voteImage(id: UUID) {
-        // lógica de votar na imagem com UUID
-        print("Votou na imagem \(id)")
+        guard let submission = service.playerSubmissions.first(where: { $0.imageSubmission.id == id }) else {
+            print("Nenhuma submissão encontrada para essa imagem")
+            return
+        }
+        submission.votes += 1
     }
 }
