@@ -1,0 +1,15 @@
+{
+  "originHash" : "010a3234a1bb71081a7dea2ba52a850e1505cc75700ba3aaaec5a9ac7d1075c0",
+  "pins" : [
+    {
+      "identity" : "pinterestlikegrid",
+      "kind" : "remoteSourceControl",
+      "location" : "https://github.com/thaisrfernandes/PinterestLikeGrid.git",
+      "state" : {
+        "branch" : "main",
+        "revision" : "3dddb6afd7a55248c0dd8b5eac2e552023635c5e"
+      }
+    }
+  ],
+  "version" : 3
+}
