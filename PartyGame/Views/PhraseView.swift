@@ -30,9 +30,12 @@ struct PhraseView: View {
                     .font(.system(size: 64, weight: .bold, design: .default))
                 VStack(spacing: 64){
                     VStack(spacing: 16){
+                    VStack(spacing: 16){
                         TextField(
                             "write your own phrase here",
+                            "write your own phrase here",
                             text: $selectedPhrase.text)
+                        .foregroundStyle(.lilac)
                         .foregroundStyle(.lilac)
                         .padding(.vertical, 12)
                         .padding(.horizontal, 16)
@@ -99,6 +102,7 @@ struct PhraseView: View {
                 .padding(.horizontal, 16)
                 .padding(.vertical, 16)
                 .onAppear() {
+                    displayedPhrases = Array(Phrases.all.shuffled().prefix(3))
                     displayedPhrases = Array(Phrases.all.shuffled().prefix(3))
                 }
             }
