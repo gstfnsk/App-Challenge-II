@@ -59,6 +59,9 @@ struct ImageSelectionView: View {
             Button {
                 goToVotingView = true
                 viewModel.toggleReady()
+                if viewModel.haveAllPlayersSubmitted {
+                    goToVotingView = true
+                }
             } label: {
                 Text(viewModel.isLocalReady ? "Cancelar ready" : "Ready")
                     .frame(maxWidth: .infinity)
@@ -82,6 +85,7 @@ struct ImageSelectionView: View {
             selectedPhrase = viewModel.getRandomPhrase()
         }
         .navigationTitle("Imagem")
+        .navigationBarBackButtonHidden(true)
         .navigationBarTitleDisplayMode(.inline)
         .navigationDestination(isPresented: $goToVotingView) {
             VotingView(phrase: selectedPhrase)

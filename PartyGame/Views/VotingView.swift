@@ -63,9 +63,6 @@ struct VotingView: View {
             // Filtra as imagens submetidas para a frase atual
             imageSubmissions = viewModel.submissions(for: phrase)
         }
+        .navigationBarBackButtonHidden(true)
     }
 }
-
-//#Preview {
-//    VotingView()
-//}

@@ -11,6 +11,9 @@ class ImageCarouselViewModel: ObservableObject {
         
     private let service = GameCenterService.shared
 
-    init() {
+    func submissions(for phrase: String) -> [ImageSubmission] {
+        service.playerSubmissions
+            .filter { $0.phrase == phrase }
+            .map { $0.imageSubmission }
     }
 }

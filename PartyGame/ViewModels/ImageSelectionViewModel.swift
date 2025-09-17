@@ -35,6 +35,10 @@ final class ImageSelectionViewModel: ObservableObject {
             }
             .store(in: &cancellables)
     }
+    
+    var haveAllPlayersSubmitted: Bool {
+        service.haveAllPlayersSubmittedImage()
+    }
 
     func chooseCamera() {
         guard UIImagePickerController.isSourceTypeAvailable(.camera) else {
