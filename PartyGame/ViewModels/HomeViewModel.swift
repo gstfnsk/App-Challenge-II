@@ -30,8 +30,12 @@ class HomeViewModel: ObservableObject {
             .assign(to: &$isInMatch)
     }
         
-    func startMatchmaking() {
-        service.startMatchmaking()
+    func startSinglePlayerGame() {
+        service.startMatchmaking(minPlayers: 1, maxPlayers: 1, singlePlayerMode: true)
+    }
+
+    func startMultiplayerGame(minPlayers: Int = 2, maxPlayers: Int = 4) {
+        service.startMatchmaking(minPlayers: minPlayers, maxPlayers: maxPlayers, singlePlayerMode: false)
     }
     
     func sendMessage(_ text: String) {

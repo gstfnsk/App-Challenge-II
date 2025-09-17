@@ -18,16 +18,14 @@ final class ImageSelectionViewModel: ObservableObject {
 
     @Published private(set) var hasSubmitted = false
     @Published private(set) var isLocalReady = false
-
-    private let service: GameCenterService
-    private let onSubmit: (ImageSubmission) -> Void
+    
+    private let service = GameCenterService.shared
+  //  private let onSubmit: (ImageSubmission) -> Void
     private var cancellables: Set<AnyCancellable> = []
 
-    init(service: GameCenterService,
-         onSubmit: @escaping (ImageSubmission) -> Void) {
-        self.service = service
-        self.onSubmit = onSubmit
-
+    init() {
+        // onSubmit: @escaping (ImageSubmission) -> Void) {
+     //   self.onSubmit = onSubmit
         service.$readyMap
             .receive(on: DispatchQueue.main)
             .sink { [weak self] map in
@@ -38,7 +36,6 @@ final class ImageSelectionViewModel: ObservableObject {
             .store(in: &cancellables)
     }
 
-
     func chooseCamera() {
         guard UIImagePickerController.isSourceTypeAvailable(.camera) else {
             errorMessage = "Câmera não disponível neste dispositivo."
@@ -46,12 +43,16 @@ final class ImageSelectionViewModel: ObservableObject {
         }
         isShowingCamera = true
     }
+    
+    func getRandomPhrase() -> String {
+            return service.returnRandomPhrase()
+    }
 
     func chooseLibrary() {
         isShowingLibrary = true
     }
 
-    func handlePickedImage(_ image: UIImage) {
+    func handlePickedImage(_ image: UIImage, selectedPhrase: String) {
         selectedImage = image
         errorMessage = nil
 
@@ -60,8 +61,11 @@ final class ImageSelectionViewModel: ObservableObject {
             return
         }
 
-        let submission = ImageSubmission(image: data, submissionTime: Date())
-        onSubmit(submission)
+        let imageSubmission = ImageSubmission(image: data, submissionTime: Date())
+        let player = GKLocalPlayer.local
+        let phrase = selectedPhrase
+        GameCenterService.shared.addSubmission(player: player, phrase: phrase, image: imageSubmission)
+        hasSubmitted = true
         hasSubmitted = true
     }
 
@@ -74,9 +78,13 @@ final class ImageSelectionViewModel: ObservableObject {
             errorMessage = "Falha ao preparar a imagem."
             return
         }
-        let submission = ImageSubmission(image: data, submissionTime: Date())
-        onSubmit(submission)
+        _ = ImageSubmission(image: data, submissionTime: Date())
+       // onSubmit(submission)
         hasSubmitted = true
+    }
+    
+    func getSubmitedPhrases() -> [String] {
+            return service.getSubmittedPhrases()
     }
 
     func toggleReady() {

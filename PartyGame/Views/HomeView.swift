@@ -45,7 +45,6 @@ struct HomeView: View {
                                 ButtonHighFidelityView(image: "img-gameController", title: "Start Match", action: { viewModel.startMatchmaking() }
                                 )
                             }
-
                         }
                         .padding()
                     }
@@ -82,6 +81,7 @@ struct HomeView: View {
                 LobbyView(viewModel: viewModel.makeLobbyViewModel())
             }
             
+
         }
     }
 }
