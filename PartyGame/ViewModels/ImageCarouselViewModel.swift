@@ -9,9 +9,8 @@ import GameKit
 
 class ImageCarouselViewModel: ObservableObject {
         
-    private let service: GameCenterService
-    
-    init(service: GameCenterService = GameCenterService()) {
-        self.service = service
+    private let service = GameCenterService.shared
+
+    init() {
     }
 }
