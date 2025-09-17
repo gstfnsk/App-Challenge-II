@@ -9,11 +9,11 @@ import SwiftUI
 
 @main
 struct PicktureApp: App {
-    @StateObject private var gameCenter = GameCenterService()
+    @StateObject var service = GameCenterService.shared
 
     var body: some Scene {
         WindowGroup {
-            HomeView(viewModel: HomeViewModel(service: gameCenter))
+            HomeView()
         }
     }
 }
