@@ -36,7 +36,7 @@ final class ImageSelectionViewModel: ObservableObject {
             .store(in: &cancellables)
     }
     
-    var haveAllPlayersSubmitted: Bool {
+    var haveAllPlayersSubmittedImg: Bool {
         service.haveAllPlayersSubmittedImage()
     }
 

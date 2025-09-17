@@ -59,7 +59,7 @@ struct ImageSelectionView: View {
             Button {
                 goToVotingView = true
                 viewModel.toggleReady()
-                if viewModel.haveAllPlayersSubmitted {
+                if viewModel.haveAllPlayersSubmittedImg {
                     goToVotingView = true
                 }
             } label: {

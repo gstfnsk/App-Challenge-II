@@ -30,80 +30,80 @@ struct PhraseView: View {
                     .font(.system(size: 64, weight: .bold, design: .default))
                 VStack(spacing: 64){
                     VStack(spacing: 16){
-                    VStack(spacing: 16){
-                        TextField(
-                            "write your own phrase here",
-                            "write your own phrase here",
-                            text: $selectedPhrase.text)
-                        .foregroundStyle(.lilac)
-                        .foregroundStyle(.lilac)
-                        .padding(.vertical, 12)
-                        .padding(.horizontal, 16)
-                        .frame(maxWidth: .infinity, minHeight: 52, maxHeight: 52, alignment: .leading)
-                        .background(RoundedRectangle(cornerRadius: 26)
-                            .fill(Color.lighterPurple.shadow(.inner(color: .darkerPurple, radius: 2, y: 3))))
-                        
                         VStack(spacing: 16){
-                            HStack(spacing: 63){
-                                Text("or choose one of ours:")
-                                    .foregroundStyle(.ice)
-                                    .fontWeight(.semibold)
-                                    .font(.system(size: 20, weight: .semibold, design: .rounded))
-                                Button{
-                                    displayedPhrases = Array(Phrases.all.shuffled().prefix(3))
-                                }label: {
-                                    Image("Dice")
-                                        .background(Circle()
-                                            .frame(width: 35, height: 36)
-                                            .foregroundStyle(Color.lilac))
+                            TextField(
+                                "write your own phrase here",
+                                text: $selectedPhrase.text)
+                            .foregroundStyle(.lilac)
+                            .foregroundStyle(.lilac)
+                            .padding(.vertical, 12)
+                            .padding(.horizontal, 16)
+                            .frame(maxWidth: .infinity, minHeight: 52, maxHeight: 52, alignment: .leading)
+                            .background(RoundedRectangle(cornerRadius: 26)
+                                .fill(Color.lighterPurple.shadow(.inner(color: .darkerPurple, radius: 2, y: 3))))
+                            
+                            VStack(spacing: 16){
+                                HStack(spacing: 63){
+                                    Text("or choose one of ours:")
+                                        .foregroundStyle(.ice)
+                                        .fontWeight(.semibold)
+                                        .font(.system(size: 20, weight: .semibold, design: .rounded))
+                                    Button{
+                                        displayedPhrases = Array(Phrases.all.shuffled().prefix(3))
+                                    }label: {
+                                        Image("Dice")
+                                            .background(Circle()
+                                                .frame(width: 35, height: 36)
+                                                .foregroundStyle(Color.lilac))
+                                        
+                                    }
                                     
                                 }
-                                
-                            }
-                            LazyVGrid(columns: columns, spacing: 8){
-                                ForEach(displayedPhrases, id: \.self) { phrase in
-                                    PhraseComponent(phrase: phrase,
-                                                    isSelected: phrase == selectedPhrase,
-                                                    onSelect: {
-                                        selectedPhrase = phrase
-                                    })
+                                LazyVGrid(columns: columns, spacing: 8){
+                                    ForEach(displayedPhrases, id: \.self) { phrase in
+                                        PhraseComponent(phrase: phrase,
+                                                        isSelected: phrase == selectedPhrase,
+                                                        onSelect: {
+                                            selectedPhrase = phrase
+                                        })
+                                    }
+                                    
                                 }
-                                
                             }
+                            .padding(.vertical, 12)
+                            .padding(.horizontal)
+                            .background(RoundedRectangle(cornerRadius: 26).fill(Color.lighterPurple))
+                            
                         }
-                        .padding(.vertical, 12)
                         .padding(.horizontal)
-                        .background(RoundedRectangle(cornerRadius: 26).fill(Color.lighterPurple))
+                        .padding(.vertical)
+                        .background(GradientBackground()
+                                    /*.opacity(0.5)*/)
                         
                     }
                     .padding(.horizontal)
-                    .padding(.vertical)
-                    .background(GradientBackground()
-                                /*.opacity(0.5)*/)
-                    
-                }
-                .padding(.horizontal)
-                Button {
-                    print("Submitted phrase: \(selectedPhrase)")
-                    viewModel.submitPhrase(phrase: selectedPhrase.text)
-                    if viewModel.haveAllPlayersSubmitted {
-                        nextScreen = true
+                    Button {
+                        print("Submitted phrase: \(selectedPhrase)")
+                        viewModel.submitPhrase(phrase: selectedPhrase.text)
+                        if viewModel.haveAllPlayersSubmitted {
+                            nextScreen = true
+                        }
+                        
+                    }label: {
+                        Text("Component")
                     }
-                    
-                }label: {
-                    Text("Component")
-                }
-                .foregroundStyle(.primary)
-                .background(
-                    RoundedRectangle(cornerRadius: 16)
-                        .fill(.tertiary)
-                        .frame(width: 356, height: 42)
-                )
-                .padding(.horizontal, 16)
-                .padding(.vertical, 16)
-                .onAppear() {
-                    displayedPhrases = Array(Phrases.all.shuffled().prefix(3))
-                    displayedPhrases = Array(Phrases.all.shuffled().prefix(3))
+                    .foregroundStyle(.primary)
+                    .background(
+                        RoundedRectangle(cornerRadius: 16)
+                            .fill(.tertiary)
+                            .frame(width: 356, height: 42)
+                    )
+                    .padding(.horizontal, 16)
+                    .padding(.vertical, 16)
+                    .onAppear() {
+                        displayedPhrases = Array(Phrases.all.shuffled().prefix(3))
+                        displayedPhrases = Array(Phrases.all.shuffled().prefix(3))
+                    }
                 }
             }
         }
@@ -127,6 +127,3 @@ struct GradientBackground: View {
                 .shadow(.inner(color: Color.lilac, radius: 2, x: 0, y: 5)))
     }
 }
-//#Preview {
-//    PhraseView()
-//}
