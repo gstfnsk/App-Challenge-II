@@ -74,7 +74,7 @@ struct PhraseSelectorView: View {
                     .padding(.horizontal)
                     .padding(.vertical)
                     .background(GradientBackground()
-                    .opacity(0.5))
+                    /*.opacity(0.5)*/)
                     
                 }
                 .padding(.horizontal)
@@ -102,14 +102,14 @@ struct PhraseSelectorView: View {
 
 struct GradientBackground: View {
     let gradientBackground = LinearGradient(
-        gradient: Gradient(colors: [.lilac, .lighterPink]),
+        gradient: Gradient(colors: [.lilac.opacity(0.5), .lighterPink.opacity(0.5)]),
         startPoint: .top,
         endPoint: .bottom)
 
     var body: some View {
         RoundedRectangle(cornerRadius: 32)
             .fill(gradientBackground
-                .shadow(.inner(color: Color.white, radius: 2, x: 0, y: 3)))
+                .shadow(.inner(color: Color.lilac, radius: 2, x: 0, y: 5)))
     }
 }
 #Preview {
