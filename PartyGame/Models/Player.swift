@@ -11,13 +11,19 @@ import GameKit
 
 class Player: Identifiable {
     let id = UUID()
-    let player: GKPlayer
+    let player: PlayerRepresentable // GKplayer
     var submissions: [PlayerSubmission]
-//    let ready: Bool
+    var votes: Int {
+        var votes = 0
+        for submission in submissions {
+            votes += submission.votes
+        }
+        return votes
+    }
     
-    init (player: GKPlayer, submissions: [PlayerSubmission] = []) {
+    init (player: PlayerRepresentable, submissions: [PlayerSubmission] = []) {
         self.player = player
         self.submissions = submissions
-//        self.ready = ready
+
     }
 }
