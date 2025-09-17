@@ -11,7 +11,6 @@ struct PhraseComponent: View {
     var phrase: Phrase
     var isSelected: Bool = false
     let onSelect: () -> Void
-
     
     var body: some View {
         Button {
@@ -19,23 +18,26 @@ struct PhraseComponent: View {
             
         } label: {
             Text(phrase.text)
-                .foregroundStyle(.background)
-                .padding(.vertical, 5)
+                .foregroundStyle(.darkerPurple)
+                .padding(.vertical, 12)
                 .padding(.horizontal)
-                .font(.system(size: 17))
-                .lineLimit(10)
+                .font(.system(size: 17, weight: .medium, design: .rounded))
+                .lineLimit(nil)
+                .multilineTextAlignment(.center)
+                .frame(maxWidth: 297)
                 .background(
-                    RoundedRectangle(cornerRadius: 16)
-                        .fill(isSelected ? .black : .gray)
-                        .foregroundStyle(.tertiary)
-                        .frame(width: 356)
+                    RoundedRectangle(cornerRadius: 26)
+                        .fill(isSelected ? Color.lighterPink.shadow(.inner(color: Color.lilac, radius: 2, y: 3)) : Color.lilac.shadow(.inner(color: Color.ice, radius: 2, y: 3)))
+                        )
+                        
                         .frame(maxHeight: .infinity)
                     
-                )
-                .padding(.horizontal, 12)
-            
+                
         }
+        
     }
 }
-
+#Preview {
+    PhraseComponent(phrase: Phrase(text: "Testando um texto gigante para ver como se comporta o componente", category: .action), isSelected: true, onSelect: {})
+}
 
