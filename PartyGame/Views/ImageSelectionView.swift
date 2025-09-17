@@ -9,11 +9,16 @@ import SwiftUI
 import GameKit
 
 struct ImageSelectionView: View {
-    @ObservedObject var viewModel: ImageSelectionViewModel
+    @ObservedObject var viewModel = ImageSelectionViewModel()
     @State private var showSourceMenu = false
-
+    @State var selectedPhrase: String = ""
+    @State var goToVotingView: Bool = false
+    
     var body: some View {
         VStack(spacing: 20) {
+            
+            Text(selectedPhrase)
+            
             Group {
                 if let image = viewModel.selectedImage {
                     Image(uiImage: image)
@@ -40,7 +45,7 @@ struct ImageSelectionView: View {
                     .padding(.horizontal)
                 }
             }
-
+            
             Button {
                 showSourceMenu = true
             } label: {
@@ -50,8 +55,9 @@ struct ImageSelectionView: View {
             }
             .buttonStyle(.borderedProminent)
             .padding(.horizontal)
-
+            
             Button {
+                goToVotingView = true
                 viewModel.toggleReady()
             } label: {
                 Text(viewModel.isLocalReady ? "Cancelar ready" : "Ready")
@@ -62,33 +68,40 @@ struct ImageSelectionView: View {
             .disabled(!viewModel.hasSubmitted)
             .padding(.horizontal)
             .opacity(viewModel.hasSubmitted ? 1.0 : 0.5)
-
+            
             if let error = viewModel.errorMessage {
                 Text(error)
                     .font(.footnote)
                     .foregroundStyle(.red)
                     .padding(.horizontal)
             }
-
+            
             Spacer(minLength: 0)
+        }
+        .onAppear {
+            selectedPhrase = viewModel.getRandomPhrase()
         }
         .navigationTitle("Imagem")
         .navigationBarTitleDisplayMode(.inline)
-
+        .navigationDestination(isPresented: $goToVotingView) {
+            VotingView(phrase: selectedPhrase)
+        }
+        
         .confirmationDialog("Escolher origem", isPresented: $showSourceMenu, titleVisibility: .visible) {
             Button("Tirar foto") { viewModel.chooseCamera() }
             Button("Escolher da Galeria") { viewModel.chooseLibrary() }
             Button("Cancelar", role: .cancel) { }
         }
-
+        
         .sheet(isPresented: $viewModel.isShowingCamera) {
             ImagePicker(sourceType: .camera, allowsEditing: false) { img in
-                viewModel.handlePickedImage(img)             }
+                viewModel.handlePickedImage(img, selectedPhrase: selectedPhrase)             }
         }
         .sheet(isPresented: $viewModel.isShowingLibrary) {
             ImagePicker(sourceType: .photoLibrary, allowsEditing: false) { img in
-                viewModel.handlePickedImage(img)
+                viewModel.handlePickedImage(img, selectedPhrase: selectedPhrase)
             }
         }
     }
 }
+

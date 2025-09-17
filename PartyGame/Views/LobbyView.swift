@@ -12,28 +12,29 @@ struct LobbyView: View {
     @ObservedObject var viewModel: LobbyViewModel
     @Environment(\.dismiss) private var dismiss
     @State private var scrollTrigger = 0
+    @State private var startGame: Bool = false
     @State private var dragProgress: Double = 0.0
     @State private var isDragging: Bool = false
     
     
     var body: some View {
         VStack(spacing: 0) {
-                HStack(spacing: 12) {
-                    Text("Jogadores conectados")
-                        .font(.headline)
-                    Spacer()
-                    if viewModel.allReady && !viewModel.players.isEmpty {
-                        Text("Todos prontos ✅")
-                            .font(.subheadline)
-                            .foregroundStyle(.green)
-                    } else {
-                        Text("\(viewModel.players.count)")
-                            .font(.subheadline)
-                            .foregroundStyle(.secondary)
-                    }
+            HStack(spacing: 12) {
+                Text("Jogadores conectados")
+                    .font(.headline)
+                Spacer()
+                if viewModel.allReady { //}&& !viewModel.players.isEmpty {
+                    Text("Todos prontos ✅")
+                        .font(.subheadline)
+                        .foregroundStyle(.green)
+                } else {
+                    Text("\(viewModel.players.count)")
+                        .font(.subheadline)
+                        .foregroundStyle(.secondary)
                 }
-                .padding()
-
+            }
+            .padding()
+            
             Divider()
             VStack(spacing: 16){
                 playersStrip
@@ -94,7 +95,6 @@ struct LobbyView: View {
                             .foregroundStyle(knobColor)
                             .fontWeight(.black)
                         
-                        
                     }
                 )
                 .padding(.horizontal, 16)
@@ -104,9 +104,18 @@ struct LobbyView: View {
             chatArea
             inputBar
         }
+        .onChange(of: viewModel.allReady) { oldValue, newValue in
+            // Se todos prontos, avança para PhraseView
+            if newValue && !viewModel.players.isEmpty {
+                startGame = true
+            }
+        }
         .navigationTitle("Lobby")
         .navigationBarTitleDisplayMode(.inline)
         .navigationBarBackButtonHidden(true)
+        .navigationDestination(isPresented: $startGame) {
+            PhraseView()
+        }
         .toolbar {
             ToolbarItem(placement: .topBarLeading) {
                 Button(role: .cancel) {
@@ -120,7 +129,7 @@ struct LobbyView: View {
         }
     }
     
-    private var header: some View {
+    var header: some View {
         HStack(spacing: 12) {
             Text("Jogadores conectados")
                 .font(.headline)
@@ -129,6 +138,7 @@ struct LobbyView: View {
                 Text("Todos prontos ✅")
                     .font(.subheadline)
                     .foregroundStyle(.green)
+                
             } else {
                 Text("\(viewModel.players.count)")
                     .font(.subheadline)
@@ -138,7 +148,7 @@ struct LobbyView: View {
         .padding()
     }
     
-    private var playersStrip: some View {
+    var playersStrip: some View {
         ScrollView(.horizontal, showsIndicators: false) {
             HStack(spacing: 12) {
                 ForEach(viewModel.players, id: \.gamePlayerID) { p in
@@ -179,7 +189,7 @@ struct LobbyView: View {
         .accessibilityLabel(Text("Lista de jogadores"))
     }
     
-    private var chatArea: some View {
+    var chatArea: some View {
         ScrollViewReader { proxy in
             ScrollView {
                 LazyVStack(alignment: .leading, spacing: 8) {
@@ -201,7 +211,7 @@ struct LobbyView: View {
         }
     }
     
-    private var inputBar: some View {
+    var inputBar: some View {
         HStack(spacing: 8) {
             TextField("Digite sua mensagem...", text: $viewModel.typedMessage)
                 .textFieldStyle(RoundedBorderTextFieldStyle())
@@ -215,22 +225,22 @@ struct LobbyView: View {
         }
         .padding()
     }
-
-    private func initials(of name: String) -> String {
+    
+    func initials(of name: String) -> String {
         let parts = name.split(separator: " ")
         let a = parts.first?.first.map(String.init) ?? ""
         let b = parts.dropFirst().first?.first.map(String.init) ?? ""
         return (a + b).uppercased()
     }
     
-    private enum GradientState: Equatable {
+    enum GradientState: Equatable {
         case initial
         case startDragging
         case midDragging
         case completed
     }
     
-    private var currentGradientState: GradientState {
+    var currentGradientState: GradientState {
         if viewModel.isLocalReady && !isDragging {
             return .completed
         } else if isDragging {
@@ -249,7 +259,7 @@ struct LobbyView: View {
         }
     }
     
-    private var smoothBackgroundGradient: LinearGradient {
+    var smoothBackgroundGradient: LinearGradient {
         switch currentGradientState {
         case .initial:
             return LinearGradient(
@@ -281,7 +291,7 @@ struct LobbyView: View {
         }
     }
     
-    private var sliderText: String {
+    var sliderText: String {
         switch currentGradientState {
         case .initial, .startDragging:
             return "ready?"
@@ -292,13 +302,11 @@ struct LobbyView: View {
         }
     }
     
-    private var knobIcon: String {
+    var knobIcon: String {
         dragProgress > 0.8 ? "checkmark" : "chevron.right"
     }
     
-    private var knobColor: Color {
+    var knobColor: Color {
         dragProgress > 0.8 ? .darkGreen : .darkRed
     }
 }
-
-

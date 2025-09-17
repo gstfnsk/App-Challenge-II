@@ -22,7 +22,7 @@ struct HomeView: View {
                         Spacer()
 
                         Button("Iniciar Partida") {
-                            viewModel.startMatchmaking()
+                            viewModel.startSinglePlayerGame()
                         }
                     } else {
                         Text("Autenticando no Game Center...")
@@ -32,15 +32,12 @@ struct HomeView: View {
                 .padding()
             }
             .onAppear { viewModel.processPendingInvite() }
-            .onChange(of: viewModel.isInMatch) { inMatch in
-                if inMatch { goToLobby = true }
+            .onChange(of: viewModel.isInMatch) {
+                if viewModel.isInMatch { goToLobby = true }
             }
-
-            NavigationLink(
-                destination: LobbyView(viewModel: viewModel.makeLobbyViewModel()),
-                isActive: $goToLobby
-            ) { EmptyView() }
-            .hidden()
+            .navigationDestination(isPresented: $goToLobby) {
+                    LobbyView(viewModel: viewModel.makeLobbyViewModel())
+                }
         }
     }
 }
