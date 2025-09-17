@@ -16,10 +16,9 @@ class HomeViewModel: ObservableObject {
     private var pendingInvite: GKInvite?
     private var pendingPlayersToInvite: [GKPlayer]?
     
-    private let service: GameCenterService
+    private let service = GameCenterService.shared
     
-    init(service: GameCenterService) {
-        self.service = service
+    init() {
         
         service.$isAuthenticated
             .receive(on: DispatchQueue.main)
@@ -44,9 +43,5 @@ class HomeViewModel: ObservableObject {
     
     func processPendingInvite() {
         service.processPendingInvite()
-    }
-    
-    func makeLobbyViewModel() -> LobbyViewModel {
-        return LobbyViewModel(service: service)
     }
 }
