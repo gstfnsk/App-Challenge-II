@@ -7,7 +7,7 @@
 
 import SwiftUI
 
-struct PhraseSelectorView: View {
+struct PhraseView: View {
     
     @State var selectedPhrase: Phrase = .init(text: "write your own phrase here", category: .action)
     @State var displayedPhrases: [Phrase] = []
