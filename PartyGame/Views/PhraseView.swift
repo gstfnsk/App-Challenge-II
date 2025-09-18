@@ -10,9 +10,10 @@ import SwiftUI
 
 struct PhraseView: View {
     
+    var viewModel = PhraseViewModel()
     @State var selectedPhrase: Phrase = .init(text: "write your own phrase here", category: .action)
     @State var displayedPhrases: [Phrase] = []
-    
+    @State var nextScreen: Bool = false
     
     let columns = [GridItem(.flexible())]
     
@@ -27,13 +28,13 @@ struct PhraseView: View {
                 Text("Component")
                     .frame(alignment: .top)
                     .font(.system(size: 64, weight: .bold, design: .default))
-                VStack (spacing: 177) {
-                    
-                    VStack(spacing: 64){
+                VStack(spacing: 64){
+                    VStack(spacing: 16){
                         VStack(spacing: 16){
                             TextField(
                                 "write your own phrase here",
                                 text: $selectedPhrase.text)
+                            .foregroundStyle(.lilac)
                             .foregroundStyle(.lilac)
                             .padding(.vertical, 12)
                             .padding(.horizontal, 16)
@@ -76,18 +77,41 @@ struct PhraseView: View {
                         }
                         .padding(.horizontal)
                         .padding(.vertical)
-                        .background(GradientBackground())
+                        .background(GradientBackground()
+                                    /*.opacity(0.5)*/)
+                        
                     }
-                    
+                    .padding(.horizontal)
+                    Button {
+                        print("Submitted phrase: \(selectedPhrase)")
+                        viewModel.submitPhrase(phrase: selectedPhrase.text)
+                        if viewModel.haveAllPlayersSubmitted {
+                            nextScreen = true
+                        }
+                        
+                    }label: {
+                        Text("Component")
+                    }
+                    .foregroundStyle(.primary)
+                    .background(
+                        RoundedRectangle(cornerRadius: 16)
+                            .fill(.tertiary)
+                            .frame(width: 356, height: 42)
+                    )
+                    .padding(.horizontal, 16)
+                    .padding(.vertical, 16)
                     .onAppear() {
                         displayedPhrases = Array(Phrases.all.shuffled().prefix(3))
+                        displayedPhrases = Array(Phrases.all.shuffled().prefix(3))
                     }
-                    button
                 }
-                .padding(.horizontal)
             }
         }
         .background(Color.darkerPurple)
+        .navigationBarBackButtonHidden(true)
+        .navigationDestination(isPresented: $nextScreen) {
+            ImageSelectionView()
+        }
     }
 }
 
@@ -96,6 +120,7 @@ struct GradientBackground: View {
         gradient: Gradient(colors: [.lilac.opacity(0.5), .lighterPink.opacity(0.5)]),
         startPoint: .top,
         endPoint: .bottom)
+    
     
     var body: some View {
         RoundedRectangle(cornerRadius: 32)

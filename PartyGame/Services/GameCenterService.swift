@@ -104,35 +104,19 @@ class GameCenterService: NSObject, ObservableObject {
         }
     }
     
-    func addSubmission(player: GKPlayer, phrase: String, image: ImageSubmission) {
-        let submission = PlayerSubmission(player: player, phrase: phrase, imageSubmission: image, votes: 0)
-        playerSubmissions.append(submission)
-        print("Nova submissão adicionada:", submission)
-    }
-    
-    func haveAllPlayersSubmittedPhrase() -> Bool {
-        //        print("players.count", players.count)
-        //        print("phrases.count", phrases.count)
-        if true { // single player:
-            return !phrases.isEmpty
-        }
-        return ((players.count == phrases.count && players.count != 0) ? true : false)
-    }
-    
-    // Submit a phrase
+    //MARK: Submissão de frases
     func submitPhrase(phrase: String) {
         
-        //          multiplayer:
-        //         guard isAuthenticated else {
-        //             print("⚠️ Usuário não está autenticado")
-        //             return
-        //         }
-        //
-        //         guard isInMatch else {
-        //             print("⚠️ Nenhuma partida ativa")
-        //             return
-        //         }
+//                 multiplayer:
+                guard isAuthenticated else {
+                    print("⚠️ Usuário não está autenticado")
+                    return
+                }
         
+                guard isInMatch else {
+                    print("⚠️ Nenhuma partida ativa")
+                    return
+                }
         self.phrases.append(phrase)
     }
     
@@ -147,6 +131,33 @@ class GameCenterService: NSObject, ObservableObject {
     func getSubmittedPhrases() -> [String] {
         return self.phrases
     }
+    
+    func haveAllPlayersSubmittedImage() -> Bool {
+        return ((players.count == playerSubmissions.count && players.count != 0) ? true : false)
+    }
+    
+    //MARK: submissão de imagem do jogador para a frase atual
+    func addSubmission(player: GKPlayer, phrase: String, image: ImageSubmission) {
+        let submission = PlayerSubmission(player: player, phrase: phrase, imageSubmission: image, votes: 0)
+        playerSubmissions.append(submission)
+        print("Nova submissão adicionada:", submission)
+    }
+    
+    func haveAllPlayersSubmittedPhrase() -> Bool {
+        return ((players.count == phrases.count && players.count != 0) ? true : false)
+    }
+    
+    //MARK: Rodadas:
+    var maxRounds: Int {
+        players.count
+    }
+    
+    func goToNextRound() {
+        if currentRound < maxRounds {
+            currentRound += 1
+        }
+    }
+    
     
     // Processar convite pendente (chamado automaticamente)
     func processPendingInvite() {
@@ -398,15 +409,6 @@ extension GameCenterService: GKMatchmakerViewControllerDelegate, GKMatchDelegate
         leaveMatch()
     }
     
-    var maxRounds: Int {
-        players.count
-    }
-    
-    func goToNextRound() {
-        if currentRound < maxRounds {
-            currentRound += 1
-        }
-    }
 }
 
 // MARK: - Listener de convites

@@ -9,9 +9,11 @@ import GameKit
 
 class ImageCarouselViewModel: ObservableObject {
         
-    private let service: GameCenterService
-    
-    init(service: GameCenterService = GameCenterService()) {
-        self.service = service
+    private let service = GameCenterService.shared
+
+    func submissions(for phrase: String) -> [ImageSubmission] {
+        service.playerSubmissions
+            .filter { $0.phrase == phrase }
+            .map { $0.imageSubmission }
     }
 }

@@ -6,8 +6,8 @@
 //
 import SwiftUI
 
-struct ImageStackView: View {
-    
+struct ImageCarouselView: View {
+    @ObservedObject var viewModel = ImageCarouselViewModel()
     @State var submittedPhrase = "Your submitted phrase must go here and your submitted phrase must go here"
     @State var imageSubmissions: [ImageSubmission] = [
         ImageSubmission(image: UIImage(named: "img-placeholder16x9")?.pngData(), submissionTime: Date()),
@@ -43,5 +43,5 @@ struct ImageStackView: View {
 }
 
 #Preview {
-    ImageStackView()
+    ImageCarouselView()
 }
