@@ -6,16 +6,12 @@
 	objectVersion = 77;
 	objects = {
 
-/* Begin PBXBuildFile section */
-		758D848F2E79D061006B85A2 /* PinterestLikeGrid in Frameworks */ = {isa = PBXBuildFile; productRef = 758D848E2E79D061006B85A2 /* PinterestLikeGrid */; };
-/* End PBXBuildFile section */
-
 /* Begin PBXFileReference section */
 		D879AA4C2E68AC2A005944AC /* PartyGame.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = PartyGame.app; sourceTree = BUILT_PRODUCTS_DIR; };
 /* End PBXFileReference section */
 
 /* Begin PBXFileSystemSynchronizedBuildFileExceptionSet section */
-		758D84F22E79E813006B85A2 /* Exceptions for "PartyGame" folder in "PartyGame" target */ = {
+		219A94712E71F1CE00F239E9 /* Exceptions for "PartyGame" folder in "PartyGame" target */ = {
 			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
 			membershipExceptions = (
 				Info.plist,
@@ -28,7 +24,7 @@
 		D879AA4E2E68AC2A005944AC /* PartyGame */ = {
 			isa = PBXFileSystemSynchronizedRootGroup;
 			exceptions = (
-				758D84F22E79E813006B85A2 /* Exceptions for "PartyGame" folder in "PartyGame" target */,
+				219A94712E71F1CE00F239E9 /* Exceptions for "PartyGame" folder in "PartyGame" target */,
 			);
 			path = PartyGame;
 			sourceTree = "<group>";
@@ -40,7 +36,6 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				758D848F2E79D061006B85A2 /* PinterestLikeGrid in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -83,7 +78,6 @@
 			);
 			name = PartyGame;
 			packageProductDependencies = (
-				758D848E2E79D061006B85A2 /* PinterestLikeGrid */,
 			);
 			productName = PartyGame;
 			productReference = D879AA4C2E68AC2A005944AC /* PartyGame.app */;
@@ -113,9 +107,6 @@
 			);
 			mainGroup = D879AA432E68AC2A005944AC;
 			minimizedProjectReferenceProxies = 1;
-			packageReferences = (
-				758D848D2E79D061006B85A2 /* XCRemoteSwiftPackageReference "PinterestLikeGrid" */,
-			);
 			preferredProjectObjectVersion = 77;
 			productRefGroup = D879AA4D2E68AC2A005944AC /* Products */;
 			projectDirPath = "";
@@ -282,11 +273,13 @@
 				"DEVELOPMENT_TEAM[sdk=iphoneos*]" = U666F887F4;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = PartyGame/Info.plist;
 				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
 				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
 				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPad = "UIInterfaceOrientationPortrait UIInterfaceOrientationPortraitUpsideDown UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
 				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPhone = "UIInterfaceOrientationPortrait UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
+				IPHONEOS_DEPLOYMENT_TARGET = 18.0;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/Frameworks",
@@ -316,11 +309,13 @@
 				"DEVELOPMENT_TEAM[sdk=iphoneos*]" = U666F887F4;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = PartyGame/Info.plist;
 				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
 				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
 				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPad = "UIInterfaceOrientationPortrait UIInterfaceOrientationPortraitUpsideDown UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
 				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPhone = "UIInterfaceOrientationPortrait UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
+				IPHONEOS_DEPLOYMENT_TARGET = 18.0;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/Frameworks",
@@ -358,25 +353,6 @@
 			defaultConfigurationName = Release;
 		};
 /* End XCConfigurationList section */
-
-/* Begin XCRemoteSwiftPackageReference section */
-		758D848D2E79D061006B85A2 /* XCRemoteSwiftPackageReference "PinterestLikeGrid" */ = {
-			isa = XCRemoteSwiftPackageReference;
-			repositoryURL = "https://github.com/thaisrfernandes/PinterestLikeGrid.git";
-			requirement = {
-				branch = main;
-				kind = branch;
-			};
-		};
-/* End XCRemoteSwiftPackageReference section */
-
-/* Begin XCSwiftPackageProductDependency section */
-		758D848E2E79D061006B85A2 /* PinterestLikeGrid */ = {
-			isa = XCSwiftPackageProductDependency;
-			package = 758D848D2E79D061006B85A2 /* XCRemoteSwiftPackageReference "PinterestLikeGrid" */;
-			productName = PinterestLikeGrid;
-		};
-/* End XCSwiftPackageProductDependency section */
 	};
 	rootObject = D879AA442E68AC2A005944AC /* Project object */;
 }

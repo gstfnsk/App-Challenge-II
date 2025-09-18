@@ -2,7 +2,8 @@ import SwiftUI
 import GameKit
 
 struct HomeView: View {
-    @ObservedObject var viewModel: HomeViewModel
+    @ObservedObject var viewModel = HomeViewModel()
+    
     @State private var goToLobby = false
     
     let floatingImages = [
@@ -42,7 +43,9 @@ struct HomeView: View {
                                         
                                 }
                                 
-                                ButtonHighFidelityView(image: "img-gameController", title: "Start Match", action: {  }
+
+                                ButtonHighFidelityView(image: "img-gameController", title: "Start Match", action: { viewModel.startSinglePlayerGame() }
+
                                 )
                             }
                         }
@@ -69,8 +72,6 @@ struct HomeView: View {
                         .ignoresSafeArea()
                     )
                 }
-                
-            
             
             .onAppear { viewModel.processPendingInvite() }
             .onChange(of: viewModel.isInMatch) {
@@ -78,10 +79,8 @@ struct HomeView: View {
                         }
 
             .navigationDestination(isPresented: $goToLobby) {
-                LobbyView(viewModel: viewModel.makeLobbyViewModel())
+                LobbyView()
             }
-            
-
         }
     }
 }
@@ -93,5 +92,5 @@ struct FloatingImage {
 }
 
 #Preview {
-    HomeView(viewModel: HomeViewModel(service: GameCenterService()))
+    HomeView()
 }
