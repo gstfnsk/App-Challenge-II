@@ -93,7 +93,7 @@ struct PhraseView: View {
                     .padding(.vertical, 16)
                     .onAppear() {
                         displayedPhrases = Array(Phrases.all.shuffled().prefix(3))
-                        displayedPhrases = Array(Phrases.all.shuffled().prefix(3))
+                        viewModel.startPhase()
                     }
                 }
             }
