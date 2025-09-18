@@ -42,6 +42,9 @@ class GameCenterService: NSObject, ObservableObject {
     @Published var totalRounds: Int = 10
     @Published var currentRound: Int = 1
     @Published var phrases: [String] = []
+    
+    @Published var currentPhrase = ""
+    
     @Published var playerSubmissions: [PlayerSubmission] = []
     
     var match: GKMatch?
@@ -121,12 +124,12 @@ class GameCenterService: NSObject, ObservableObject {
         self.phrases.append(phrase)
     }
     
-    func returnRandomPhrase() -> String {
-        if let selectedPhrase = self.phrases.randomElement() {
-            return selectedPhrase
-        } else {
-            return "There are no phrases yet!"
+    func setCurrentRandomPhrase() -> String {
+        
+        if currentPhrase.isEmpty {
+            currentPhrase = self.phrases.randomElement() ?? ""
         }
+        return currentPhrase
     }
     
     func getSubmittedPhrases() -> [String] {
@@ -145,7 +148,9 @@ class GameCenterService: NSObject, ObservableObject {
     }
     
     func haveAllPlayersSubmittedPhrase() -> Bool {
+        print("\(phrases)")
         return ((gamePlayers.count == phrases.count && gamePlayers.count != 0) ? true : false)
+        
     }
     
     //MARK: Rodadas:

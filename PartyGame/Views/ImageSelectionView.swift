@@ -82,7 +82,7 @@ struct ImageSelectionView: View {
             Spacer(minLength: 0)
         }
         .onAppear {
-            selectedPhrase = viewModel.getRandomPhrase()
+            selectedPhrase = viewModel.setCurrentRandomPhrase()
         }
         .navigationTitle("Imagem")
         .navigationBarBackButtonHidden(true)

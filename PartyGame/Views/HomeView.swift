@@ -44,7 +44,7 @@ struct HomeView: View {
                                 }
                                 
 
-                                ButtonHighFidelityView(image: "img-gameController", title: "Start Match", action: { viewModel.startSinglePlayerGame() }
+                                ButtonHighFidelityView(image: "img-gameController", title: "Start Match", action: { viewModel.startMultiplayerGame() }
 
                                 )
                             }

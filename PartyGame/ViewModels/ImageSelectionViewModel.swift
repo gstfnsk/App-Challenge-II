@@ -48,8 +48,8 @@ final class ImageSelectionViewModel: ObservableObject {
         isShowingCamera = true
     }
     
-    func getRandomPhrase() -> String {
-            return service.returnRandomPhrase()
+    func setCurrentRandomPhrase() -> String {
+            return service.setCurrentRandomPhrase()
     }
 
     func chooseLibrary() {
