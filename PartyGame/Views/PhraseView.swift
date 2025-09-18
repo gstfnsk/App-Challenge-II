@@ -82,16 +82,7 @@ struct PhraseView: View {
                         
                     }
                     .padding(.horizontal)
-                    Button {
-                        print("Submitted phrase: \(selectedPhrase)")
-                        viewModel.submitPhrase(phrase: selectedPhrase.text)
-                        if viewModel.haveAllPlayersSubmitted {
-                            nextScreen = true
-                        }
-                        
-                    }label: {
-                        Text("Component")
-                    }
+                    button
                     .foregroundStyle(.primary)
                     .background(
                         RoundedRectangle(cornerRadius: 16)
@@ -129,7 +120,7 @@ struct GradientBackground: View {
     }
 }
 
-var button = ButtonHighFidelityView(image: "img-pencilSymbol", title: "confirmPhrase", action:{}, enabled: false)
+var button = ButtonHighFidelityView(image: "img-pencilSymbol", title: "confirm phrase", action:{}, enabled: false)
 
 #Preview {
     PhraseView()
