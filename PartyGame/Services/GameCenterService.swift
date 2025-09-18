@@ -46,6 +46,7 @@ class GameCenterService: NSObject, ObservableObject {
     @Published var currentPhrase = ""
     
     @Published var playerSubmissions: [PlayerSubmission] = []
+    @Published var timerStart: Date? = nil
     
     var match: GKMatch?
     private var pendingInvite: GKInvite?
@@ -108,6 +109,39 @@ class GameCenterService: NSObject, ObservableObject {
         }
     }
     
+    //MARK: Define um startTime em comum (agora + 1 segundo) e envia para os jogadores
+    func schedulePhaseStart(delay: TimeInterval = 1) {
+        let target = Date().addingTimeInterval(delay)
+        timerStart = target
+        broadcastPhaseStart(target)
+    }
+    
+    private func broadcastPhaseStart(_ date: Date) {
+        guard let match else { return }
+        let payload: [String: Any] = [
+            "type": "phaseStart",
+            "date": date.timeIntervalSince1970
+        ]
+        
+        do {
+            let data = try JSONSerialization.data(withJSONObject: payload)
+            try match.sendData(toAllPlayers: data, with: .reliable)
+        } catch {
+            print("❌ Erro ao enviar phaseStart: \(error)")
+        }
+    }
+    //MARK: chamada ao receber dados
+    func handleReceivedData(_ data: Data) {
+        guard
+            let dict = try? JSONSerialization.jsonObject(with: data) as? [String: Any],
+            let type = dict["type"] as? String
+        else { return }
+        
+        if type == "phaseStart", let ts = dict["date"] as? TimeInterval {
+            timerStart = Date(timeIntervalSince1970: ts)
+        }
+    }
+    
     //MARK: Submissão de frases
     func submitPhrase(phrase: String) {
         phrases.append(phrase)
@@ -123,6 +157,7 @@ class GameCenterService: NSObject, ObservableObject {
         } catch {
             print("❌ Erro ao enviar phrase: \(error)")
         }
+
     }
     
     func setCurrentRandomPhrase() -> String {
