@@ -14,7 +14,7 @@ final class VotingViewModel {
     let service = GameCenterService.shared
 
     var players: [GKPlayer] {
-        service.players
+        service.gamePlayers.map { $0.player }
     }
     
     var voter: GKPlayer {

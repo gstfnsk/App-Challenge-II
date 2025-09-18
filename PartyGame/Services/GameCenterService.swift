@@ -34,7 +34,8 @@ class GameCenterService: NSObject, ObservableObject {
     
     @Published var isAuthenticated = false
     @Published var isInMatch = false
-    @Published var players: [GKPlayer] = []
+    @Published var gamePlayers: [Player] = []
+  //  @Published var players: [GKPlayer] = []
     @Published var readyMap: [String: Bool] = [:]
     @Published var messages: [String] = []
     @Published var isSinglePlayer = false
@@ -133,7 +134,7 @@ class GameCenterService: NSObject, ObservableObject {
     }
     
     func haveAllPlayersSubmittedImage() -> Bool {
-        return ((players.count == playerSubmissions.count && players.count != 0) ? true : false)
+        return ((gamePlayers.count == playerSubmissions.count && gamePlayers.count != 0) ? true : false)
     }
     
     //MARK: submissão de imagem do jogador para a frase atual
@@ -144,12 +145,12 @@ class GameCenterService: NSObject, ObservableObject {
     }
     
     func haveAllPlayersSubmittedPhrase() -> Bool {
-        return ((players.count == phrases.count && players.count != 0) ? true : false)
+        return ((gamePlayers.count == phrases.count && gamePlayers.count != 0) ? true : false)
     }
     
     //MARK: Rodadas:
     var maxRounds: Int {
-        players.count
+        gamePlayers.count
     }
     
     func goToNextRound() {
@@ -231,7 +232,8 @@ class GameCenterService: NSObject, ObservableObject {
             self.isInMatch = true
             self.isSinglePlayer = true
             self.match = nil // No actual GKMatch for single player
-            self.players = [GKLocalPlayer.local]
+            self.gamePlayers = [Player(player: GKLocalPlayer.local)]
+          //  self.players = [GKLocalPlayer.local]
             self.readyMap = [GKLocalPlayer.local.gamePlayerID: false]
             self.messages = ["Welcome to single player mode!"]
             self.phrases = []
@@ -309,7 +311,13 @@ class GameCenterService: NSObject, ObservableObject {
         var everyone: [GKPlayer] = [GKLocalPlayer.local as GKPlayer]
         if let remotes = match?.players { everyone.append(contentsOf: remotes) }
         DispatchQueue.main.async {
-            self.players = everyone
+            
+            for player in everyone {
+                let gamePlayer = Player(player: player)
+                self.gamePlayers.append(gamePlayer)
+            }
+            
+          //  self.players = everyone
             var map = self.readyMap
             for p in everyone {
                 if map[p.gamePlayerID] == nil { map[p.gamePlayerID] = false }
@@ -327,7 +335,8 @@ class GameCenterService: NSObject, ObservableObject {
         DispatchQueue.main.async {
             self.isInMatch = false
             self.isSinglePlayer = false
-            self.players.removeAll()
+            self.gamePlayers.removeAll()
+           // self.players.removeAll()
             self.readyMap.removeAll()
             self.messages.removeAll()
         }
