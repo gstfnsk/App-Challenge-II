@@ -13,8 +13,10 @@ final class ImageSelectionViewModel: ObservableObject {
     @Published var errorMessage: String?
     @Published var isShowingCamera = false
     @Published var isShowingLibrary = false
-
+    
     @Published var selectedImage: UIImage?
+
+    @Published var selectedPhrase: [String] = []
 
     @Published private(set) var hasSubmitted = false
     @Published private(set) var isLocalReady = false
@@ -24,6 +26,11 @@ final class ImageSelectionViewModel: ObservableObject {
     private var cancellables: Set<AnyCancellable> = []
 
     init() {
+        
+        service.$phrases
+            .receive(on: DispatchQueue.main)
+            .assign(to: &$selectedPhrase)
+        
         // onSubmit: @escaping (ImageSubmission) -> Void) {
      //   self.onSubmit = onSubmit
         service.$readyMap
