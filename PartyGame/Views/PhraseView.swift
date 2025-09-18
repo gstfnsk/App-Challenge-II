@@ -7,6 +7,7 @@
 
 import SwiftUI
 
+
 struct PhraseView: View {
     
     var viewModel = PhraseViewModel()
@@ -23,8 +24,7 @@ struct PhraseView: View {
                 .scaledToFill()
                 .frame(minWidth: 0)
                 .edgesIgnoringSafeArea(.all)
-            
-            VStack (spacing: 101) {
+            VStack (spacing: 85){
                 Text("Component")
                     .frame(alignment: .top)
                     .font(.system(size: 64, weight: .bold, design: .default))
@@ -121,9 +121,16 @@ struct GradientBackground: View {
         startPoint: .top,
         endPoint: .bottom)
     
+    
     var body: some View {
         RoundedRectangle(cornerRadius: 32)
             .fill(gradientBackground
                 .shadow(.inner(color: Color.lilac, radius: 2, x: 0, y: 5)))
     }
+}
+
+var button = ButtonHighFidelityView(image: "img-pencilSymbol", title: "confirmPhrase", action:{}, enabled: false)
+
+#Preview {
+    PhraseView()
 }
