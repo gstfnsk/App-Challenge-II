@@ -1,17 +1,17 @@
 {
   "images" : [
     {
-      "filename" : "Noise & Texture.png",
+      "filename" : "textura.png",
       "idiom" : "universal",
       "scale" : "1x"
     },
     {
-      "filename" : "Noise & Texture-2.png",
+      "filename" : "textura-2.png",
       "idiom" : "universal",
       "scale" : "2x"
     },
     {
-      "filename" : "Noise & Texture-3.png",
+      "filename" : "textura-3.png",
       "idiom" : "universal",
       "scale" : "3x"
     }

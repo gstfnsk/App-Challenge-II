@@ -50,11 +50,10 @@ struct HomeView: View {
                     }
                     .background(
                         ZStack{
-                            Rectangle()
-                                .foregroundColor(.darkerPurple)
                             Image("img-textureI")
                                 .resizable()
                                 .scaledToFill()
+                                .opacity(0.7)
                             ForEach(floatingImages.indices, id: \.self) { index in
                                     Image(floatingImages[index].name)
                                        // .frame(width: floatingImages[index].size, height: floatingImages[index].size)
@@ -66,7 +65,8 @@ struct HomeView: View {
                             }
                             
                         }
-                        .ignoresSafeArea(.all)
+                        .background(.darkerPurple)
+                        .ignoresSafeArea()
                     )
                 }
                 
