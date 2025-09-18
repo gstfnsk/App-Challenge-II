@@ -108,6 +108,7 @@ struct PhraseView: View {
                         .onAppear() {
                             displayedPhrases = Array(Phrases.all.shuffled().prefix(3))
                         }
+
                     }
                     button
                 }
@@ -136,7 +137,6 @@ struct GradientBackground: View {
                 .shadow(.inner(color: Color.lilac, radius: 2, x: 0, y: 5)))
     }
 }
-
 
 
 #Preview {
