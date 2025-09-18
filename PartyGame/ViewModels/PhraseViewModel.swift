@@ -11,6 +11,8 @@ import SwiftUI
 @Observable
 final class PhraseViewModel {
     let service = GameCenterService.shared
+    
+    
      
      func submitPhrase(phrase: String) {
          service.submitPhrase(phrase: phrase)

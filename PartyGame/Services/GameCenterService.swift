@@ -13,7 +13,7 @@ extension UIApplication {
 }
 
 private struct LobbyPacket: Codable {
-    enum PacketType: String, Codable { case chat, ready }
+    enum PacketType: String, Codable { case chat, ready}
     let type: PacketType
     let senderID: String
     let text: String?
@@ -110,18 +110,19 @@ class GameCenterService: NSObject, ObservableObject {
     
     //MARK: Submissão de frases
     func submitPhrase(phrase: String) {
-        
-//                 multiplayer:
-                guard isAuthenticated else {
-                    print("⚠️ Usuário não está autenticado")
-                    return
-                }
-        
-                guard isInMatch else {
-                    print("⚠️ Nenhuma partida ativa")
-                    return
-                }
-        self.phrases.append(phrase)
+        phrases.append(phrase)
+            
+        guard let match else { return }
+        let payload: [String: Any] = [
+            "type": "newPhrase",
+            "phrase": phrase
+        ]
+        do {
+            let data = try JSONSerialization.data(withJSONObject: payload)
+            try match.sendData(toAllPlayers: data, with: .reliable)
+        } catch {
+            print("❌ Erro ao enviar phrase: \(error)")
+        }
     }
     
     func setCurrentRandomPhrase() -> String {
@@ -384,6 +385,24 @@ extension GameCenterService: GKMatchmakerViewControllerDelegate, GKMatchDelegate
     }
     
     func match(_ match: GKMatch, didReceive data: Data, fromRemotePlayer player: GKPlayer) {
+        
+        guard
+            let dict = try? JSONSerialization.jsonObject(with: data) as? [String: Any],
+            let type = dict["type"] as? String
+        else { return }
+        
+        switch type {
+        case "newPhrase":
+            if let phrase = dict["phrase"] as? String {
+                // Adiciona à lista localmente
+                phrases.append(phrase)
+            }
+        default:
+            break
+        }
+        
+        
+        
         if let packet = try? JSONDecoder().decode(LobbyPacket.self, from: data) {
             switch packet.type {
             case .chat:
