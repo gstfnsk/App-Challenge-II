@@ -13,7 +13,7 @@ struct ButtonHighFidelityView: View {
     var title: String
     var action: () -> Void
     
-    @State var enabled: Bool = false
+    @State var enabled: Bool = true
     
     var body: some View {
         Button {

@@ -13,8 +13,11 @@ final class ImageSelectionViewModel: ObservableObject {
     @Published var errorMessage: String?
     @Published var isShowingCamera = false
     @Published var isShowingLibrary = false
-
+    
     @Published var selectedImage: UIImage?
+
+    @Published var selectedPhrase: [String] = []
+    @Published var currentPhrase: String = ""
 
     @Published private(set) var hasSubmitted = false
     @Published private(set) var isLocalReady = false
@@ -24,6 +27,15 @@ final class ImageSelectionViewModel: ObservableObject {
     private var cancellables: Set<AnyCancellable> = []
 
     init() {
+        
+        service.$phrases
+            .receive(on: DispatchQueue.main)
+            .assign(to: &$selectedPhrase)
+        
+        service.$currentPhrase
+            .receive(on: DispatchQueue.main)
+            .assign(to: &$currentPhrase)
+        
         // onSubmit: @escaping (ImageSubmission) -> Void) {
      //   self.onSubmit = onSubmit
         service.$readyMap
@@ -48,8 +60,12 @@ final class ImageSelectionViewModel: ObservableObject {
         isShowingCamera = true
     }
     
-    func getRandomPhrase() -> String {
-            return service.returnRandomPhrase()
+    func setCurrentRandomPhrase() -> String {
+        // Inicia o processo de seleção de frase se ainda não foi iniciado
+        if currentPhrase.isEmpty && service.phraseLeaderID == nil {
+            service.initiatePhraseSelection()
+        }
+        return currentPhrase
     }
 
     func chooseLibrary() {
@@ -86,10 +102,8 @@ final class ImageSelectionViewModel: ObservableObject {
        // onSubmit(submission)
         hasSubmitted = true
     }
+
     
-    func getSubmitedPhrases() -> [String] {
-            return service.getSubmittedPhrases()
-    }
 
     func toggleReady() {
         service.toggleReady()

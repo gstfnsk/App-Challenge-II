@@ -24,9 +24,12 @@ final class LobbyViewModel: ObservableObject {
     private let service = GameCenterService.shared
     
     init() {
-        service.$players
-            .receive(on: DispatchQueue.main)
-            .assign(to: &$players)
+        
+        self.players = service.gamePlayers.map { $0.player }
+        
+        //service.$gamePlayers
+        //    .receive(on: DispatchQueue.main)
+        //    .assign(to: &$players)
         
         service.$messages
             .receive(on: DispatchQueue.main)

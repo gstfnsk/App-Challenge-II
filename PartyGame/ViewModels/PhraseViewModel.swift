@@ -12,6 +12,7 @@ import SwiftUI
 @Observable
 final class PhraseViewModel {
     let service = GameCenterService.shared
+
     var timeRemaining: Int = 30
     var haveTimeRunOut: Bool = false
     
@@ -67,9 +68,9 @@ final class PhraseViewModel {
          service.toggleReady()
      }
      
-     func getSubmitedPhrases() -> [String] {
-         return service.getSubmittedPhrases()
-     }
+//     func getSubmitedPhrases() -> [String] {
+//         return service.getSubmittedPhrases()
+//     }
     
     var haveAllPlayersSubmitted: Bool {
         service.haveAllPlayersSubmittedPhrase()

@@ -13,7 +13,7 @@ extension UIApplication {
 }
 
 private struct LobbyPacket: Codable {
-    enum PacketType: String, Codable { case chat, ready }
+    enum PacketType: String, Codable { case chat, ready}
     let type: PacketType
     let senderID: String
     let text: String?
@@ -34,13 +34,19 @@ class GameCenterService: NSObject, ObservableObject {
     
     @Published var isAuthenticated = false
     @Published var isInMatch = false
-    @Published var players: [GKPlayer] = []
+    @Published var gamePlayers: [Player] = []
+  //  @Published var players: [GKPlayer] = []
     @Published var readyMap: [String: Bool] = [:]
     @Published var messages: [String] = []
     @Published var isSinglePlayer = false
     @Published var totalRounds: Int = 10
     @Published var currentRound: Int = 1
     @Published var phrases: [String] = []
+    
+    @Published var currentPhrase = ""
+    @Published var phraseLeaderID: String? = nil
+    @Published var isWaitingForPhrase = false
+    
     @Published var playerSubmissions: [PlayerSubmission] = []
     @Published var timerStart: Date? = nil
     
@@ -140,34 +146,134 @@ class GameCenterService: NSObject, ObservableObject {
     
     //MARK: Submissão de frases
     func submitPhrase(phrase: String) {
-        
-        //                 multiplayer:
-        guard isAuthenticated else {
-            print("⚠️ Usuário não está autenticado")
-            return
+        phrases.append(phrase)
+            
+        guard let match else { return }
+        let payload: [String: Any] = [
+            "type": "newPhrase",
+            "phrase": phrase
+        ]
+        do {
+            let data = try JSONSerialization.data(withJSONObject: payload)
+            try match.sendData(toAllPlayers: data, with: .reliable)
+        } catch {
+            print("❌ Erro ao enviar phrase: \(error)")
         }
-        
-        guard isInMatch else {
-            print("⚠️ Nenhuma partida ativa")
-            return
-        }
-        self.phrases.append(phrase)
+
     }
     
-    func returnRandomPhrase() -> String {
-        if let selectedPhrase = self.phrases.randomElement() {
-            return selectedPhrase
+    // Função para eleger o líder da frase (jogador com menor ID)
+    private func electPhraseLeader() -> String? {
+        guard !gamePlayers.isEmpty else { return nil }
+        
+        // Ordena os jogadores por ID e pega o menor (que será o líder)
+        let sortedPlayers = gamePlayers.sorted { $0.player.gamePlayerID < $1.player.gamePlayerID }
+        return sortedPlayers.first?.player.gamePlayerID
+    }
+    
+    // Função para iniciar o processo de seleção de frase
+    func initiatePhraseSelection() {
+        guard currentPhrase.isEmpty && phraseLeaderID == nil else {
+            print("⚠️ Seleção de frase já em andamento ou frase já selecionada")
+            return
+        }
+        
+        let localID = GKLocalPlayer.local.gamePlayerID
+        let leaderID = electPhraseLeader()
+        
+        guard let leaderID = leaderID else {
+            print("❌ Não foi possível eleger um líder")
+            return
+        }
+        
+        // Define o líder
+        phraseLeaderID = leaderID
+        
+        if isSinglePlayer {
+            // Modo single player - seleciona a frase diretamente
+            selectRandomPhrase()
         } else {
-            return "There are no phrases yet!"
+            // Modo multiplayer - envia a eleição do líder para todos
+            broadcastPhraseLeader(leaderID)
+            
+            if localID == leaderID {
+                // Este jogador é o líder - seleciona a frase
+                selectRandomPhrase()
+            } else {
+                // Este jogador não é o líder - aguarda a frase
+                isWaitingForPhrase = true
+            }
         }
     }
     
-    func getSubmittedPhrases() -> [String] {
-        return self.phrases
+    // Função para selecionar uma frase aleatória (apenas o líder)
+    private func selectRandomPhrase() {
+        guard let leaderID = phraseLeaderID,
+              GKLocalPlayer.local.gamePlayerID == leaderID else {
+            print("❌ Apenas o líder pode selecionar a frase")
+            return
+        }
+        
+        guard !phrases.isEmpty else {
+            print("❌ Nenhuma frase disponível para seleção")
+            return
+        }
+        
+        let selectedPhrase = phrases.randomElement() ?? ""
+        currentPhrase = selectedPhrase
+        print("🎯 Líder selecionou a frase: \(selectedPhrase)")
+        
+        // Envia a frase selecionada para todos os jogadores
+        broadcastSelectedPhrase(selectedPhrase)
+    }
+    
+    // Função para enviar a eleição do líder
+    private func broadcastPhraseLeader(_ leaderID: String) {
+        guard let match = match else { return }
+        
+        let payload: [String: Any] = [
+            "type": "PhraseLeader",
+            "leaderID": leaderID
+        ]
+        
+        do {
+            let data = try JSONSerialization.data(withJSONObject: payload)
+            try match.sendData(toAllPlayers: data, with: .reliable)
+            print("📡 Líder da frase eleito: \(leaderID)")
+        } catch {
+            print("❌ Erro ao enviar eleição do líder: \(error)")
+        }
+    }
+    
+    // Função para enviar a frase selecionada
+    private func broadcastSelectedPhrase(_ phrase: String) {
+        guard let match = match else { return }
+        
+        let payload: [String: Any] = [
+            "type": "SelectedPhrase",
+            "currentPhrase": phrase
+        ]
+        
+        do {
+            let data = try JSONSerialization.data(withJSONObject: payload)
+            try match.sendData(toAllPlayers: data, with: .reliable)
+            print("📡 Frase selecionada enviada: \(phrase)")
+        } catch {
+            print("❌ Erro ao enviar frase selecionada: \(error)")
+        }
+    }
+    
+    // Função legada mantida para compatibilidade
+    func setCurrentRandomPhrase() {
+        initiatePhraseSelection()
+    }
+    
+    func getCurrentRandomPhrase() -> String {
+        return self.currentPhrase
     }
     
     func haveAllPlayersSubmittedImage() -> Bool {
-        return ((players.count == playerSubmissions.count && players.count != 0) ? true : false)
+        return ((gamePlayers.count == playerSubmissions.count && gamePlayers.count != 0) ? true : false)
     }
     
     //MARK: submissão de imagem do jogador para a frase atual
@@ -178,18 +284,30 @@ class GameCenterService: NSObject, ObservableObject {
     }
     
     func haveAllPlayersSubmittedPhrase() -> Bool {
-        return ((players.count == phrases.count && players.count != 0) ? true : false)
+        print("\(phrases)")
+        return ((gamePlayers.count == phrases.count && gamePlayers.count != 0) ? true : false)
+        
     }
     
     //MARK: Rodadas:
     var maxRounds: Int {
-        players.count
+        gamePlayers.count
     }
     
     func goToNextRound() {
         if currentRound < maxRounds {
             currentRound += 1
+            // Resetar estado da frase para a nova rodada
+            resetPhraseState()
         }
+    }
+    
+    // Função para resetar o estado da frase
+    private func resetPhraseState() {
+        currentPhrase = ""
+        phraseLeaderID = nil
+        isWaitingForPhrase = false
+        print("🔄 Estado da frase resetado para nova rodada")
     }
     
     
@@ -265,7 +383,8 @@ class GameCenterService: NSObject, ObservableObject {
             self.isInMatch = true
             self.isSinglePlayer = true
             self.match = nil // No actual GKMatch for single player
-            self.players = [GKLocalPlayer.local]
+            self.gamePlayers = [Player(player: GKLocalPlayer.local)]
+          //  self.players = [GKLocalPlayer.local]
             self.readyMap = [GKLocalPlayer.local.gamePlayerID: false]
             self.messages = ["Welcome to single player mode!"]
             self.phrases = []
@@ -343,7 +462,13 @@ class GameCenterService: NSObject, ObservableObject {
         var everyone: [GKPlayer] = [GKLocalPlayer.local as GKPlayer]
         if let remotes = match?.players { everyone.append(contentsOf: remotes) }
         DispatchQueue.main.async {
-            self.players = everyone
+            
+            for player in everyone {
+                let gamePlayer = Player(player: player)
+                self.gamePlayers.append(gamePlayer)
+            }
+            
+          //  self.players = everyone
             var map = self.readyMap
             for p in everyone {
                 if map[p.gamePlayerID] == nil { map[p.gamePlayerID] = false }
@@ -361,7 +486,7 @@ class GameCenterService: NSObject, ObservableObject {
         DispatchQueue.main.async {
             self.isInMatch = false
             self.isSinglePlayer = false
-            self.players.removeAll()
+            self.gamePlayers.removeAll()
             self.readyMap.removeAll()
             self.messages.removeAll()
         }
@@ -404,6 +529,51 @@ extension GameCenterService: GKMatchmakerViewControllerDelegate, GKMatchDelegate
     }
     
     func match(_ match: GKMatch, didReceive data: Data, fromRemotePlayer player: GKPlayer) {
+        
+        guard
+            let dict = try? JSONSerialization.jsonObject(with: data) as? [String: Any],
+            let type = dict["type"] as? String
+        else { return }
+        
+        switch type {
+        case "PhraseLeader":
+            if let leaderID = dict["leaderID"] as? String {
+                DispatchQueue.main.async {
+                    self.phraseLeaderID = leaderID
+                    print("📡 Líder da frase recebido: \(leaderID)")
+                }
+            }
+        case "SelectedPhrase":
+            if let phrase = dict["currentPhrase"] as? String {
+                DispatchQueue.main.async {
+                    if self.currentPhrase.isEmpty {
+                        self.currentPhrase = phrase
+                        self.isWaitingForPhrase = false
+                        print("📡 Frase selecionada recebida: \(phrase)")
+                    } else {
+                        print("⚠️ Frase já estava definida: \(self.currentPhrase)")
+                    }
+                }
+            }
+        default:
+            break
+        }
+        
+        guard
+            let dict = try? JSONSerialization.jsonObject(with: data) as? [String: Any],
+            let type = dict["type"] as? String
+        else { return }
+        
+        switch type {
+        case "newPhrase":
+            if let phrase = dict["phrase"] as? String {
+                // Adiciona à lista localmente
+                phrases.append(phrase)
+            }
+        default:
+            break
+        }
+        
         if let packet = try? JSONDecoder().decode(LobbyPacket.self, from: data) {
             switch packet.type {
             case .chat:
