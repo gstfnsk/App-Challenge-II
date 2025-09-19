@@ -98,11 +98,11 @@ struct ImageSelectionView: View {
         .onAppear {
             selectedPhrase = viewModel.setCurrentRandomPhrase()
         }
-//        .onReceive(GameCenterService.shared.$currentPhrase) { phrase in
-//            if !phrase.isEmpty {
-//                selectedPhrase = phrase
-//            }
-//        }
+        .onReceive(GameCenterService.shared.$currentPhrase) { phrase in
+            if !phrase.isEmpty {
+                selectedPhrase = phrase
+            }
+        }
         .navigationTitle("Imagem")
         .navigationBarBackButtonHidden(true)
         .navigationBarTitleDisplayMode(.inline)
