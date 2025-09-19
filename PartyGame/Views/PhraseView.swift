@@ -120,6 +120,9 @@ struct PhraseView: View {
         .navigationDestination(isPresented: $nextScreen) {
             ImageSelectionView()
         }
+        .onChange(of: viewModel.haveAllPlayersSubmitted) {
+            nextScreen = true
+        }
     }
     
 }
