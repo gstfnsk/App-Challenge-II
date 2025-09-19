@@ -163,7 +163,9 @@ class GameCenterService: NSObject, ObservableObject {
     func setCurrentRandomPhrase() {
         
         if currentPhrase.isEmpty {
+            print("currentPhrase esta vazia")
             currentPhrase = self.phrases.randomElement() ?? ""
+            print("currentPhrase: \(currentPhrase)")
             
             guard let match else { return }
             let payload: [String: Any] = [
@@ -444,7 +446,10 @@ extension GameCenterService: GKMatchmakerViewControllerDelegate, GKMatchDelegate
         case "SelectedPhrase":
             if let phrase = dict["currentPhrase"] as? String {
                 if currentPhrase.isEmpty {
+                    print("currentPhrase esta vazia e será preenchida com \(phrase)")
                     currentPhrase = phrase
+                } else {
+                    print("currentPhrase já esta preenchida com \(currentPhrase)")
                 }
             }
         default:
