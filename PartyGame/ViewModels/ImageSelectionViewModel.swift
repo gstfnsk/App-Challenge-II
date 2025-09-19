@@ -56,11 +56,11 @@ final class ImageSelectionViewModel: ObservableObject {
     }
     
     func setCurrentRandomPhrase() -> String {
-        if service.getCurrentRandomPhrase().isEmpty {
-            service.setCurrentRandomPhrase()
+        // Inicia o processo de seleção de frase se ainda não foi iniciado
+        if service.getCurrentRandomPhrase().isEmpty && service.phraseLeaderID == nil {
+            service.initiatePhraseSelection()
         }
         return service.getCurrentRandomPhrase()
-        
     }
 
     func chooseLibrary() {
@@ -97,10 +97,8 @@ final class ImageSelectionViewModel: ObservableObject {
        // onSubmit(submission)
         hasSubmitted = true
     }
+
     
-//    func getSubmitedPhrases() -> [String] {
-//            return service.getSubmittedPhrases()
-//    }
 
     func toggleReady() {
         service.toggleReady()

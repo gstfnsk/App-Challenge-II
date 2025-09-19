@@ -17,7 +17,21 @@ struct ImageSelectionView: View {
     var body: some View {
         VStack(spacing: 20) {
             
-            Text(selectedPhrase)
+            if selectedPhrase.isEmpty {
+                HStack {
+                    ProgressView()
+                        .scaleEffect(0.8)
+                    Text("Aguardando frase...")
+                        .font(.subheadline)
+                        .foregroundStyle(.secondary)
+                }
+                .padding()
+            } else {
+                Text(selectedPhrase)
+                    .font(.headline)
+                    .multilineTextAlignment(.center)
+                    .padding()
+            }
             
             Group {
                 if let image = viewModel.selectedImage {
@@ -84,6 +98,11 @@ struct ImageSelectionView: View {
         .onAppear {
             selectedPhrase = viewModel.setCurrentRandomPhrase()
         }
+//        .onReceive(GameCenterService.shared.$currentPhrase) { phrase in
+//            if !phrase.isEmpty {
+//                selectedPhrase = phrase
+//            }
+//        }
         .navigationTitle("Imagem")
         .navigationBarBackButtonHidden(true)
         .navigationBarTitleDisplayMode(.inline)
