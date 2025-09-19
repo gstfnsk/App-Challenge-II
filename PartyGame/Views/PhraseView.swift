@@ -121,7 +121,7 @@ struct PhraseView: View {
             ImageSelectionView()
         }
         .onAppear {
-            viewModel.startPhase()
+           // viewModel.startPhase()
         }
         .onChange(of: viewModel.haveAllPlayersSubmitted) {
             nextScreen = true

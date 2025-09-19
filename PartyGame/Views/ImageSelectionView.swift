@@ -13,10 +13,12 @@ struct ImageSelectionView: View {
     @State private var showSourceMenu = false
     @State var goToVotingView: Bool = false
     
+    @State var currentPhrase: String = ""
+    
     var body: some View {
         VStack(spacing: 20) {
             
-            if viewModel.currentPhrase.isEmpty {
+            if currentPhrase.isEmpty {
                 HStack {
                     ProgressView()
                         .scaleEffect(0.8)
@@ -26,7 +28,7 @@ struct ImageSelectionView: View {
                 }
                 .padding()
             } else {
-                Text(viewModel.currentPhrase)
+                Text(currentPhrase)
                     .font(.headline)
                     .multilineTextAlignment(.center)
                     .padding()
@@ -95,7 +97,10 @@ struct ImageSelectionView: View {
             Spacer(minLength: 0)
         }
         .onAppear {
-            _ = viewModel.setCurrentRandomPhrase()
+            currentPhrase = viewModel.setCurrentRandomPhrase()
+        }
+        .onReceive(viewModel.$currentPhrase) { currentPhrase in
+            self.currentPhrase = currentPhrase
         }
         .navigationTitle("Imagem")
         .navigationBarBackButtonHidden(true)
