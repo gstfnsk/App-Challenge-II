@@ -487,7 +487,6 @@ class GameCenterService: NSObject, ObservableObject {
             self.isInMatch = false
             self.isSinglePlayer = false
             self.gamePlayers.removeAll()
-           // self.players.removeAll()
             self.readyMap.removeAll()
             self.messages.removeAll()
         }
