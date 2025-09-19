@@ -11,13 +11,12 @@ import GameKit
 struct ImageSelectionView: View {
     @ObservedObject var viewModel = ImageSelectionViewModel()
     @State private var showSourceMenu = false
-    @State var selectedPhrase: String = ""
     @State var goToVotingView: Bool = false
     
     var body: some View {
         VStack(spacing: 20) {
             
-            if selectedPhrase.isEmpty {
+            if viewModel.currentPhrase.isEmpty {
                 HStack {
                     ProgressView()
                         .scaleEffect(0.8)
@@ -27,7 +26,7 @@ struct ImageSelectionView: View {
                 }
                 .padding()
             } else {
-                Text(selectedPhrase)
+                Text(viewModel.currentPhrase)
                     .font(.headline)
                     .multilineTextAlignment(.center)
                     .padding()
@@ -96,18 +95,13 @@ struct ImageSelectionView: View {
             Spacer(minLength: 0)
         }
         .onAppear {
-            selectedPhrase = viewModel.setCurrentRandomPhrase()
-        }
-        .onReceive(GameCenterService.shared.$currentPhrase) { phrase in
-            if !phrase.isEmpty {
-                selectedPhrase = phrase
-            }
+            _ = viewModel.setCurrentRandomPhrase()
         }
         .navigationTitle("Imagem")
         .navigationBarBackButtonHidden(true)
         .navigationBarTitleDisplayMode(.inline)
         .navigationDestination(isPresented: $goToVotingView) {
-            VotingView(phrase: selectedPhrase)
+            VotingView(phrase: viewModel.currentPhrase)
         }
         
         .confirmationDialog("Escolher origem", isPresented: $showSourceMenu, titleVisibility: .visible) {
@@ -118,11 +112,11 @@ struct ImageSelectionView: View {
         
         .sheet(isPresented: $viewModel.isShowingCamera) {
             ImagePicker(sourceType: .camera, allowsEditing: false) { img in
-                viewModel.handlePickedImage(img, selectedPhrase: selectedPhrase)             }
+                viewModel.handlePickedImage(img, selectedPhrase: viewModel.currentPhrase)             }
         }
         .sheet(isPresented: $viewModel.isShowingLibrary) {
             ImagePicker(sourceType: .photoLibrary, allowsEditing: false) { img in
-                viewModel.handlePickedImage(img, selectedPhrase: selectedPhrase)
+                viewModel.handlePickedImage(img, selectedPhrase: viewModel.currentPhrase)
             }
         }
     }

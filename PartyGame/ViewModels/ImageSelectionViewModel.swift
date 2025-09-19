@@ -17,6 +17,7 @@ final class ImageSelectionViewModel: ObservableObject {
     @Published var selectedImage: UIImage?
 
     @Published var selectedPhrase: [String] = []
+    @Published var currentPhrase: String = ""
 
     @Published private(set) var hasSubmitted = false
     @Published private(set) var isLocalReady = false
@@ -30,6 +31,10 @@ final class ImageSelectionViewModel: ObservableObject {
         service.$phrases
             .receive(on: DispatchQueue.main)
             .assign(to: &$selectedPhrase)
+        
+        service.$currentPhrase
+            .receive(on: DispatchQueue.main)
+            .assign(to: &$currentPhrase)
         
         // onSubmit: @escaping (ImageSubmission) -> Void) {
      //   self.onSubmit = onSubmit
@@ -57,10 +62,10 @@ final class ImageSelectionViewModel: ObservableObject {
     
     func setCurrentRandomPhrase() -> String {
         // Inicia o processo de seleção de frase se ainda não foi iniciado
-        if service.getCurrentRandomPhrase().isEmpty && service.phraseLeaderID == nil {
+        if currentPhrase.isEmpty && service.phraseLeaderID == nil {
             service.initiatePhraseSelection()
         }
-        return service.getCurrentRandomPhrase()
+        return currentPhrase
     }
 
     func chooseLibrary() {
