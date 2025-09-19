@@ -8,12 +8,12 @@
 import SwiftUI
 
 @main
-struct GameCenterPOCApp: App {
-    @StateObject private var gameCenter = GameCenterService()
-    
+struct PicktureApp: App {
+    @StateObject var service = GameCenterService.shared
+
     var body: some Scene {
         WindowGroup {
-            HomeView(viewModel: HomeViewModel())
+            HomeView()
         }
     }
 }

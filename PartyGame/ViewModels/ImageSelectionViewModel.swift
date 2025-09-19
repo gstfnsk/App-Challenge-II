@@ -1,0 +1,117 @@
+//
+//  ImageSelectionViewModel.swift
+//  PartyGame
+//
+//  Created by Rafael Toneto on 11/09/25.
+//
+
+import SwiftUI
+import GameKit
+import Combine
+
+final class ImageSelectionViewModel: ObservableObject {
+    @Published var errorMessage: String?
+    @Published var isShowingCamera = false
+    @Published var isShowingLibrary = false
+    
+    @Published var selectedImage: UIImage?
+
+    @Published var selectedPhrase: [String] = []
+    @Published var currentPhrase: String = ""
+
+    @Published private(set) var hasSubmitted = false
+    @Published private(set) var isLocalReady = false
+    
+    private let service = GameCenterService.shared
+  //  private let onSubmit: (ImageSubmission) -> Void
+    private var cancellables: Set<AnyCancellable> = []
+
+    init() {
+        
+        service.$phrases
+            .receive(on: DispatchQueue.main)
+            .assign(to: &$selectedPhrase)
+        
+        service.$currentPhrase
+            .receive(on: DispatchQueue.main)
+            .assign(to: &$currentPhrase)
+        
+        // onSubmit: @escaping (ImageSubmission) -> Void) {
+     //   self.onSubmit = onSubmit
+        service.$readyMap
+            .receive(on: DispatchQueue.main)
+            .sink { [weak self] map in
+                guard let self = self else { return }
+                let localID = GKLocalPlayer.local.gamePlayerID
+                self.isLocalReady = map[localID] ?? false
+            }
+            .store(in: &cancellables)
+    }
+    
+    var haveAllPlayersSubmittedImg: Bool {
+        service.haveAllPlayersSubmittedImage()
+    }
+
+    func chooseCamera() {
+        guard UIImagePickerController.isSourceTypeAvailable(.camera) else {
+            errorMessage = "Câmera não disponível neste dispositivo."
+            return
+        }
+        isShowingCamera = true
+    }
+    
+    func setCurrentRandomPhrase() -> String {
+        // Inicia o processo de seleção de frase se ainda não foi iniciado
+        if currentPhrase.isEmpty && service.phraseLeaderID == nil {
+            service.initiatePhraseSelection()
+        }
+        return currentPhrase
+    }
+
+    func chooseLibrary() {
+        isShowingLibrary = true
+    }
+
+    func handlePickedImage(_ image: UIImage, selectedPhrase: String) {
+        selectedImage = image
+        errorMessage = nil
+
+        guard let data = image.jpegData(compressionQuality: 0.7) else {
+            errorMessage = "Falha ao preparar a imagem."
+            return
+        }
+
+        let imageSubmission = ImageSubmission(image: data, submissionTime: Date())
+        let player = GKLocalPlayer.local
+        let phrase = selectedPhrase
+        GameCenterService.shared.addSubmission(player: player, phrase: phrase, image: imageSubmission)
+        hasSubmitted = true
+        hasSubmitted = true
+    }
+
+    func send() {
+        guard let image = selectedImage else {
+            errorMessage = "Selecione ou tire uma foto antes de enviar."
+            return
+        }
+        guard let data = image.jpegData(compressionQuality: 0.7) else {
+            errorMessage = "Falha ao preparar a imagem."
+            return
+        }
+        _ = ImageSubmission(image: data, submissionTime: Date())
+       // onSubmit(submission)
+        hasSubmitted = true
+    }
+
+    
+
+    func toggleReady() {
+        service.toggleReady()
+    }
+
+    func clear() {
+        selectedImage = nil
+        hasSubmitted = false
+        errorMessage = nil
+    }
+}
