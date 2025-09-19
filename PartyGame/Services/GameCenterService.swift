@@ -160,16 +160,30 @@ class GameCenterService: NSObject, ObservableObject {
 
     }
     
-    func setCurrentRandomPhrase() -> String {
+    func setCurrentRandomPhrase() {
         
         if currentPhrase.isEmpty {
             currentPhrase = self.phrases.randomElement() ?? ""
+            
+            guard let match else { return }
+            let payload: [String: Any] = [
+                "type": "SelectedPhrase",
+                "currentPhrase": currentPhrase
+            ]
+            do {
+                let data = try JSONSerialization.data(withJSONObject: payload)
+                try match.sendData(toAllPlayers: data, with: .reliable)
+            } catch {
+                print("❌ Erro ao enviar currentPhrase: \(error)")
+            }
+            
         }
-        return currentPhrase
+        
+        
     }
     
-    func getSubmittedPhrases() -> [String] {
-        return self.phrases
+    func getCurrentRandomPhrase() -> String {
+        return self.currentPhrase
     }
     
     func haveAllPlayersSubmittedImage() -> Bool {
@@ -427,6 +441,22 @@ extension GameCenterService: GKMatchmakerViewControllerDelegate, GKMatchDelegate
         else { return }
         
         switch type {
+        case "SelectedPhrase":
+            if let phrase = dict["currentPhrase"] as? String {
+                if currentPhrase.isEmpty {
+                    currentPhrase = phrase
+                }
+            }
+        default:
+            break
+        }
+        
+        guard
+            let dict = try? JSONSerialization.jsonObject(with: data) as? [String: Any],
+            let type = dict["type"] as? String
+        else { return }
+        
+        switch type {
         case "newPhrase":
             if let phrase = dict["phrase"] as? String {
                 // Adiciona à lista localmente
@@ -435,8 +465,6 @@ extension GameCenterService: GKMatchmakerViewControllerDelegate, GKMatchDelegate
         default:
             break
         }
-        
-        
         
         if let packet = try? JSONDecoder().decode(LobbyPacket.self, from: data) {
             switch packet.type {

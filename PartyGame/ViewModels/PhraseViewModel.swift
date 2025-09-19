@@ -68,9 +68,9 @@ final class PhraseViewModel {
          service.toggleReady()
      }
      
-     func getSubmitedPhrases() -> [String] {
-         return service.getSubmittedPhrases()
-     }
+//     func getSubmitedPhrases() -> [String] {
+//         return service.getSubmittedPhrases()
+//     }
     
     var haveAllPlayersSubmitted: Bool {
         service.haveAllPlayersSubmittedPhrase()

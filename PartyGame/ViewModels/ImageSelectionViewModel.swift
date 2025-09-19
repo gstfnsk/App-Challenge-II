@@ -56,7 +56,11 @@ final class ImageSelectionViewModel: ObservableObject {
     }
     
     func setCurrentRandomPhrase() -> String {
-            return service.setCurrentRandomPhrase()
+        if service.getCurrentRandomPhrase().isEmpty {
+            service.setCurrentRandomPhrase()
+        }
+        return service.getCurrentRandomPhrase()
+        
     }
 
     func chooseLibrary() {
@@ -94,9 +98,9 @@ final class ImageSelectionViewModel: ObservableObject {
         hasSubmitted = true
     }
     
-    func getSubmitedPhrases() -> [String] {
-            return service.getSubmittedPhrases()
-    }
+//    func getSubmitedPhrases() -> [String] {
+//            return service.getSubmittedPhrases()
+//    }
 
     func toggleReady() {
         service.toggleReady()
