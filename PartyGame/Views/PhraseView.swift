@@ -17,13 +17,13 @@ struct PhraseView: View {
     
     let columns = [GridItem(.flexible())]
     
-    private var button: some View { ButtonHighFidelityView(image: "img-pencilSymbol", title: "confirmPhrase", action:{
+    private var button: some View { ButtonView(image: "img-pencilSymbol", title: "confirm phrase", titleDone: "phrase submitted", action:{
         print("Submitted phrase: \(selectedPhrase)")
         viewModel.submitPhrase(phrase: selectedPhrase.text)
         if viewModel.haveAllPlayersSubmitted {
             nextScreen = true
         }
-    }, enabled: true)}
+    })}
     
     var body: some View {
         ZStack{
