@@ -53,6 +53,11 @@ class GameCenterService: NSObject, ObservableObject {
     var match: GKMatch?
     private var pendingInvite: GKInvite?
     private var pendingPlayersToInvite: [GKPlayer]?
+    private var expectedPlayersCount: Int {
+        if isSinglePlayer { return 1 }
+        let ids = Set(([GKLocalPlayer.local] + (match?.players ?? [])).map { $0.gamePlayerID })
+        return ids.count
+    }
     
     override init() {
         super.init()
@@ -147,7 +152,8 @@ class GameCenterService: NSObject, ObservableObject {
     //MARK: Submissão de frases
     func submitPhrase(phrase: String) {
         phrases.append(phrase)
-            
+        trySelectPhraseIfReady()
+
         guard let match else { return }
         let payload: [String: Any] = [
             "type": "newPhrase",
@@ -159,9 +165,7 @@ class GameCenterService: NSObject, ObservableObject {
         } catch {
             print("❌ Erro ao enviar phrase: \(error)")
         }
-
     }
-    
     // Função para eleger o líder da frase (jogador com menor ID)
     private func electPhraseLeader() -> String? {
         guard !gamePlayers.isEmpty else { return nil }
@@ -196,13 +200,10 @@ class GameCenterService: NSObject, ObservableObject {
             // Modo multiplayer - envia a eleição do líder para todos
             broadcastPhraseLeader(leaderID)
             
-            if localID == leaderID {
-                // Este jogador é o líder - seleciona a frase
-                selectRandomPhrase()
-            } else {
-                // Este jogador não é o líder - aguarda a frase
+            if localID != leaderID {
                 isWaitingForPhrase = true
             }
+            DispatchQueue.main.async { self.trySelectPhraseIfReady() }
         }
     }
     
@@ -458,6 +459,21 @@ class GameCenterService: NSObject, ObservableObject {
         }
     }
     
+    private func trySelectPhraseIfReady() {
+        guard currentPhrase.isEmpty else { return }
+        guard let leaderID = phraseLeaderID else { return }
+
+        let expected = expectedPlayersCount
+        let haveAll = phrases.count >= expected && expected > 0
+        guard haveAll else { return }
+
+        if GKLocalPlayer.local.gamePlayerID == leaderID {
+            selectRandomPhrase()
+        } else {
+            DispatchQueue.main.async { self.isWaitingForPhrase = true }
+        }
+    }
+    
     private func refreshPlayers() {
         var everyone: [GKPlayer] = [GKLocalPlayer.local as GKPlayer]
         if let remotes = match?.players { everyone.append(contentsOf: remotes) }
@@ -541,6 +557,7 @@ extension GameCenterService: GKMatchmakerViewControllerDelegate, GKMatchDelegate
                 DispatchQueue.main.async {
                     self.phraseLeaderID = leaderID
                     print("📡 Líder da frase recebido: \(leaderID)")
+                    self.trySelectPhraseIfReady()
                 }
             }
         case "SelectedPhrase":
@@ -567,8 +584,8 @@ extension GameCenterService: GKMatchmakerViewControllerDelegate, GKMatchDelegate
         switch type {
         case "newPhrase":
             if let phrase = dict["phrase"] as? String {
-                // Adiciona à lista localmente
                 phrases.append(phrase)
+                self.trySelectPhraseIfReady()
             }
         default:
             break
