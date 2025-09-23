@@ -10,7 +10,7 @@ import SwiftUI
 
 struct PhraseView: View {
     
-    var viewModel = PhraseViewModel()
+    @StateObject var viewModel = PhraseViewModel()
     @State var selectedPhrase: Phrase = .init(text: "write your own phrase here", category: .action)
     @State var displayedPhrases: [Phrase] = []
     @State var nextScreen: Bool = false
@@ -35,7 +35,7 @@ struct PhraseView: View {
             VStack(spacing: 85){
                 VStack(spacing: 24){
                     VStack(spacing: 5){
-                        Text("round1")
+                        Text("round x")
                             .font(.system(size: 15, weight: .medium, design: .rounded))
                             .foregroundStyle(.lilac)
                             .frame(maxWidth: .infinity, alignment: .leading)
@@ -46,70 +46,58 @@ struct PhraseView: View {
                                 .foregroundStyle(.ice
                                     .shadow(.inner(color: .lilac, radius: 2, y: 3)))
                                 .frame(maxWidth: .infinity, alignment: .leading)
-                            TimerComponent(duration: 30.0)
+                            TimerComponent(duration: Double(viewModel.timeRemaining))
                         }
                     }
-                    ProgressBarComponent(duration: 30.0)
+                    ProgressBarComponent(duration: Double(viewModel.timeRemaining))
                 }
                 .padding(.horizontal)
                 VStack (spacing: 177){
-                    VStack(spacing: 64){
                         VStack(spacing: 16){
-                            VStack(spacing: 16){
-                                TextField(
-                                    "write your own phrase here",
-                                    text: $selectedPhrase.text)
-                                .foregroundStyle(.lilac)
-                                .foregroundStyle(.lilac)
-                                .padding(.vertical, 12)
-                                .padding(.horizontal, 16)
-                                .frame(maxWidth: .infinity, minHeight: 52, maxHeight: 52, alignment: .leading)
-                                .background(RoundedRectangle(cornerRadius: 26)
-                                    .fill(Color.lighterPurple.shadow(.inner(color: .darkerPurple, radius: 2, y: 3))))
-                                
-                                VStack(spacing: 16){
-                                    HStack(spacing: 63){
-                                        Text("or choose one of ours:")
-                                            .foregroundStyle(.ice)
-                                            .fontWeight(.semibold)
-                                            .font(.system(size: 20, weight: .semibold, design: .rounded))
-                                        Button{
-                                            displayedPhrases = Array(Phrases.all.shuffled().prefix(3))
-                                        }label: {
-                                            Image("Dice")
-                                                .background(Circle()
-                                                    .frame(width: 35, height: 36)
-                                                    .foregroundStyle(Color.lilac))
-                                            
-                                        }
-                                        
-                                    }
-                                    LazyVGrid(columns: columns, spacing: 8){
-                                        ForEach(displayedPhrases, id: \.self) { phrase in
-                                            PhraseComponent(phrase: phrase,
-                                                            isSelected: phrase == selectedPhrase,
-                                                            onSelect: {
-                                                selectedPhrase = phrase
-                                            })
-                                        }
-                                        
-                                    }
-                                }
-                                .padding(.vertical, 12)
-                                .padding(.horizontal)
-                                .background(RoundedRectangle(cornerRadius: 26).fill(Color.lighterPurple))
-                                
-                            }
-                            .padding(.horizontal)
-                            .padding(.vertical)
-                            .background(GradientBackground())
+                            TextField(
+                                "write your own phrase here",
+                                text: $selectedPhrase.text)
+                            .foregroundStyle(.lilac)
+                            .foregroundStyle(.lilac)
+                            .padding(.vertical, 12)
+                            .padding(.horizontal, 16)
+                            .frame(maxWidth: .infinity, minHeight: 52, maxHeight: 52, alignment: .leading)
+                            .background(RoundedRectangle(cornerRadius: 26)
+                                .fill(Color.lighterPurple.shadow(.inner(color: .darkerPurple, radius: 2, y: 3))))
                             
+                            VStack(spacing: 16){
+                                HStack(spacing: 63){
+                                    Text("or choose one of ours:")
+                                        .foregroundStyle(.ice)
+                                        .fontWeight(.semibold)
+                                        .font(.system(size: 20, weight: .semibold, design: .rounded))
+                                    DiceButton{
+                                            displayedPhrases = Array(Phrases.all.shuffled().prefix(3))
+                                        }
+                                    
+                                }
+                                LazyVGrid(columns: columns, spacing: 8){
+                                    ForEach(displayedPhrases, id: \.self) { phrase in
+                                        PhraseComponent(phrase: phrase,
+                                                        isSelected: phrase == selectedPhrase,
+                                                        onSelect: {
+                                            selectedPhrase = phrase
+                                        })
+                                    }
+                                    
+                                }
+                            }
+                            .padding(.vertical, 12)
+                            .padding(.horizontal)
+                            .background(RoundedRectangle(cornerRadius: 26).fill(Color.lighterPurple))
                         }
+                        .padding(.horizontal)
+                        .padding(.vertical)
+                        .background(GradientBackground())
+                        .frame(maxHeight: 350, alignment: .top)
                         .onAppear() {
                             displayedPhrases = Array(Phrases.all.shuffled().prefix(3))
                         }
-
-                    }
                     button
                 }
                 .padding(.horizontal)
@@ -121,14 +109,20 @@ struct PhraseView: View {
             ImageSelectionView()
         }
         .onAppear {
-           // viewModel.startPhase()
+             viewModel.startPhase()
+        
         }
         .onChange(of: viewModel.haveAllPlayersSubmitted) {
+            nextScreen = true
+        }
+        .onChange(of: viewModel.haveTimeRunOut) {
             nextScreen = true
         }
     }
     
 }
+
+
 
 struct GradientBackground: View {
     let gradientBackground = LinearGradient(
