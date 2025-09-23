@@ -10,14 +10,14 @@ import Combine
 import SwiftUI
 
 @Observable
-final class PhraseViewModel {
+final class PhraseViewModel : ObservableObject {
     let service = GameCenterService.shared
 
-    var timeRemaining: Int = 30
-    var haveTimeRunOut: Bool = false
+    @Published var timeRemaining: Int = 30
+    @Published var haveTimeRunOut: Bool = false
     
     private var cancellables = Set<AnyCancellable>()
-        private var timer: Timer?
+    private var timer: Timer?
      
     init() {
         service.$timerStart
