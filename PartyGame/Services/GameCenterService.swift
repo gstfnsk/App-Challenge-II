@@ -27,6 +27,11 @@ private struct LobbyPacket: Codable {
     }
 }
 
+struct SubmissionPayload: Codable {
+    let type: String
+    let submission: PlayerSubmission
+}
+
 // MARK: - Game Center Helper
 class GameCenterService: NSObject, ObservableObject {
     
@@ -273,20 +278,39 @@ class GameCenterService: NSObject, ObservableObject {
     }
     
     func haveAllPlayersSubmittedImage() -> Bool {
+        print(playerSubmissions)
         return ((gamePlayers.count == playerSubmissions.count && gamePlayers.count != 0) ? true : false)
     }
     
     //MARK: submissão de imagem do jogador para a frase atual
-    func addSubmission(player: GKPlayer, phrase: String, image: ImageSubmission) {
-        let submission = PlayerSubmission(player: player, phrase: phrase, imageSubmission: image, votes: 0)
+    func addSubmission(playerID: String, phrase: String, image: ImageSubmission) {
+        let submission = PlayerSubmission(playerID: playerID, phrase: phrase, imageSubmission: image, votes: 0)
         playerSubmissions.append(submission)
+        
+        guard let match else { return }
+        do {
+
+            let payload = SubmissionPayload(type: "newImage", submission: submission)
+            let data = try JSONEncoder().encode(payload)
+            try match.sendData(toAllPlayers: data, with: .reliable)
+            
+        } catch {
+            print("❌ Erro ao enviar submission: \(error)")
+        }
+        
         print("Nova submissão adicionada:", submission)
+        print("todas images: \(playerSubmissions)")
     }
+    
     
     func haveAllPlayersSubmittedPhrase() -> Bool {
         print("\(phrases)")
         return ((gamePlayers.count == phrases.count && gamePlayers.count != 0) ? true : false)
         
+    }
+    
+    func getSubmittedImages() -> [PlayerSubmission] {
+        return self.playerSubmissions
     }
     
     //MARK: Rodadas:
@@ -567,11 +591,25 @@ extension GameCenterService: GKMatchmakerViewControllerDelegate, GKMatchDelegate
         switch type {
         case "newPhrase":
             if let phrase = dict["phrase"] as? String {
-                // Adiciona à lista localmente
+                print("frase adicionada Delegate")
                 phrases.append(phrase)
             }
+            
         default:
             break
+        }
+        
+        if let payload = try? JSONDecoder().decode(SubmissionPayload.self, from: data) {
+            switch payload.type {
+            case "newImage":
+                let submission = payload.submission
+                DispatchQueue.main.async {
+                    self.playerSubmissions.append(submission)
+                    print("Nova submissão recebida e adicionada: \(submission)")
+                }
+            default:
+                break
+            }
         }
         
         if let packet = try? JSONDecoder().decode(LobbyPacket.self, from: data) {

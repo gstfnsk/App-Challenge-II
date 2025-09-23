@@ -7,7 +7,7 @@
 import SwiftUI
 import GameKit
 
-class ImageCarouselViewModel: ObservableObject {
+class ImageStackViewModel: ObservableObject {
         
     private let service = GameCenterService.shared
 

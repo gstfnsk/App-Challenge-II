@@ -6,17 +6,11 @@
 //
 import SwiftUI
 
-struct ImageCarouselView: View {
-    @ObservedObject var viewModel = ImageCarouselViewModel()
+struct ImageStackView: View {
+    @ObservedObject var viewModel = ImageStackViewModel()
     @State var submittedPhrase = "Your submitted phrase must go here and your submitted phrase must go here"
-    @State var imageSubmissions: [ImageSubmission] = [
-        ImageSubmission(image: UIImage(named: "img-placeholder16x9")?.pngData(), submissionTime: Date()),
-        ImageSubmission(image: UIImage(named: "img-placeholder4x3")?.pngData(), submissionTime: Date()),
-        ImageSubmission(image: UIImage(named: "img-placeholder9x16")?.pngData(), submissionTime: Date()),
-        ImageSubmission(image: UIImage(named: "img-placeholder16x9")?.pngData(), submissionTime: Date()),
-        ImageSubmission(image: UIImage(named: "img-placeholder4x3")?.pngData(), submissionTime: Date()),
-        ImageSubmission(image: UIImage(named: "img-placeholder9x16")?.pngData(), submissionTime: Date())
-    ]
+    
+    @State var imageSubmissions: [ImageSubmission]
     
     @State private var timer = Timer.publish(every: 1.5, on: .main, in: .common).autoconnect()
     @State private var isDone: Bool = false
@@ -42,6 +36,6 @@ struct ImageCarouselView: View {
     }
 }
 
-#Preview {
-    ImageCarouselView()
-}
+//#Preview {
+//    ImageStackView()
+//}

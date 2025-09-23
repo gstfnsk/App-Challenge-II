@@ -11,9 +11,14 @@ import GameKit
 struct ImageSelectionView: View {
     @ObservedObject var viewModel = ImageSelectionViewModel()
     @State private var showSourceMenu = false
-    @State var goToVotingView: Bool = false
+    
+    @State var goToStackView: Bool = false
     
     @State var currentPhrase: String = ""
+    
+    @State var playerReady: Bool = false
+    
+    @State var selectedImage: UIImage?
     
     var body: some View {
         VStack(spacing: 20) {
@@ -35,7 +40,7 @@ struct ImageSelectionView: View {
             }
             
             Group {
-                if let image = viewModel.selectedImage {
+                if let image = selectedImage {
                     Image(uiImage: image)
                         .resizable()
                         .scaledToFit()
@@ -72,20 +77,24 @@ struct ImageSelectionView: View {
             .padding(.horizontal)
             
             Button {
-                goToVotingView = true
-                viewModel.toggleReady()
-                if viewModel.haveAllPlayersSubmittedImg {
-                    goToVotingView = true
+                if let selectedImage = selectedImage {
+                    viewModel.submitSelectedImage(image: selectedImage)
+                    //viewModel.toggleReady()
+                  //  if viewModel.haveAllPlayersSubmittedImg {
+                  //      goToStackView = true
+                  //  }
+                    playerReady = true
                 }
+                
             } label: {
-                Text(viewModel.isLocalReady ? "Cancelar ready" : "Ready")
+                Text(playerReady ? "Cancelar ready" : "Ready")
                     .frame(maxWidth: .infinity)
                     .padding(.vertical, 12)
             }
             .buttonStyle(.bordered)
-            .disabled(!viewModel.hasSubmitted)
+          //  .disabled(!viewModel.hasSubmitted)
             .padding(.horizontal)
-            .opacity(viewModel.hasSubmitted ? 1.0 : 0.5)
+          //  .opacity(viewModel.hasSubmitted ? 1.0 : 0.5)
             
             if let error = viewModel.errorMessage {
                 Text(error)
@@ -102,11 +111,21 @@ struct ImageSelectionView: View {
         .onReceive(viewModel.$currentPhrase) { currentPhrase in
             self.currentPhrase = currentPhrase
         }
+        .onChange(of: viewModel.haveAllPlayersSubmittedImg) {
+            goToStackView = true
+        }
+        .onChange(of: viewModel.selectedImage) {
+            if selectedImage == nil {
+                selectedImage = viewModel.selectedImage
+            }
+        }
+        
         .navigationTitle("Imagem")
         .navigationBarBackButtonHidden(true)
         .navigationBarTitleDisplayMode(.inline)
-        .navigationDestination(isPresented: $goToVotingView) {
-            VotingView(phrase: viewModel.currentPhrase)
+        .navigationDestination(isPresented: $goToStackView) {
+            
+            ImageStackView(viewModel: ImageStackViewModel(), imageSubmissions: viewModel.getSubmittedImages())
         }
         
         .confirmationDialog("Escolher origem", isPresented: $showSourceMenu, titleVisibility: .visible) {
@@ -117,11 +136,14 @@ struct ImageSelectionView: View {
         
         .sheet(isPresented: $viewModel.isShowingCamera) {
             ImagePicker(sourceType: .camera, allowsEditing: false) { img in
-                viewModel.handlePickedImage(img, selectedPhrase: viewModel.currentPhrase)             }
+                selectedImage = img
+                 // viewModel.handlePickedImage(img, selectedPhrase: viewModel.currentPhrase)
+            }
         }
         .sheet(isPresented: $viewModel.isShowingLibrary) {
             ImagePicker(sourceType: .photoLibrary, allowsEditing: false) { img in
-                viewModel.handlePickedImage(img, selectedPhrase: viewModel.currentPhrase)
+                selectedImage = img
+              //  viewModel.handlePickedImage(img, selectedPhrase: viewModel.currentPhrase)
             }
         }
     }
