@@ -27,7 +27,7 @@ struct VotingView: View {
                 Text(phrase)
                 PinterestLikeGrid($imageSubmissions, columns: 2, spacing: 16) { photo, index in
                     Button {
-                        viewModel.voteImage(id: photo.id)
+                       // viewModel.voteImage(id: photo.id)
                         selectedImage = photo.id
                     } label: {
                         if let data = photo.image, let uiImage = UIImage(data: data)
@@ -57,12 +57,12 @@ struct VotingView: View {
             }
             if let selectedImage {
             ButtonView(image: "iconVoteButton", title: "confirm vote", titleDone: "vote confirmed", action: {
-                    viewModel.submitVote()
+                    //viewModel.submitVote()
                     goToNextRound = true
             }, state: .enabled)
             } else {
                 ButtonView(image: "iconVoteButton", title: "confirm vote", titleDone: "vote confirmed", action: {
-                    viewModel.submitVote()
+                   // viewModel.submitVote()
                     goToNextRound = true
                 }, state: .inactive)
             }

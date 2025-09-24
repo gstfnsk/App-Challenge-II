@@ -28,11 +28,11 @@ final class VotingViewModel {
             .map { $0.imageSubmission }
     }
 
-    func voteImage(id: UUID) {
-        guard let submission = service.playerSubmissions.first(where: { $0.imageSubmission.id == id }) else {
-            print("Nenhuma submissão encontrada para essa imagem")
-            return
-        }
-        submission.votes += 1
-    }
+//    func voteImage(id: UUID) {
+//        guard let submission = service.playerSubmissions.first(where: { $0.imageSubmission.id == id }) else {
+//            print("Nenhuma submissão encontrada para essa imagem")
+//            return
+//        }
+//        submission.votes += 1
+//    }
 }
