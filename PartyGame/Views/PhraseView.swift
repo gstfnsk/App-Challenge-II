@@ -71,7 +71,8 @@ struct PhraseView: View {
                                         .font(.system(size: 20, weight: .semibold, design: .rounded))
                                         .frame(maxWidth: .infinity)
                                     DiceButton{
-                                            displayedPhrases = Array(Phrases.all.shuffled().prefix(3))
+                                        viewModel.dicePressed()
+                                        displayedPhrases = viewModel.phrases
                                         }
                                     
                                 }
@@ -95,7 +96,7 @@ struct PhraseView: View {
                         .background(GradientBackground())
                         .frame(maxHeight: 350, alignment: .top)
                         .onAppear() {
-                            displayedPhrases = Array(Phrases.all.shuffled().prefix(3))
+                            displayedPhrases = viewModel.phrases
                         }
                     button
                 }
