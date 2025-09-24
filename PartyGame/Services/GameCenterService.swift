@@ -55,6 +55,8 @@ class GameCenterService: NSObject, ObservableObject {
     @Published var playerSubmissions: [PlayerSubmission] = []
     @Published var timerStart: Date? = nil
     
+    @Published var isPhraseSubmittedByAnyPlayer: Bool = false
+    @Published var isAutoSubmittingPhrase: Bool = false // Reintroduzindo esta flag
     var match: GKMatch?
     private var pendingInvite: GKInvite?
     private var pendingPlayersToInvite: [GKPlayer]?
@@ -156,9 +158,12 @@ class GameCenterService: NSObject, ObservableObject {
     
     //MARK: Submissão de frases
     func submitPhrase(phrase: String) {
-        phrases.append(phrase)
-        trySelectPhraseIfReady()
-
+        // Evitar duplicatas locais antes de enviar
+        if !phrases.contains(phrase) {
+            phrases.append(phrase)
+            isPhraseSubmittedByAnyPlayer = true // Uma frase foi submetida localmente
+        }
+            
         guard let match else { return }
         let payload: [String: Any] = [
             "type": "newPhrase",
@@ -169,6 +174,23 @@ class GameCenterService: NSObject, ObservableObject {
             try match.sendData(toAllPlayers: data, with: .reliable)
         } catch {
             print("❌ Erro ao enviar phrase: \(error)")
+        }
+
+    }
+    
+    // MARK: Broadcast para iniciar submissão automática
+    func broadcastStartAutoPhraseSubmission() {
+        guard let match else { return }
+        let payload: [String: Any] = [
+            "type": "startAutoPhraseSubmission"
+        ]
+        do {
+            let data = try JSONSerialization.data(withJSONObject: payload)
+            try match.sendData(toAllPlayers: data, with: .reliable)
+            isAutoSubmittingPhrase = true // Marca localmente também para reatividade imediata
+            print("📡 Sinal para iniciar auto-submissão de frase enviado.")
+        } catch {
+            print("❌ Erro ao enviar sinal de auto-submissão: \(error)")
         }
     }
     // Função para eleger o líder da frase (jogador com menor ID)
@@ -182,6 +204,12 @@ class GameCenterService: NSObject, ObservableObject {
     
     // Função para iniciar o processo de seleção de frase
     func initiatePhraseSelection() {
+        // Apenas para garantir que Phrases.all não esteja vazia
+        if Phrases.all.isEmpty {
+            print("⚠️ As frases disponíveis estão vazias em Phrases.all!")
+            return
+        }
+        
         guard currentPhrase.isEmpty && phraseLeaderID == nil else {
             print("⚠️ Seleção de frase já em andamento ou frase já selecionada")
             return
@@ -332,6 +360,9 @@ class GameCenterService: NSObject, ObservableObject {
         currentPhrase = ""
         phraseLeaderID = nil
         isWaitingForPhrase = false
+        phrases.removeAll() // Limpa as frases para a próxima rodada
+        isPhraseSubmittedByAnyPlayer = false // Reseta a flag de submissão de frase por qualquer jogador
+        isAutoSubmittingPhrase = false // Reseta a flag de auto-submissão (reintroduzida)
         print("🔄 Estado da frase resetado para nova rodada")
     }
     
@@ -596,25 +627,29 @@ extension GameCenterService: GKMatchmakerViewControllerDelegate, GKMatchDelegate
                     }
                 }
             }
+        case "startAutoPhraseSubmission": // Trata o novo tipo de payload
+            DispatchQueue.main.async {
+                self.isAutoSubmittingPhrase = true
+                print("📡 Sinal para iniciar auto-submissão de frase recebido.")
+            }
         default:
             break
         }
         
-        guard
-            let dict = try? JSONSerialization.jsonObject(with: data) as? [String: Any],
-            let type = dict["type"] as? String
-        else { return }
-        
-        switch type {
-        case "newPhrase":
-            if let phrase = dict["phrase"] as? String {
-                print("frase adicionada Delegate")
-                phrases.append(phrase)
-                self.trySelectPhraseIfReady()
+        // Separar o tratamento de newPhrase para garantir que o remetente local não re-adicione
+        if type == "newPhrase", let phrase = dict["phrase"] as? String {
+            // Ignorar mensagens de "newPhrase" enviadas pelo próprio jogador local
+            if player.gamePlayerID == GKLocalPlayer.local.gamePlayerID {
+                print("ℹ️ Ignorando minha própria frase de \(player.displayName)")
+                return
             }
             
-        default:
-            break
+            // Adiciona à lista localmente se não for uma duplicata e não for do próprio jogador
+            if !phrases.contains(phrase) {
+                phrases.append(phrase)
+                isPhraseSubmittedByAnyPlayer = true // Uma frase foi submetida remotamente
+                print("📡 Frase '\(phrase)' recebida de \(player.displayName)")
+            }
         }
         
         if let payload = try? JSONDecoder().decode(SubmissionPayload.self, from: data) {
