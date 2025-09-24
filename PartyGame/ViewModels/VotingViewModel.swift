@@ -27,6 +27,18 @@ final class VotingViewModel {
             .filter { $0.phrase == phrase }
             .map { $0.imageSubmission }
     }
+    
+    func cleanAndStoreSubmissions() {
+        service.cleanAndStorePlayerSubmissions()
+    }
+    
+    func getPlayer(imageid: UUID) {
+        guard let submission = service.playerSubmissions.first(where: { $0.imageSubmission.id == imageid }) else {
+                   print("Nenhuma submissão encontrada para essa imagem")
+                   return
+               }
+        service.getPlayer(playerID: submission.playerID)
+    }
 
 //    func voteImage(id: UUID) {
 //        guard let submission = service.playerSubmissions.first(where: { $0.imageSubmission.id == id }) else {

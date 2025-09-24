@@ -29,6 +29,7 @@ struct VotingView: View {
                     Button {
                        // viewModel.voteImage(id: photo.id)
                         selectedImage = photo.id
+                        print("selected image: \(String(describing: selectedImage))")
                     } label: {
                         if let data = photo.image, let uiImage = UIImage(data: data)
                         {
@@ -58,6 +59,8 @@ struct VotingView: View {
             if let selectedImage {
             ButtonView(image: "iconVoteButton", title: "confirm vote", titleDone: "vote confirmed", action: {
                     //viewModel.submitVote()
+                print("öi")
+                viewModel.cleanAndStoreSubmissions()
                     goToNextRound = true
             }, state: .enabled)
             } else {

@@ -51,16 +51,11 @@ final class ImageSelectionViewModel: ObservableObject {
 //    }
     
     func setCurrentRandomPhrase() -> String {
-        
         if currentPhrase.isEmpty && service.phraseLeaderID == nil {
             service.initiatePhraseSelection()
         }
         return currentPhrase
     }
-
-//    func chooseLibrary() {
-//        isShowingLibrary = true
-//    }
     
     func submitSelectedImage(image: UIImage) {
         let maxWidth: CGFloat = 600
