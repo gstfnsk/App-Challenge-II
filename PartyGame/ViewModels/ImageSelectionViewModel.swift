@@ -11,8 +11,6 @@ import Combine
 
 final class ImageSelectionViewModel: ObservableObject {
     @Published var errorMessage: String?
-    @Published var isShowingCamera = false
-    @Published var isShowingLibrary = false
 
     @Published var selectedPhrase: [String] = []
     @Published var currentPhrase: String = ""
@@ -44,13 +42,13 @@ final class ImageSelectionViewModel: ObservableObject {
         service.haveAllPlayersSubmittedImage()
     }
 
-    func chooseCamera() {
-        guard UIImagePickerController.isSourceTypeAvailable(.camera) else {
-            errorMessage = "Câmera não disponível neste dispositivo."
-            return
-        }
-        isShowingCamera = true
-    }
+//    func chooseCamera() {
+//        guard UIImagePickerController.isSourceTypeAvailable(.camera) else {
+//            errorMessage = "Câmera não disponível neste dispositivo."
+//            return
+//        }
+//        //isShowingCamera = true
+//    }
     
     func setCurrentRandomPhrase() -> String {
         
@@ -60,9 +58,9 @@ final class ImageSelectionViewModel: ObservableObject {
         return currentPhrase
     }
 
-    func chooseLibrary() {
-        isShowingLibrary = true
-    }
+//    func chooseLibrary() {
+//        isShowingLibrary = true
+//    }
     
     func submitSelectedImage(image: UIImage) {
         let maxWidth: CGFloat = 600
