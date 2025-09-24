@@ -10,7 +10,7 @@ import SwiftUI
 
 struct PhraseView: View {
     
-    @StateObject var viewModel = PhraseViewModel()
+    var viewModel = PhraseViewModel()
     @State var selectedPhrase: Phrase = .init(text: "write your own phrase here", category: .action)
     @State var displayedPhrases: [Phrase] = []
     @State var nextScreen: Bool = false
@@ -20,9 +20,7 @@ struct PhraseView: View {
     private var button: some View { ButtonHighFidelityView(image: "img-pencilSymbol", title: "confirm Phrase", action:{
         print("Submitted phrase: \(selectedPhrase)")
         viewModel.submitPhrase(phrase: selectedPhrase.text)
-        if viewModel.haveAllPlayersSubmitted {
-            nextScreen = true
-        }
+        
     }, enabled: true)}
     
     var body: some View {
@@ -46,10 +44,10 @@ struct PhraseView: View {
                                 .foregroundStyle(.ice
                                     .shadow(.inner(color: .lilac, radius: 2, y: 3)))
                                 .frame(maxWidth: .infinity, alignment: .leading)
-                            TimerComponent(duration: Double(viewModel.timeRemaining))
+                            TimerComponent(remainingTime: viewModel.timeRemaining, duration: 30.0)
                         }
                     }
-                    ProgressBarComponent(duration: Double(viewModel.timeRemaining))
+                    ProgressBarComponent(progress: .constant(1.0 - (viewModel.remainingTimeDouble/30.0)))
                 }
                 .padding(.horizontal)
                 VStack (spacing: 177){
@@ -57,7 +55,6 @@ struct PhraseView: View {
                             TextField(
                                 "write your own phrase here",
                                 text: $selectedPhrase.text)
-                            .foregroundStyle(.lilac)
                             .foregroundStyle(.lilac)
                             .padding(.vertical, 12)
                             .padding(.horizontal, 16)
@@ -68,9 +65,11 @@ struct PhraseView: View {
                             VStack(spacing: 16){
                                 HStack(spacing: 63){
                                     Text("or choose one of ours:")
+                                        .lineLimit(1)
                                         .foregroundStyle(.ice)
                                         .fontWeight(.semibold)
                                         .font(.system(size: 20, weight: .semibold, design: .rounded))
+                                        .frame(maxWidth: .infinity)
                                     DiceButton{
                                             displayedPhrases = Array(Phrases.all.shuffled().prefix(3))
                                         }
@@ -111,9 +110,6 @@ struct PhraseView: View {
         .onAppear {
              viewModel.startPhase()
         
-        }
-        .onChange(of: viewModel.haveAllPlayersSubmitted) {
-            nextScreen = true
         }
         .onChange(of: viewModel.haveTimeRunOut) {
             nextScreen = true
