@@ -30,6 +30,7 @@ struct ImageStackView: View {
                 print("Done!")
             }
         }
+        .navigationBarBackButtonHidden(true)
         .frame(maxWidth: .infinity, maxHeight: .infinity)
         .padding(.horizontal, 32)
         .background(Color(.systemBackground).edgesIgnoringSafeArea(.all))

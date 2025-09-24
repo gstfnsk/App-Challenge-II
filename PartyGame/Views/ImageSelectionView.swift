@@ -75,26 +75,21 @@ struct ImageSelectionView: View {
             }
             .buttonStyle(.borderedProminent)
             .padding(.horizontal)
+            .disabled(playerReady ? true : false)
             
             Button {
                 if let selectedImage = selectedImage {
                     viewModel.submitSelectedImage(image: selectedImage)
-                    //viewModel.toggleReady()
-                  //  if viewModel.haveAllPlayersSubmittedImg {
-                  //      goToStackView = true
-                  //  }
                     playerReady = true
                 }
-                
             } label: {
                 Text(playerReady ? "Cancelar ready" : "Ready")
                     .frame(maxWidth: .infinity)
                     .padding(.vertical, 12)
             }
             .buttonStyle(.bordered)
-          //  .disabled(!viewModel.hasSubmitted)
+            .disabled(playerReady ? true : false)
             .padding(.horizontal)
-          //  .opacity(viewModel.hasSubmitted ? 1.0 : 0.5)
             
             if let error = viewModel.errorMessage {
                 Text(error)
@@ -114,11 +109,6 @@ struct ImageSelectionView: View {
         .onChange(of: viewModel.haveAllPlayersSubmittedImg) {
             goToStackView = true
         }
-        .onChange(of: viewModel.selectedImage) {
-            if selectedImage == nil {
-                selectedImage = viewModel.selectedImage
-            }
-        }
         
         .navigationTitle("Imagem")
         .navigationBarBackButtonHidden(true)
@@ -137,13 +127,11 @@ struct ImageSelectionView: View {
         .sheet(isPresented: $viewModel.isShowingCamera) {
             ImagePicker(sourceType: .camera, allowsEditing: false) { img in
                 selectedImage = img
-                 // viewModel.handlePickedImage(img, selectedPhrase: viewModel.currentPhrase)
             }
         }
         .sheet(isPresented: $viewModel.isShowingLibrary) {
             ImagePicker(sourceType: .photoLibrary, allowsEditing: false) { img in
                 selectedImage = img
-              //  viewModel.handlePickedImage(img, selectedPhrase: viewModel.currentPhrase)
             }
         }
     }
