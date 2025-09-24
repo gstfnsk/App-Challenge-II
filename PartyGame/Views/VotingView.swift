@@ -12,6 +12,7 @@ import PinterestLikeGrid
 struct VotingView: View {
     @State var phrase: String
     @State var selectedImage: UUID?
+    @State var goToNextRound: Bool = false
     var viewModel: VotingViewModel = VotingViewModel()
     let columns = [
         GridItem(.flexible()),
@@ -55,9 +56,16 @@ struct VotingView: View {
                 }
             }
             if let selectedImage {
-                Text("you voted \(selectedImage)")
+            ButtonView(image: "iconVoteButton", title: "confirm vote", titleDone: "vote confirmed", action: {
+                    //viewModel.submitVote()
+                    goToNextRound = true
+            }, state: .enabled)
+            } else {
+                ButtonView(image: "iconVoteButton", title: "confirm vote", titleDone: "vote confirmed", action: {
+                   // viewModel.submitVote()
+                    goToNextRound = true
+                }, state: .inactive)
             }
-            ButtonView(title: "confirm vote")
         }
         .onAppear {
             // Filtra as imagens submetidas para a frase atual
