@@ -16,6 +16,7 @@ final class PhraseViewModel  {
 
      var timeRemaining: Int = 30
      var haveTimeRunOut: Bool = false
+     var phrases: [Phrase] = Array(Phrases.all.shuffled().prefix(3))
     
     private var cancellables = Set<AnyCancellable>()
     private var timer: Timer?
@@ -25,12 +26,33 @@ final class PhraseViewModel  {
     var hasSubmittedPhrase: Bool = false
     var remainingTimeDouble: Double = 30.0
     
+    init() {
+        service.$timerStart
+            .compactMap { $0 }
+            .receive(on: DispatchQueue.main)
+            .sink { [weak self] target in
+                self?.startCountdown(until: target)
+            }
+            .store(in: &cancellables)
+        
+        // Observar quando todos os jogadores submeteram a frase para parar o timer
+        service.$phrases
+            .receive(on: DispatchQueue.main)
+            .sink { [weak self] _ in
+                guard let self = self else { return }
+                if self.haveAllPlayersSubmitted {
+                    self.timer?.invalidate()
+                    self.haveTimeRunOut = true // Força a transição, pois todos submeteram
+                }
+            }
+            .store(in: &cancellables)
+    }
+    
     //MARK: Chamado quando o jogador inicia a fase
     func startPhase() {
         hasSubmittedPhrase = false // Reseta o estado de submissão da frase
         hasProcessedTimeRunOut = false // Reseta a flag de processamento de time-out
-        service.schedulePhaseStart(delay: 3)
-        startCountdown(until: Date().addingTimeInterval(30))
+        service.schedulePhaseStart(delay: 30) // Alterado para 3s de atraso. O ideal é o valor da duração da fase
     }
     
     private func startCountdown(until target: Date) {
@@ -62,15 +84,9 @@ final class PhraseViewModel  {
     }
     
     private func submitRandomPhraseIfNeeded() {
-        // Só tenta submeter uma frase aleatória se o jogador local for o líder,
-        // nenhuma frase foi submetida ainda por este jogador ou por qualquer outro jogador,
-        // o processo de auto-submissão ainda não foi iniciado por ninguém no GameCenterService,
-        // e não processamos o time-out localmente ainda.
-        guard service.phraseLeaderID == GKLocalPlayer.local.gamePlayerID,
-              !hasSubmittedPhrase,
-              !service.isPhraseSubmittedByAnyPlayer,
-              !service.isAutoSubmittingPhrase,
-              !hasProcessedTimeRunOut else { return }
+        // Qualquer jogador que não submeteu uma frase ainda deve submeter uma aleatória.
+        // A verificação `hasProcessedTimeRunOut` garante que isso ocorra apenas uma vez localmente por time-out.
+        guard !hasSubmittedPhrase, !hasProcessedTimeRunOut else { return }
         
         // Marca que o time-out foi processado localmente para esta fase.
         hasProcessedTimeRunOut = true
@@ -81,10 +97,14 @@ final class PhraseViewModel  {
         // Pequeno atraso para garantir que a flag de auto-submissão seja propagada antes de submeter a frase.
         DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) { [weak self] in
             guard let self = self else { return }
-            if let randomPhrase = Phrases.all.randomElement() {
+            if let randomPhrase = phrases.randomElement() {
                 self.submitPhrase(phrase: randomPhrase.text)
             }
         }
+    }
+    
+    func dicePressed(){
+        phrases = Array(Phrases.all.shuffled().prefix(3))
     }
     
      func submitPhrase(phrase: String) {
@@ -100,4 +120,7 @@ final class PhraseViewModel  {
 //         return service.getSubmittedPhrases()
 //     }
     
+    var haveAllPlayersSubmitted: Bool {
+        service.haveAllPlayersSubmittedPhrase()
+    }
 }
