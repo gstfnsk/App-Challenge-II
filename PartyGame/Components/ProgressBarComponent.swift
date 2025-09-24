@@ -18,25 +18,16 @@ struct ProgressBarComponent: View {
     let cornerRadius: CGFloat = 20
     let trackColor: Color = .ice
 
-    @State private var localProgress: Double = 0  // 0...1
-    @State private var startDate: Date?
-    @State private var timerActive: Bool = false
-
     init(progress: Binding<Double>) {
         self._progress = progress
         self.duration = 0
-    }
-
-    init(duration: TimeInterval) {
-        self._progress = .constant(0)
-        self.duration = max(0, duration)
     }
 
     private let t1: Double = 0.37
     private let t2: Double = 0.75
 
     private var effectiveProgress: Double {
-        isTimed ? localProgress : progress
+        progress
     }
 
     private var clamped: Double { min(max(effectiveProgress, 0.0), 1.0) }
@@ -76,8 +67,6 @@ struct ProgressBarComponent: View {
         }
     }
 
-    private var isTimed: Bool { duration > 0 }
-
     var body: some View {
         GeometryReader { geo in
             let width = geo.size.width * clamped
@@ -111,30 +100,10 @@ struct ProgressBarComponent: View {
             }
         }
         .frame(height: height)
-        .onAppear {
-            guard isTimed else { return }
-            startDate = Date()
-            localProgress = 0
-            timerActive = true
-        }
-        .onDisappear {
-            timerActive = false
-        }
-        .onReceive(timer) { now in
-            guard isTimed, timerActive, let start = startDate else { return }
-            let elapsed = now.timeIntervalSince(start)
-            let p = min(max(elapsed / duration, 0), 1)
-            localProgress = p
-            if p >= 1 { timerActive = false }
-        }
-    }
-
-    private var timer: Publishers.Autoconnect<Timer.TimerPublisher> {
-        Timer.publish(every: 1.0/30.0, on: .main, in: .common).autoconnect()
     }
 }
 
 #Preview() {
-    ProgressBarComponent(duration: 5)
+    ProgressBarComponent(progress: .constant(0.5))
         .padding()
 }
