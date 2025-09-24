@@ -115,7 +115,7 @@ struct ImageSelectionView: View {
         .navigationBarTitleDisplayMode(.inline)
         .navigationDestination(isPresented: $goToStackView) {
             
-            ImageStackView(viewModel: ImageStackViewModel(), imageSubmissions: viewModel.getSubmittedImages())
+            ImageStackView(viewModel: ImageStackViewModel(), submittedPhrase: currentPhrase, imageSubmissions: viewModel.getSubmittedImages())
         }
         
         .confirmationDialog("Escolher origem", isPresented: $showSourceMenu, titleVisibility: .visible) {

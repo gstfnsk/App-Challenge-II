@@ -8,7 +8,8 @@ import SwiftUI
 
 struct ImageStackView: View {
     @ObservedObject var viewModel = ImageStackViewModel()
-    @State var submittedPhrase = "Your submitted phrase must go here and your submitted phrase must go here"
+    
+    @State var submittedPhrase = ""
     
     @State var imageSubmissions: [ImageSubmission]
     
@@ -34,6 +35,10 @@ struct ImageStackView: View {
         .frame(maxWidth: .infinity, maxHeight: .infinity)
         .padding(.horizontal, 32)
         .background(Color(.systemBackground).edgesIgnoringSafeArea(.all))
+        .navigationDestination(isPresented: $isDone) {
+            
+            VotingView(phrase: submittedPhrase, imageSubmissions: imageSubmissions)
+        }
     }
 }
 
