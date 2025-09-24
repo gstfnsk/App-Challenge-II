@@ -10,6 +10,8 @@ import GameKit
 
 struct ImageSelectionView: View {
     @ObservedObject var viewModel = ImageSelectionViewModel()
+    @State private var isShowingCamera = false
+    @State private var isShowingLibrary = false
     @State private var showSourceMenu = false
     
     @State var goToStackView: Bool = false
@@ -73,6 +75,11 @@ struct ImageSelectionView: View {
                     .frame(maxWidth: .infinity)
                     .padding(.vertical, 14)
             }
+            .confirmationDialog("Escolher origem", isPresented: $showSourceMenu) {
+                Button("Tirar foto") { isShowingCamera = true }
+                Button("Escolher da Galeria") { isShowingLibrary = true }
+                Button("Cancelar", role: .cancel) { }
+            }
             .buttonStyle(.borderedProminent)
             .padding(.horizontal)
             .disabled(playerReady ? true : false)
@@ -118,18 +125,18 @@ struct ImageSelectionView: View {
             ImageStackView(viewModel: ImageStackViewModel(), submittedPhrase: currentPhrase, imageSubmissions: viewModel.getSubmittedImages())
         }
         
-        .confirmationDialog("Escolher origem", isPresented: $showSourceMenu, titleVisibility: .visible) {
-            Button("Tirar foto") { viewModel.chooseCamera() }
-            Button("Escolher da Galeria") { viewModel.chooseLibrary() }
-            Button("Cancelar", role: .cancel) { }
-        }
+//        .confirmationDialog("Escolher origem", isPresented: $showSourceMenu, titleVisibility: .visible) {
+//            Button("Tirar foto") { viewModel.chooseCamera() }
+//            Button("Escolher da Galeria") { viewModel.chooseLibrary() }
+//            Button("Cancelar", role: .cancel) { }
+//        }
         
-        .sheet(isPresented: $viewModel.isShowingCamera) {
+        .sheet(isPresented: $isShowingCamera) {
             ImagePicker(sourceType: .camera, allowsEditing: false) { img in
                 selectedImage = img
             }
         }
-        .sheet(isPresented: $viewModel.isShowingLibrary) {
+        .sheet(isPresented: $isShowingLibrary) {
             ImagePicker(sourceType: .photoLibrary, allowsEditing: false) { img in
                 selectedImage = img
             }

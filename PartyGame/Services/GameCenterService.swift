@@ -624,6 +624,7 @@ extension GameCenterService: GKMatchmakerViewControllerDelegate, GKMatchDelegate
                 DispatchQueue.main.async {
                     self.playerSubmissions.append(submission)
                     print("Nova submissão recebida e adicionada: \(submission)")
+                    print("Printar todos jogadores: \(self.gamePlayers)")
                 }
             default:
                 break
