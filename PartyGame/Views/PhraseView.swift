@@ -9,21 +9,20 @@ import SwiftUI
 
 
 struct PhraseView: View {
-    
+    private let service = GameCenterService.shared
     var viewModel = PhraseViewModel()
-    @State var selectedPhrase: Phrase = .init(text: "write your own phrase here", category: .action)
+    @State var selectedPhrase: Phrase? = nil
     @State var displayedPhrases: [Phrase] = []
     @State var nextScreen: Bool = false
     
-    let columns = [GridItem(.flexible())]
-    
-    private var button: some View { ButtonView(image: "img-pencilSymbol", title: "confirm phrase", titleDone: "phrase submitted", action:{
-        print("Submitted phrase: \(selectedPhrase)")
-        viewModel.submitPhrase(phrase: selectedPhrase.text)
-        if viewModel.haveAllPlayersSubmitted {
-            nextScreen = true
+    var isButtonInactive: Bool {
+        guard let phrase = selectedPhrase else {
+            return true
         }
-    })}
+        return phrase.text.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty
+    }
+    
+    let columns = [GridItem(.flexible())]
     
     var body: some View {
         ZStack{
@@ -32,10 +31,11 @@ struct PhraseView: View {
                 .scaledToFill()
                 .frame(minWidth: 0)
                 .edgesIgnoringSafeArea(.all)
+            
             VStack(spacing: 85){
                 VStack(spacing: 24){
                     VStack(spacing: 5){
-                        Text("round1")
+                        Text("round \(service.currentRound)")
                             .font(.system(size: 15, weight: .medium, design: .rounded))
                             .foregroundStyle(.lilac)
                             .frame(maxWidth: .infinity, alignment: .leading)
@@ -46,71 +46,88 @@ struct PhraseView: View {
                                 .foregroundStyle(.ice
                                     .shadow(.inner(color: .lilac, radius: 2, y: 3)))
                                 .frame(maxWidth: .infinity, alignment: .leading)
-                            TimerComponent(duration: 30.0)
+                            TimerComponent(remainingTime: viewModel.timeRemaining, duration: 30.0)
                         }
                     }
-                    ProgressBarComponent(duration: 30.0)
+                    ProgressBarComponent(progress: .constant(1.0 - (viewModel.remainingTimeDouble/30.0)))
                 }
                 .padding(.horizontal)
+                
                 VStack (spacing: 177){
-                    VStack(spacing: 64){
-                        VStack(spacing: 16){
-                            VStack(spacing: 16){
-                                TextField(
-                                    "write your own phrase here",
-                                    text: $selectedPhrase.text)
-                                .foregroundStyle(.lilac)
-                                .foregroundStyle(.lilac)
-                                .padding(.vertical, 12)
-                                .padding(.horizontal, 16)
-                                .frame(maxWidth: .infinity, minHeight: 52, maxHeight: 52, alignment: .leading)
-                                .background(RoundedRectangle(cornerRadius: 26)
-                                    .fill(Color.lighterPurple.shadow(.inner(color: .darkerPurple, radius: 2, y: 3))))
-                                
-                                VStack(spacing: 16){
-                                    HStack(spacing: 63){
-                                        Text("or choose one of ours:")
-                                            .foregroundStyle(.ice)
-                                            .fontWeight(.semibold)
-                                            .font(.system(size: 20, weight: .semibold, design: .rounded))
-                                        Button{
-                                            displayedPhrases = Array(Phrases.all.shuffled().prefix(3))
-                                        }label: {
-                                            Image("Dice")
-                                                .background(Circle()
-                                                    .frame(width: 35, height: 36)
-                                                    .foregroundStyle(Color.lilac))
-                                            
-                                        }
-                                        
-                                    }
-                                    LazyVGrid(columns: columns, spacing: 8){
-                                        ForEach(displayedPhrases, id: \.self) { phrase in
-                                            PhraseComponent(phrase: phrase,
-                                                            isSelected: phrase == selectedPhrase,
-                                                            onSelect: {
-                                                selectedPhrase = phrase
-                                            })
-                                        }
-                                        
+                    VStack(spacing: 16){
+                        TextField(
+                            "write your own phrase here",
+                            text: Binding(
+                                get: { selectedPhrase?.text ?? "" },
+                                set: { newValue in
+                                    if var phrase = selectedPhrase {
+                                        phrase.text = newValue
+                                        selectedPhrase = phrase
+                                    } else {
+                                        selectedPhrase = Phrase(text: newValue, category: .action)
                                     }
                                 }
-                                .padding(.vertical, 12)
-                                .padding(.horizontal)
-                                .background(RoundedRectangle(cornerRadius: 26).fill(Color.lighterPurple))
-                                
+                            )
+                        )
+                        .foregroundStyle(.lilac)
+                        .padding(.vertical, 12)
+                        .padding(.horizontal, 16)
+                        .frame(maxWidth: .infinity, minHeight: 52, maxHeight: 52, alignment: .leading)
+                        .background(RoundedRectangle(cornerRadius: 26)
+                            .fill(Color.lighterPurple.shadow(.inner(color: .darkerPurple, radius: 2, y: 3))))
+                        
+                        VStack(spacing: 16){
+                            HStack(spacing: 63){
+                                Text("or choose one of ours:")
+                                    .lineLimit(1)
+                                    .foregroundStyle(.ice)
+                                    .fontWeight(.semibold)
+                                    .font(.system(size: 20, weight: .semibold, design: .rounded))
+                                    .frame(maxWidth: .infinity)
+                                DiceButton{
+                                    viewModel.dicePressed()
+                                    displayedPhrases = viewModel.selectablePhrases
+                                }
                             }
-                            .padding(.horizontal)
-                            .padding(.vertical)
-                            .background(GradientBackground())
                             
+                            LazyVGrid(columns: columns, spacing: 8){
+                                ForEach(displayedPhrases, id: \.self) { phrase in
+                                    PhraseComponent(
+                                        phrase: phrase,
+                                        isSelected: phrase == selectedPhrase,
+                                        onSelect: {
+                                            selectedPhrase = phrase
+                                        },
+                                        isEnabled: !viewModel.isSelectionDisabled
+                                    )
+                                }
+                            }
                         }
-                        .onAppear() {
-                            displayedPhrases = Array(Phrases.all.shuffled().prefix(3))
-                        }
-
+                        .padding(.vertical, 12)
+                        .padding(.horizontal)
+                        .background(RoundedRectangle(cornerRadius: 26).fill(Color.lighterPurple))
                     }
-                    button
+                    .padding(.horizontal)
+                    .padding(.vertical)
+                    .background(GradientBackground())
+                    .frame(maxHeight: 350, alignment: .top)
+                    .onAppear() {
+                        displayedPhrases = viewModel.selectablePhrases
+                    }
+                    
+                    ButtonView(
+                        image: "img-pencilSymbol",
+                        title: "confirm Phrase",
+                        titleDone: "phrase Submitted",
+                        action: {
+                            print("Submitted phrase: \(selectedPhrase)")
+                            if let phrase = selectedPhrase {
+                                viewModel.submitPhrase(phrase: phrase.text)
+                            }
+                        },
+                        state: isButtonInactive ? .inactive : .enabled
+                    )
+                    .id(selectedPhrase?.text)
                 }
                 .padding(.horizontal)
             }
@@ -121,13 +138,22 @@ struct PhraseView: View {
             ImageSelectionView()
         }
         .onAppear {
-           // viewModel.startPhase()
+            viewModel.startPhase()
         }
-        .onChange(of: viewModel.haveAllPlayersSubmitted) {
-            nextScreen = true
+
+        .onChange(of: viewModel.haveTimeRunOut) { oldValue, newValue in
+            print("🔥 Time run out changed: \(oldValue) -> \(newValue)")
+            if newValue {
+                nextScreen = true
+            }
+        }
+        .onChange(of: viewModel.haveAllPlayersSubmitted) { oldValue, newValue in
+            print("👥 All players submitted changed: \(oldValue) -> \(newValue)")
+            if newValue {
+                nextScreen = true
+            }
         }
     }
-    
 }
 
 struct GradientBackground: View {
@@ -136,15 +162,9 @@ struct GradientBackground: View {
         startPoint: .top,
         endPoint: .bottom)
     
-    
     var body: some View {
         RoundedRectangle(cornerRadius: 32)
             .fill(gradientBackground
                 .shadow(.inner(color: Color.lilac, radius: 2, x: 0, y: 5)))
     }
-}
-
-
-#Preview {
-    PhraseView()
 }
