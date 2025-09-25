@@ -57,7 +57,7 @@ struct VotingView: View {
             if let selectedImage {
                 Text("you voted \(selectedImage)")
             }
-            ButtonView(title: "confirm vote")
+//            ButtonView(title: "confirm vote")
         }
         .onAppear {
             // Filtra as imagens submetidas para a frase atual
