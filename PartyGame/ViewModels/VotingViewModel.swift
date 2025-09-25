@@ -27,6 +27,10 @@ final class VotingViewModel {
             .filter { $0.phrase == phrase }
             .map { $0.imageSubmission }
     }
+    
+    func cleanAndStoreSubmissions() {
+        service.cleanAndStorePlayerSubmissions()
+    }
 
 //    func voteImage(id: UUID) {
 //        guard let submission = service.playerSubmissions.first(where: { $0.imageSubmission.id == id }) else {
