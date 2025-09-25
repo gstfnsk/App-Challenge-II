@@ -1,32 +1,35 @@
-//
-//  PhraseViewModel.swift
-//  Pickture
-//
-//  Created by Giulia Stefainski on 15/09/25.
-//
+// PRIMEIRO: PhraseViewModel.swift corrigido
 
 import Foundation
 import Combine
 import SwiftUI
-import GameKit // Adiciona import para GameKit
+import GameKit
 
 @Observable
-final class PhraseViewModel  {
+final class PhraseViewModel {
     let service = GameCenterService.shared
-
-     var timeRemaining: Int = 30
-     var haveTimeRunOut: Bool = false
-     var phrases: [Phrase] = Array(Phrases.all.shuffled().prefix(3))
+    
+    var timeRemaining: Int = 30
+    var haveTimeRunOut: Bool = false
+    var selectablePhrases: [Phrase] = Array(Phrases.all.shuffled().prefix(3))
     
     private var cancellables = Set<AnyCancellable>()
     private var timer: Timer?
-    private var hasProcessedTimeRunOut: Bool = false // Nova flag para garantir que o time-out seja processado uma vez
+    private var hasProcessedTimeRunOut: Bool = false
     
     // Propriedades publicadas para a View
     var hasSubmittedPhrase: Bool = false
     var remainingTimeDouble: Double = 30.0
+    var haveAllPlayersSubmitted: Bool = false
+    var isSelectionDisabled: Bool = false
+    var hasInitiatedPhraseSelection: Bool = false
     
     init() {
+        setupObservers()
+    }
+    
+    private func setupObservers() {
+        // Observer para o timer
         service.$timerStart
             .compactMap { $0 }
             .receive(on: DispatchQueue.main)
@@ -35,92 +38,118 @@ final class PhraseViewModel  {
             }
             .store(in: &cancellables)
         
-        // Observar quando todos os jogadores submeteram a frase para parar o timer
-        service.$phrases
+        // OBSERVER PRINCIPAL - Este é o mais importante!
+        service.$submittedPhrasesByPlayer
+            .combineLatest(service.$gamePlayers)
             .receive(on: DispatchQueue.main)
-            .sink { [weak self] _ in
+            .sink { [weak self] (submittedPhrases, gamePlayers) in
                 guard let self = self else { return }
-                if self.haveAllPlayersSubmitted {
-                    self.timer?.invalidate()
-                    self.haveTimeRunOut = true // Força a transição, pois todos submeteram
+                
+                let oldValue = self.haveAllPlayersSubmitted
+                let newValue = self.service.haveAllPlayersSubmittedPhrase()
+                
+                print("🔍 Debug - Submitted: \(submittedPhrases.count), Players: \(gamePlayers.count)")
+                print("🔍 Debug - Old: \(oldValue), New: \(newValue)")
+                
+                if oldValue != newValue {
+                    self.haveAllPlayersSubmitted = newValue
+                    print("🔄 haveAllPlayersSubmitted changed from \(oldValue) to \(newValue)")
+                    
+                    if newValue && !self.hasInitiatedPhraseSelection {
+                        self.hasInitiatedPhraseSelection = true
+                        self.timer?.invalidate()
+                        print("✅ All players submitted - initiating phrase selection")
+                        
+                        // Pequeno delay para garantir que a UI seja atualizada
+                        DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) {
+                            self.service.initiatePhraseSelection()
+                        }
+                    }
                 }
             }
             .store(in: &cancellables)
     }
     
-    //MARK: Chamado quando o jogador inicia a fase
     func startPhase() {
-        hasSubmittedPhrase = false // Reseta o estado de submissão da frase
-        hasProcessedTimeRunOut = false // Reseta a flag de processamento de time-out
-        service.schedulePhaseStart(delay: 30) // Alterado para 3s de atraso. O ideal é o valor da duração da fase
+        print("🚀 Starting phase - resetting all states")
+        
+        // Reset de todas as propriedades
+        hasSubmittedPhrase = false
+        hasProcessedTimeRunOut = false
+        hasInitiatedPhraseSelection = false
+        haveAllPlayersSubmitted = false
+        haveTimeRunOut = false
+        isSelectionDisabled = false
+        timeRemaining = 30
+        remainingTimeDouble = 30.0
+        
+        // Embaralha as frases
+        selectablePhrases = Array(Phrases.all.shuffled().prefix(3))
+        
+        service.schedulePhaseStart(delay: 30)
     }
     
     private func startCountdown(until target: Date) {
         timer?.invalidate()
-        timeRemaining = 30 // Reinicia o tempo restante
+        timeRemaining = 30
         updateRemaining(target: target)
-        timer = Timer.scheduledTimer(withTimeInterval: 0.1, repeats: true) { [weak self] _ in // Alterado para 0.1 segundo
+        timer = Timer.scheduledTimer(withTimeInterval: 0.1, repeats: true) { [weak self] _ in
             self?.updateRemaining(target: target)
         }
     }
     
     private func updateRemaining(target: Date) {
-        let totalTime = 30.0 // Duração total da fase
         let remainingSecondsDouble = target.timeIntervalSinceNow
         
-        // Garante que o tempo restante não seja negativo e arredonda para cima
         timeRemaining = max(0, Int(ceil(remainingSecondsDouble)))
         remainingTimeDouble = max(0.0, remainingSecondsDouble)
         
-        if timeRemaining == 0 {
+        if timeRemaining == 0 && !hasInitiatedPhraseSelection {
             timer?.invalidate()
+            hasInitiatedPhraseSelection = true
             haveTimeRunOut = true
-            // Garante que a submissão aleatória seja processada apenas uma vez
+            
+            print("⏰ Time ran out - initiating phrase selection")
+            
             if !hasProcessedTimeRunOut {
+                hasProcessedTimeRunOut = true
                 submitRandomPhraseIfNeeded()
-                // hasProcessedTimeRunOut = true // Não definiremos aqui, será dentro de submitRandomPhraseIfNeeded
+            }
+            
+            DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) { [weak self] in
+                self?.service.initiatePhraseSelection()
             }
         }
     }
     
     private func submitRandomPhraseIfNeeded() {
-        // Qualquer jogador que não submeteu uma frase ainda deve submeter uma aleatória.
-        // A verificação `hasProcessedTimeRunOut` garante que isso ocorra apenas uma vez localmente por time-out.
-        guard !hasSubmittedPhrase, !hasProcessedTimeRunOut else { return }
+        guard !hasSubmittedPhrase else { return }
         
-        // Marca que o time-out foi processado localmente para esta fase.
-        hasProcessedTimeRunOut = true
+        hasSubmittedPhrase = true
         
-        // Sinaliza a todos os jogadores que a auto-submissão está começando.
-        service.broadcastStartAutoPhraseSubmission()
-        
-        // Pequeno atraso para garantir que a flag de auto-submissão seja propagada antes de submeter a frase.
-        DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) { [weak self] in
-            guard let self = self else { return }
-            if let randomPhrase = phrases.randomElement() {
-                self.submitPhrase(phrase: randomPhrase.text)
-            }
+        if let randomPhrase = selectablePhrases.randomElement()?.text {
+            service.submitPhrase(phrase: randomPhrase)
+            print("⏰ Auto-submission: \(randomPhrase)")
         }
     }
     
-    func dicePressed(){
-        phrases = Array(Phrases.all.shuffled().prefix(3))
+    func dicePressed() {
+        selectablePhrases = Array(Phrases.all.shuffled().prefix(3))
     }
     
-     func submitPhrase(phrase: String) {
-         service.submitPhrase(phrase: phrase)
-         hasSubmittedPhrase = true
-     }
-     
-     func toggleReady() {
-         service.toggleReady()
-     }
-     
-//     func getSubmitedPhrases() -> [String] {
-//         return service.getSubmittedPhrases()
-//     }
+    func submitPhrase(phrase: String) {
+        guard !hasSubmittedPhrase else {
+            print("⏭️ Ignoring duplicate submission")
+            return
+        }
+        
+        print("📝 Submitting phrase: \(phrase)")
+        hasSubmittedPhrase = true
+        isSelectionDisabled = true
+        service.submitPhrase(phrase: phrase)
+    }
     
-    var haveAllPlayersSubmitted: Bool {
-        service.haveAllPlayersSubmittedPhrase()
+    func toggleReady() {
+        service.toggleReady()
     }
 }
