@@ -217,7 +217,7 @@ class GameCenterService: NSObject, ObservableObject {
     }
     
     func autoSubmitMissingPhrases() {
-        let submittedPlayerIDs = Set(playerSubmissions.map { $0.player.gamePlayerID })
+        let submittedPlayerIDs = Set(playerSubmissions.map { $0.playerID })
 
         for player in gamePlayers {
             let playerID = player.player.gamePlayerID
