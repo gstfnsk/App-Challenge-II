@@ -23,90 +23,135 @@ struct ImageSelectionView: View {
     @State var selectedImage: UIImage?
     
     var body: some View {
-        VStack(spacing: 20) {
-            
-            if currentPhrase.isEmpty {
-                HStack {
-                    ProgressView()
-                        .scaleEffect(0.8)
-                    Text("Aguardando frase...")
-                        .font(.subheadline)
-                        .foregroundStyle(.secondary)
+        ZStack{
+            Image("img-textureI")
+                .resizable()
+                .scaledToFill()
+                .frame(minWidth: 0)
+                .edgesIgnoringSafeArea(.all)
+
+            VStack(spacing: 16) {
+                VStack(spacing: 24) {
+                    VStack(spacing: 5) {
+                        Text("round \(viewModel.service.currentRound)")
+                            .font(.system(size: 15, weight: .medium, design: .rounded))
+                            .foregroundStyle(.lilac)
+                            .frame(maxWidth: .infinity, alignment: .leading)
+
+                        HStack (spacing: 42) {
+                            Text("send a pickture")
+                                .font(.custom("DynaPuff-Medium", size: 28))
+                                .foregroundStyle(.ice
+                                    .shadow(.inner(color: .lilac, radius: 2, y: 3)))
+                                .frame(maxWidth: .infinity, alignment: .leading)
+                            TimerComponent(duration: 30.0)
+                        }
+                    }
+                    ProgressBarComponent(duration: 30.0)
                 }
-                .padding()
-            } else {
-                Text(currentPhrase)
-                    .font(.headline)
-                    .multilineTextAlignment(.center)
-                    .padding()
-            }
-            
-            Group {
-                if let image = selectedImage {
-                    Image(uiImage: image)
-                        .resizable()
-                        .scaledToFit()
-                        .frame(maxHeight: 300)
-                        .clipShape(RoundedRectangle(cornerRadius: 16))
-                        .overlay(RoundedRectangle(cornerRadius: 16).stroke(.secondary.opacity(0.3)))
+                .safeAreaPadding(.top, 32)
+                .padding(.horizontal)
+                
+                VStack(spacing: 90) {
+                    VStack(spacing: 16) {
+                        VStack(alignment: .leading, spacing: 16) {
+                            Text("the phrase is:")
+                                .font(.system(size: 20, weight: .semibold, design: .rounded))
+                                .foregroundStyle(.ice)
+                                .frame(maxWidth: .infinity, alignment: .leading)
+                            
+                            Text("\"\(currentPhrase)\"")
+                                .font(.custom("Dynapuff-Regular", size: 22))
+                                .foregroundStyle(.ice)
+                                .lineLimit(6)
+                                .fixedSize(horizontal: false, vertical: true)
+                                .multilineTextAlignment(.leading)
+                                .frame(maxWidth: 297, alignment: .leading)
+                                .padding(.bottom, 28)
+                        }
+                        .padding(.top)
                         .padding(.horizontal)
-                } else {
-                    ZStack {
-                        RoundedRectangle(cornerRadius: 16)
-                            .fill(Color.secondary.opacity(0.08))
-                            .frame(height: 220)
-                        VStack(spacing: 6) {
-                            Image(systemName: "photo.on.rectangle.angled")
-                                .font(.system(size: 34))
-                                .foregroundStyle(.secondary)
-                            Text("Nenhuma imagem selecionada")
-                                .font(.subheadline)
-                                .foregroundStyle(.secondary)
+                        .background(RoundedRectangle(cornerRadius: 26).fill(Color.lighterPurple))
+                        
+                        if let image = selectedImage {
+                            Image(uiImage: image)
+                                .resizable()
+                                .scaledToFill()
+                                .frame(maxWidth: 300, maxHeight: 280)
+                                .clipShape(RoundedRectangle(cornerRadius: 24))
+                                .overlay(RoundedRectangle(cornerRadius: 24).stroke(.lighterPurple, lineWidth: 3))
+                                .padding(.horizontal)
+                                .onTapGesture {
+                                    showSourceMenu = true
+                                }
+                                .confirmationDialog("Escolher origem", isPresented: $showSourceMenu) {
+                                    Button("Tirar foto") { isShowingCamera = true }
+                                    Button("Escolher da Galeria") { isShowingLibrary = true }
+                                    Button("Cancelar", role: .cancel) { }
+                                }
+                        } else {
+                            VStack(spacing: 8) {
+                                
+                                Spacer(minLength: 8)
+                                    .frame(maxHeight: 114)
+                                
+                                Image("img-addImage")
+                                    .padding(.horizontal, 100)
+                                
+                                Text("click to add")
+                                    .font(.system(size: 17, weight: .medium, design: .rounded))
+                                    .underline()
+                                    .foregroundStyle(.white)
+                                    .frame(maxWidth: .infinity, alignment: .center)
+                                    .padding(.horizontal, 100)
+                                
+                                Spacer(minLength: 8)
+                                    .frame(maxHeight: 114)
+                                    
+                            }
+                            .padding(.bottom)
+                            .padding(.horizontal)
+                            .background(RoundedRectangle(cornerRadius: 26)
+                                .fill(Color.lighterPurple.shadow(.inner(color: .darkerPurple, radius: 2, y: 3))))
+                            .onTapGesture {
+                                showSourceMenu = true
+                            }
+                            .confirmationDialog("Escolher origem", isPresented: $showSourceMenu) {
+                                Button("Tirar foto") { isShowingCamera = true }
+                                Button("Escolher da Galeria") { isShowingLibrary = true }
+                                Button("Cancelar", role: .cancel) { }
+                            }
                         }
                     }
                     .padding(.horizontal)
+                    .padding(.vertical)
+                    .background(GradientBackground())
+                        
+//                    .safeAreaInset(edge: .bottom){
+                        ButtonView(image: "img-cameraSymbol", title: "confirm pickture", titleDone: "pickture sent", action:{
+                                if let selectedImage = selectedImage {
+                                    viewModel.submitSelectedImage(image: selectedImage)
+                                    playerReady = true
+                                }
+                            }//, state: playerReady ? .enabled : .inactive
+                        )
+//                    }
+                }
+                .safeAreaPadding(.bottom, 32)
+                .padding(.horizontal)
+                                
+                if let error = viewModel.errorMessage {
+                    Text(error)
+                        .font(.footnote)
+                        .foregroundStyle(.red)
+                        .padding(.horizontal)
                 }
             }
-            
-            Button {
-                showSourceMenu = true
-            } label: {
-                Text("Selecionar imagem")
-                    .frame(maxWidth: .infinity)
-                    .padding(.vertical, 14)
-            }
-            .confirmationDialog("Escolher origem", isPresented: $showSourceMenu) {
-                Button("Tirar foto") { isShowingCamera = true }
-                Button("Escolher da Galeria") { isShowingLibrary = true }
-                Button("Cancelar", role: .cancel) { }
-            }
-            .buttonStyle(.borderedProminent)
-            .padding(.horizontal)
-            .disabled(playerReady ? true : false)
-            
-            Button {
-                if let selectedImage = selectedImage {
-                    viewModel.submitSelectedImage(image: selectedImage)
-                    playerReady = true
-                }
-            } label: {
-                Text(playerReady ? "Cancelar ready" : "Ready")
-                    .frame(maxWidth: .infinity)
-                    .padding(.vertical, 12)
-            }
-            .buttonStyle(.bordered)
-            .disabled(playerReady ? true : false)
-            .padding(.horizontal)
-            
-            if let error = viewModel.errorMessage {
-                Text(error)
-                    .font(.footnote)
-                    .foregroundStyle(.red)
-                    .padding(.horizontal)
-            }
-            
-            Spacer(minLength: 0)
         }
+        .background(Color.darkerPurple)
+        .navigationBarBackButtonHidden(true)
+
+
         .onAppear {
             currentPhrase = viewModel.setCurrentRandomPhrase()
         }
@@ -116,21 +161,11 @@ struct ImageSelectionView: View {
         .onChange(of: viewModel.haveAllPlayersSubmittedImg) {
             goToStackView = true
         }
-        
-        .navigationTitle("Imagem")
         .navigationBarBackButtonHidden(true)
-        .navigationBarTitleDisplayMode(.inline)
         .navigationDestination(isPresented: $goToStackView) {
             
             ImageStackView(viewModel: ImageStackViewModel(), submittedPhrase: currentPhrase, imageSubmissions: viewModel.getSubmittedImages())
         }
-        
-//        .confirmationDialog("Escolher origem", isPresented: $showSourceMenu, titleVisibility: .visible) {
-//            Button("Tirar foto") { viewModel.chooseCamera() }
-//            Button("Escolher da Galeria") { viewModel.chooseLibrary() }
-//            Button("Cancelar", role: .cancel) { }
-//        }
-        
         .sheet(isPresented: $isShowingCamera) {
             ImagePicker(sourceType: .camera, allowsEditing: false) { img in
                 selectedImage = img
@@ -144,3 +179,6 @@ struct ImageSelectionView: View {
     }
 }
 
+#Preview {
+    ImageSelectionView()
+}

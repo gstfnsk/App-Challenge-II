@@ -19,7 +19,7 @@ final class ImageSelectionViewModel: ObservableObject {
     
     @Published private(set) var hasSubmitted = false
     
-    private let service = GameCenterService.shared
+    let service = GameCenterService.shared
     private var cancellables: Set<AnyCancellable> = []
 
     init() {
