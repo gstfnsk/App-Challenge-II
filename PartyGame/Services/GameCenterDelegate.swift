@@ -79,15 +79,22 @@ extension GameCenterService: GKMatchmakerViewControllerDelegate, GKMatchDelegate
                 phrases.append(phrase)
                 self.trySelectPhraseIfReady()
             }
-        case "newVote":
-            print("oiiiiii")
-            if let vote = try? JSONDecoder().decode(VoteSubmission.self, from: data) {
-                self.storeVotes(vote: vote)
-            }
-            print("voto recebido")
             
         default:
             break
+        }
+        
+        if let votePacket = try? JSONDecoder().decode(VotePayload.self, from: data) {
+            switch votePacket.type {
+            case "newVote":
+                let vote = votePacket.submission
+                    DispatchQueue.main.async {
+                        self.storeVotes(vote: vote)
+                        print("📡 voto recebido de \(vote.from)")
+                    }
+            default:
+                break
+            }
         }
         
         if let payload = try? JSONDecoder().decode(SubmissionPayload.self, from: data) {

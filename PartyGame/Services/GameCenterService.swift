@@ -32,6 +32,11 @@ struct SubmissionPayload: Codable {
     let submission: PlayerSubmission
 }
 
+struct VotePayload: Codable {
+    let type: String
+    let submission: VoteSubmission
+}
+
 // MARK: - Game Center Helper
 class GameCenterService: NSObject, ObservableObject {
     
@@ -161,22 +166,20 @@ class GameCenterService: NSObject, ObservableObject {
     
     //MARK: Submissão de voto
     func submitVote(id: UUID) {
-        let localID = GKLocalPlayer.local.gamePlayerID
-        let vote = VoteSubmission(from: localID, toPhoto: id, round: self.currentRound)
-        print("teste")
-        guard let match else { return }
-        print("chegou aqui")
-        let payload: [String: Any] = [
-            "type": "newVote",
-            "vote": vote
-        ]
+            let localID = GKLocalPlayer.local.gamePlayerID
+            let vote = VoteSubmission(from: localID, toPhoto: id, round: self.currentRound)
+            guard let match else { return }
+
         do {
-            let data = try JSONSerialization.data(withJSONObject: payload)
+            let payload = VotePayload(type: "newVote", submission: vote)
+            let data = try JSONEncoder().encode(payload)
             try match.sendData(toAllPlayers: data, with: .reliable)
-            print("voto submetido")
+            
         } catch {
             print("❌ Erro ao enviar voto: \(error)")
         }
+        print("Novo voto adicionada:", vote)
+
     }
     
     // Game center realiza o append dos votos
@@ -193,9 +196,7 @@ class GameCenterService: NSObject, ObservableObject {
     func submitPhrase(phrase: String) {
         phrases.append(phrase)
         trySelectPhraseIfReady()
-
         guard let match else { return }
-        print("testeeeeeee")
         let payload: [String: Any] = [
             "type": "newPhrase",
             "phrase": phrase
