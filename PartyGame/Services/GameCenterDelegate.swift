@@ -79,11 +79,12 @@ extension GameCenterService: GKMatchmakerViewControllerDelegate, GKMatchDelegate
                 phrases.append(phrase)
                 self.trySelectPhraseIfReady()
             }
-        case "vote":
+        case "newVote":
+            print("oiiiiii")
             if let vote = try? JSONDecoder().decode(VoteSubmission.self, from: data) {
                 self.storeVotes(vote: vote)
             }
-            print("voto submetido")
+            print("voto recebido")
             
         default:
             break

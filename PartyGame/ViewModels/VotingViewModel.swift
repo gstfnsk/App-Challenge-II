@@ -33,6 +33,7 @@ final class VotingViewModel {
     }
 
     func voteImage(id: UUID) {
+        print("votando")
         service.submitVote(id: id)
     }
     

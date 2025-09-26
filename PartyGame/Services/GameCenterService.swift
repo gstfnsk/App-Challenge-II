@@ -163,16 +163,17 @@ class GameCenterService: NSObject, ObservableObject {
     func submitVote(id: UUID) {
         let localID = GKLocalPlayer.local.gamePlayerID
         let vote = VoteSubmission(from: localID, toPhoto: id, round: self.currentRound)
-//        votes.append(vote)
-        
+        print("teste")
         guard let match else { return }
+        print("chegou aqui")
         let payload: [String: Any] = [
             "type": "newVote",
             "vote": vote
         ]
         do {
-            let data = try JSONSerialization.data(withJSONObject: payload, options: [])
+            let data = try JSONSerialization.data(withJSONObject: payload)
             try match.sendData(toAllPlayers: data, with: .reliable)
+            print("voto submetido")
         } catch {
             print("❌ Erro ao enviar voto: \(error)")
         }
@@ -180,6 +181,7 @@ class GameCenterService: NSObject, ObservableObject {
     
     // Game center realiza o append dos votos
     func storeVotes(vote: VoteSubmission) {
+        print("chegou aqui")
         votes.append(vote)
     }
     
@@ -193,6 +195,7 @@ class GameCenterService: NSObject, ObservableObject {
         trySelectPhraseIfReady()
 
         guard let match else { return }
+        print("testeeeeeee")
         let payload: [String: Any] = [
             "type": "newPhrase",
             "phrase": phrase
