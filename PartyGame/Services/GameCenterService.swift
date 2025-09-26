@@ -190,6 +190,17 @@ class GameCenterService: NSObject, ObservableObject {
     
     func attributeVotes() {
         print(votes)
+        for vote in votes {
+                if let index = playerSubmissions.firstIndex(where: { $0.imageSubmission.id == vote.toPhoto }) {
+                    playerSubmissions[index].votes += 1
+                    print("✅ Voto atribuído: \(vote.from) → \(playerSubmissions[index].playerID)")
+                } else {
+                    print("⚠️ Nenhuma submissão encontrada para UUID \(vote.toPhoto)")
+                }
+            }
+        for player in playerSubmissions {
+            print("🗯️ Jogador: \(player.playerID), Pontos: \(player.votes)")
+        }
     }
     
     //MARK: Submissão de frases
