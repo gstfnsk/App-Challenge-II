@@ -79,6 +79,17 @@ extension GameCenterService: GKMatchmakerViewControllerDelegate, GKMatchDelegate
                 self.cleanPlayerSubmissions(broadcast: false)
                 print("📡 PlayerSubmissions limpo com sucesso: \(self.playerSubmissions)")
             }
+            
+        case "ResetReady":
+                DispatchQueue.main.async {
+                    var map = self.readyMap
+                    for key in map.keys {
+                        map[key] = false
+                    }
+                    self.readyMap = map
+                    print("ready resetado para todos \(self.readyMap)")
+                }
+            
         default:
             break
         }

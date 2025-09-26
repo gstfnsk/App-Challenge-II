@@ -57,28 +57,26 @@ struct VotingView: View {
             }
             if let selectedImage {
             ButtonView(image: "iconVoteButton", title: "confirm vote", titleDone: "vote confirmed", action: {
-                    //viewModel.submitVote()
-                    goToNextRound = true
-                    viewModel.cleanAndStoreSubmissions()
+                viewModel.cleanAndStoreSubmissions()
+                viewModel.toggleReady()
+                    
             }, state: .enabled)
             } else {
                 ButtonView(image: "iconVoteButton", title: "confirm vote", titleDone: "vote confirmed", action: {
-                   // viewModel.submitVote()
-                    goToNextRound = true
                 }, state: .inactive)
             }
         }
         .onAppear {
-            // Filtra as imagens submetidas para a frase atual
             imageSubmissions = viewModel.submissions(for: phrase)
         }
         .onChange(of: viewModel.allReady) {
             if !viewModel.players.isEmpty {
                 goToNextRound = true
             }
+            viewModel.resetAllPlayersReady()
         }
         .navigationDestination(isPresented: $goToNextRound) {
-            PhraseView()
+            ImageSelectionView()
         }
         .navigationBarBackButtonHidden(true)
     }

@@ -516,6 +516,27 @@ class GameCenterService: NSObject, ObservableObject {
         }
     }
     
+    // Zera o readyMap para todos os jogadores. Se broadcast = true, sincroniza com os demais dispositivos.
+    func resetReadyForAllPlayers(broadcast: Bool = true) {
+        DispatchQueue.main.async {
+            var map = self.readyMap
+            for key in map.keys {
+                map[key] = false
+            }
+            self.readyMap = map
+        }
+        
+        guard broadcast, !isSinglePlayer, let match = match else { return }
+        do {
+            let payload: [String: Any] = ["type": "ResetReady"]
+            let data = try JSONSerialization.data(withJSONObject: payload)
+            try match.sendData(toAllPlayers: data, with: .reliable)
+            print("📡 ResetReady enviado para todos os jogadores.")
+        } catch {
+            print("❌ Erro ao enviar ResetReady: \(error)")
+        }
+    }
+    
     internal func trySelectPhraseIfReady() {
         guard currentPhrase.isEmpty else { return }
         guard let leaderID = phraseLeaderID else { return }
@@ -566,5 +587,3 @@ class GameCenterService: NSObject, ObservableObject {
     }
     
 }
-
-

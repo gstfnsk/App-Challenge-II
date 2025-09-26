@@ -51,6 +51,10 @@ final class VotingViewModel {
     func cleanAndStoreSubmissions() {
         service.cleanAndStorePlayerSubmissions()
     }
+    
+    func resetAllPlayersReady() {
+        service.resetReadyForAllPlayers()
+    }
 
 //    func voteImage(id: UUID) {
 //        guard let submission = service.playerSubmissions.first(where: { $0.imageSubmission.id == id }) else {
