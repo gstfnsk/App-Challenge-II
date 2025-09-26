@@ -7,16 +7,9 @@
 
 import SwiftUI
 
-class ImageSubmission: Identifiable, Hashable, Equatable {
-    static func == (lhs: ImageSubmission, rhs: ImageSubmission) -> Bool {
-        lhs.id == rhs.id
-    }
-    
-    func hash(into hasher: inout Hasher) {
-        hasher.combine(id)
-    }
-    
+struct ImageSubmission: Identifiable, Hashable, Codable {
     let id = UUID()
+    let playerID: String
     let image: Data?
     let submissionTime: Date
     
@@ -25,7 +18,8 @@ class ImageSubmission: Identifiable, Hashable, Equatable {
         return UIImage(data: image)
     }
     
-    init(image: Data?, submissionTime: Date) {
+    init(playerID: String, image: Data?, submissionTime: Date) {
+        self.playerID = playerID
         self.image = image
         self.submissionTime = submissionTime
     }

@@ -9,15 +9,15 @@
 import SwiftUI
 import GameKit
 
-class PlayerSubmission: Identifiable {
-    let id = UUID()
-    let player: GKPlayer //PlayerRepresentable
+struct PlayerSubmission: Codable {
+   // let id = UUID()
+    let playerID: String //PlayerRepresentable
     let phrase: String
     let imageSubmission: ImageSubmission
     var votes: Int
     
-    init(player: GKPlayer, phrase: String, imageSubmission: ImageSubmission, votes: Int) {
-        self.player = player
+    init(playerID: String, phrase: String, imageSubmission: ImageSubmission, votes: Int) {
+        self.playerID = playerID
         self.phrase = phrase
         self.imageSubmission = imageSubmission
         self.votes = votes

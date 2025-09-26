@@ -7,7 +7,7 @@
 import SwiftUI
 import GameKit
 
-class ImageCarouselViewModel: ObservableObject {
+class ImageStackViewModel: ObservableObject {
         
     private let service = GameCenterService.shared
 
@@ -15,5 +15,9 @@ class ImageCarouselViewModel: ObservableObject {
         service.playerSubmissions
             .filter { $0.phrase == phrase }
             .map { $0.imageSubmission }
+    }
+    
+    func resetAllPlayersReady() {
+        service.resetReadyForAllPlayers()
     }
 }

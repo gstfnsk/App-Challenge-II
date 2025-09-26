@@ -11,12 +11,13 @@ struct PhraseComponent: View {
     var phrase: Phrase
     var isSelected: Bool = false
     let onSelect: () -> Void
+    var isEnabled: Bool = true
     
     var body: some View {
         Button {
             onSelect()
-            
-        } label: {
+        }
+        label: {
             Text(phrase.text)
                 .foregroundStyle(.darkerPurple)
                 .padding(.vertical, 12)
@@ -34,6 +35,7 @@ struct PhraseComponent: View {
                     
                 
         }
+        .disabled(!isEnabled)
         
     }
 }

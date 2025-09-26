@@ -24,15 +24,10 @@ struct HomeView: View {
                             Text(viewModel.isAuthenticated ? "Autenticado: \(GKLocalPlayer.local.displayName)" : "Autenticando...")
                                     .font(.subheadline)
                                     .foregroundColor(viewModel.isAuthenticated ? .green : .yellow)
-
                             Spacer()
-
                             Image("img-picktureBanner")
-
                             Spacer()
-                        
                             VStack(alignment: .center, spacing: 16) {
-                                
                                 Button {
                                     
                                 } label: {
@@ -42,11 +37,7 @@ struct HomeView: View {
                                         .underline(true, color: .lilac)
                                         
                                 }
-                                
-
-                                ButtonHighFidelityView(image: "img-gameController", title: "Start Match", action: { viewModel.startMultiplayerGame() }
-
-                                )
+                                ButtonView(image: "img-gameController", title: "Start Match", titleDone: "", action: { viewModel.startMultiplayerGame() }, changeToDone: false)
                             }
                         }
                         .padding()
@@ -64,15 +55,12 @@ struct HomeView: View {
                                             x: floatingImages[index].x * geo.size.width,
                                             y: floatingImages[index].y * geo.size.height
                                         )
-                                
                             }
-                            
                         }
                         .background(.darkerPurple)
                         .ignoresSafeArea()
                     )
                 }
-            
             .onAppear { viewModel.processPendingInvite() }
             .onChange(of: viewModel.isInMatch) {
                             if viewModel.isInMatch { goToLobby = true }

@@ -11,7 +11,7 @@ import GameKit
 
 class Player: Identifiable {
     let id = UUID()
-    let player: GKPlayer //PlayerRepresentable // 
+    let player: GKPlayer //PlayerRepresentable //
     var submissions: [PlayerSubmission]
     var votes: Int {
         var votes = 0

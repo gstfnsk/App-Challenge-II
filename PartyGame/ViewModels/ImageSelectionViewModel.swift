@@ -11,19 +11,15 @@ import Combine
 
 final class ImageSelectionViewModel: ObservableObject {
     @Published var errorMessage: String?
-    @Published var isShowingCamera = false
-    @Published var isShowingLibrary = false
-    
-    @Published var selectedImage: UIImage?
 
     @Published var selectedPhrase: [String] = []
     @Published var currentPhrase: String = ""
-
-    @Published private(set) var hasSubmitted = false
-    @Published private(set) var isLocalReady = false
     
-    private let service = GameCenterService.shared
-  //  private let onSubmit: (ImageSubmission) -> Void
+    @Published var playerSubmissions: [PlayerSubmission] = []
+    
+    @Published private(set) var hasSubmitted = false
+    
+    let service = GameCenterService.shared
     private var cancellables: Set<AnyCancellable> = []
 
     init() {
@@ -36,82 +32,68 @@ final class ImageSelectionViewModel: ObservableObject {
             .receive(on: DispatchQueue.main)
             .assign(to: &$currentPhrase)
         
-        // onSubmit: @escaping (ImageSubmission) -> Void) {
-     //   self.onSubmit = onSubmit
-        service.$readyMap
+        service.$playerSubmissions
             .receive(on: DispatchQueue.main)
-            .sink { [weak self] map in
-                guard let self = self else { return }
-                let localID = GKLocalPlayer.local.gamePlayerID
-                self.isLocalReady = map[localID] ?? false
-            }
-            .store(in: &cancellables)
+            .assign(to: &$playerSubmissions)
+        
     }
     
     var haveAllPlayersSubmittedImg: Bool {
         service.haveAllPlayersSubmittedImage()
     }
 
-    func chooseCamera() {
-        guard UIImagePickerController.isSourceTypeAvailable(.camera) else {
-            errorMessage = "Câmera não disponível neste dispositivo."
-            return
-        }
-        isShowingCamera = true
-    }
+//    func chooseCamera() {
+//        guard UIImagePickerController.isSourceTypeAvailable(.camera) else {
+//            errorMessage = "Câmera não disponível neste dispositivo."
+//            return
+//        }
+//        //isShowingCamera = true
+//    }
     
     func setCurrentRandomPhrase() -> String {
-        // Inicia o processo de seleção de frase se ainda não foi iniciado
+        
         if currentPhrase.isEmpty && service.phraseLeaderID == nil {
             service.initiatePhraseSelection()
         }
         return currentPhrase
     }
 
-    func chooseLibrary() {
-        isShowingLibrary = true
-    }
-
-    func handlePickedImage(_ image: UIImage, selectedPhrase: String) {
-        selectedImage = image
-        errorMessage = nil
-
-        guard let data = image.jpegData(compressionQuality: 0.7) else {
-            errorMessage = "Falha ao preparar a imagem."
-            return
-        }
-
-        let imageSubmission = ImageSubmission(image: data, submissionTime: Date())
-        let player = GKLocalPlayer.local
-        let phrase = selectedPhrase
-        GameCenterService.shared.addSubmission(player: player, phrase: phrase, image: imageSubmission)
-        hasSubmitted = true
-        hasSubmitted = true
-    }
-
-    func send() {
-        guard let image = selectedImage else {
-            errorMessage = "Selecione ou tire uma foto antes de enviar."
-            return
-        }
-        guard let data = image.jpegData(compressionQuality: 0.7) else {
-            errorMessage = "Falha ao preparar a imagem."
-            return
-        }
-        _ = ImageSubmission(image: data, submissionTime: Date())
-       // onSubmit(submission)
-        hasSubmitted = true
-    }
-
+//    func chooseLibrary() {
+//        isShowingLibrary = true
+//    }
     
+    func submitSelectedImage(image: UIImage) {
+        let maxWidth: CGFloat = 600
+        let scale = min(1, maxWidth / image.size.width)
+        let newSize = CGSize(width: image.size.width * scale, height: image.size.height * scale)
 
-    func toggleReady() {
-        service.toggleReady()
+        UIGraphicsBeginImageContextWithOptions(newSize, false, 1.0)
+        image.draw(in: CGRect(origin: .zero, size: newSize))
+        let resizedImage = UIGraphicsGetImageFromCurrentImageContext()
+        UIGraphicsEndImageContext()
+
+        guard let resized = resizedImage else {
+            errorMessage = "Falha ao redimensionar a imagem."
+            return
+        }
+
+        guard let data = resized.jpegData(compressionQuality: 0.1) else {
+            errorMessage = "Falha ao preparar a imagem."
+            return
+        }
+
+        let player = GKLocalPlayer.local.gamePlayerID
+        let imageSubmission = ImageSubmission(playerID: player, image: data, submissionTime: Date())
+        let phrase = currentPhrase
+        service.addSubmission(playerID: player, phrase: phrase, image: imageSubmission)
+
+        hasSubmitted = true
+        
+        print("Imagem pronta para envio, tamanho em bytes:", data.count)
+    }
+    
+    func getSubmittedImages() -> [ImageSubmission] {
+        return service.playerSubmissions.map { $0.imageSubmission }
     }
 
-    func clear() {
-        selectedImage = nil
-        hasSubmitted = false
-        errorMessage = nil
-    }
 }
