@@ -53,8 +53,13 @@ class GameCenterService: NSObject, ObservableObject {
     @Published var isWaitingForPhrase = false
     
     @Published var playerSubmissions: [PlayerSubmission] = []
+    @Published var votes: [VoteSubmission] = []
+    var submissionsByImageID: [UUID: PlayerSubmission] = [:] // para facilitar a busca do player submission a partir do UUID da imagem (voto)
+    
     @Published var timerStart: Date? = nil
     
+    @Published var allVotes: [VoteSubmission] = []
+
     var match: GKMatch?
     internal var pendingInvite: GKInvite?
     internal var pendingPlayersToInvite: [GKPlayer]?
@@ -152,6 +157,34 @@ class GameCenterService: NSObject, ObservableObject {
         if type == "phaseStart", let ts = dict["date"] as? TimeInterval {
             timerStart = Date(timeIntervalSince1970: ts)
         }
+    }
+    
+    //MARK: Submissão de voto
+    func submitVote(id: UUID) {
+        let localID = GKLocalPlayer.local.gamePlayerID
+        let vote = VoteSubmission(from: localID, toPhoto: id, round: self.currentRound)
+//        votes.append(vote)
+        
+        guard let match else { return }
+        let payload: [String: Any] = [
+            "type": "newVote",
+            "vote": vote
+        ]
+        do {
+            let data = try JSONSerialization.data(withJSONObject: payload, options: [])
+            try match.sendData(toAllPlayers: data, with: .reliable)
+        } catch {
+            print("❌ Erro ao enviar voto: \(error)")
+        }
+    }
+    
+    // Game center realiza o append dos votos
+    func storeVotes(vote: VoteSubmission) {
+        votes.append(vote)
+    }
+    
+    func attributeVotes() {
+        print(votes)
     }
     
     //MARK: Submissão de frases
@@ -319,6 +352,7 @@ class GameCenterService: NSObject, ObservableObject {
     //MARK: submissão de imagem do jogador para a frase atual
     func addSubmission(playerID: String, phrase: String, image: ImageSubmission) {
         let submission = PlayerSubmission(playerID: playerID, phrase: phrase, imageSubmission: image, votes: 0)
+        
         playerSubmissions.append(submission)
         
         guard let match else { return }
@@ -357,6 +391,8 @@ class GameCenterService: NSObject, ObservableObject {
             currentRound += 1
             // Resetar estado da frase para a nova rodada
             resetPhraseState()
+            attributeVotes()
+            //TODO: resetVotes()
         }
     }
     

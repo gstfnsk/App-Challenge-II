@@ -73,22 +73,17 @@ extension GameCenterService: GKMatchmakerViewControllerDelegate, GKMatchDelegate
                 self.cleanPlayerSubmissions(broadcast: false)
                 print("📡 PlayerSubmissions limpo com sucesso: \(self.playerSubmissions)")
             }
-        default:
-            break
-        }
-        
-        guard
-            let dict = try? JSONSerialization.jsonObject(with: data) as? [String: Any],
-            let type = dict["type"] as? String
-        else { return }
-        
-        switch type {
         case "newPhrase":
             if let phrase = dict["phrase"] as? String {
                 print("frase adicionada Delegate")
                 phrases.append(phrase)
                 self.trySelectPhraseIfReady()
             }
+        case "vote":
+            if let vote = try? JSONDecoder().decode(VoteSubmission.self, from: data) {
+                self.storeVotes(vote: vote)
+            }
+            print("voto submetido")
             
         default:
             break
