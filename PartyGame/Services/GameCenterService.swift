@@ -19,8 +19,9 @@ extension UIApplication {
     }
 }
 
-private struct LobbyPacket: Codable {
-    enum PacketType: String, Codable { case chat, ready }
+
+struct LobbyPacket: Codable {
+    enum PacketType: String, Codable { case chat, ready}
     let type: PacketType
     let senderID: String
     let text: String?
@@ -70,11 +71,11 @@ class GameCenterService: NSObject, ObservableObject {
     
     // Networking / match
     var match: GKMatch?
-    private var pendingInvite: GKInvite?
-    private var pendingPlayersToInvite: [GKPlayer]?
-    
-    // Derived
-    private var expectedPlayersCount: Int {
+
+    internal var pendingInvite: GKInvite?
+    internal var pendingPlayersToInvite: [GKPlayer]?
+    internal var expectedPlayersCount: Int {
+
         if isSinglePlayer { return 1 }
         let ids = Set(([GKLocalPlayer.local] + (match?.players ?? [])).map { $0.gamePlayerID })
         return ids.count
@@ -328,7 +329,42 @@ class GameCenterService: NSObject, ObservableObject {
         return ((gamePlayers.count == playerSubmissions.count && gamePlayers.count != 0) ? true : false)
     }
     
+
     // MARK: - Image submission
+    func cleanAndStorePlayerSubmissions() {
+        addSubmissionToPlayers()
+        
+        cleanPlayerSubmissions(broadcast: true)
+    }
+    
+    func cleanPlayerSubmissions(broadcast: Bool) {
+        playerSubmissions.removeAll()
+        print("playerSubmissions were cleaned")
+        
+        guard broadcast, let match else { return }
+        
+        do {
+            let payload = ["type": "CleanPlayerSubmissions"]
+            let data = try JSONEncoder().encode(payload)
+            try match.sendData(toAllPlayers: data, with: .reliable)
+            print("📡 Submissões de imagens enviadas.")
+        } catch {
+            print("❌ Erro ao enviar submissões de imagens: \(error)")
+        }
+    }
+    
+    func addSubmissionToPlayers() {
+        for submission in playerSubmissions {
+            let gamePlayerIndex = gamePlayers.firstIndex(where: {$0.player.gamePlayerID == submission.playerID})
+            if let index = gamePlayerIndex {
+                gamePlayers[index].submissions.append(submission)
+                print("player: \(gamePlayers[index].player.displayName) - Submissão adicionada: \(gamePlayers[index].submissions)")
+            }
+            
+        }
+    }
+    
+    //MARK: submissão de imagem do jogador para a frase atual
     func addSubmission(playerID: String, phrase: String, image: ImageSubmission) {
         let submission = PlayerSubmission(playerID: playerID, phrase: phrase, imageSubmission: image, votes: 0)
         playerSubmissions.append(submission)
@@ -373,9 +409,29 @@ class GameCenterService: NSObject, ObservableObject {
         phrases.removeAll()
     }
     
-    // MARK: - Helper: trySelectPhraseIfReady (reintroduced & robust)
-    private func trySelectPhraseIfReady() {
-        // Only proceed if no currentPhrase and there's a leader
+
+    // Zera o readyMap para todos os jogadores. Se broadcast = true, sincroniza com os demais dispositivos.
+    func resetReadyForAllPlayers(broadcast: Bool = true) {
+        DispatchQueue.main.async {
+            var map = self.readyMap
+            for key in map.keys {
+                map[key] = false
+            }
+            self.readyMap = map
+        }
+        
+        guard broadcast, !isSinglePlayer, let match = match else { return }
+        do {
+            let payload: [String: Any] = ["type": "ResetReady"]
+            let data = try JSONSerialization.data(withJSONObject: payload)
+            try match.sendData(toAllPlayers: data, with: .reliable)
+            print("📡 ResetReady enviado para todos os jogadores.")
+        } catch {
+            print("❌ Erro ao enviar ResetReady: \(error)")
+        }
+    }
+    
+    internal func trySelectPhraseIfReady() {
         guard currentPhrase.isEmpty else { return }
         guard let leaderID = phraseLeaderID else { return }
         
@@ -395,8 +451,9 @@ class GameCenterService: NSObject, ObservableObject {
         }
     }
     
-    // MARK: - Player / match management
-    private func refreshPlayers() {
+
+    internal func refreshPlayers() {
+
         var everyone: [GKPlayer] = [GKLocalPlayer.local as GKPlayer]
         if let remotes = match?.players { everyone.append(contentsOf: remotes) }
         DispatchQueue.main.async {
@@ -540,173 +597,6 @@ class GameCenterService: NSObject, ObservableObject {
             try match.sendData(toAllPlayers: data, with: .reliable)
         } catch {
             print("❌ Erro ao enviar READY: \(error)")
-        }
-    }
-}
-
-// MARK: - Delegates
-extension GameCenterService: GKMatchmakerViewControllerDelegate, GKMatchDelegate {
-    func matchmakerViewControllerWasCancelled(_ viewController: GKMatchmakerViewController) {
-        viewController.dismiss(animated: true)
-        print("❌ Matchmaking cancelado")
-    }
-    
-    func matchmakerViewController(_ viewController: GKMatchmakerViewController,
-                                  didFailWithError error: Error) {
-        viewController.dismiss(animated: true)
-        print("❌ Erro no matchmaking: \(error.localizedDescription)")
-    }
-    
-    func matchmakerViewController(_ viewController: GKMatchmakerViewController,
-                                  didFind match: GKMatch) {
-        viewController.dismiss(animated: true)
-        self.match = match
-        match.delegate = self
-        print("✅ Match encontrado com \(match.players.count) jogadores")
-        
-        refreshPlayers()
-        let localID = GKLocalPlayer.local.gamePlayerID
-        DispatchQueue.main.async {
-            self.isInMatch = true
-            var map: [String: Bool] = [:]
-            map[localID] = false
-            for p in match.players { map[p.gamePlayerID] = false }
-            self.phrases = []
-            self.readyMap = map
-        }
-        
-        sendMessage("Olá, galera!")
-    }
-    
-    func match(_ match: GKMatch, didReceive data: Data, fromRemotePlayer player: GKPlayer) {
-        // Primeiro: tentar decodificar como LobbyPacket (mensagens de lobby)
-        if let packet = try? JSONDecoder().decode(LobbyPacket.self, from: data) {
-            DispatchQueue.main.async {
-                switch packet.type {
-                case .chat:
-                    if let text = packet.text {
-                        self.messages.append("\(player.displayName): \(text)")
-                    }
-                case .ready:
-                    let value = packet.ready ?? false
-                    self.readyMap[player.gamePlayerID] = value
-                }
-            }
-            return
-        }
-        
-        // Segundo: tentar decodificar como SubmissionPayload (image submissions)
-        if let payload = try? JSONDecoder().decode(SubmissionPayload.self, from: data) {
-            switch payload.type {
-            case "newImage":
-                let submission = payload.submission
-                DispatchQueue.main.async {
-                    self.playerSubmissions.append(submission)
-                    print("Nova submissão recebida e adicionada: \(submission)")
-                    print("Printar todos jogadores: \(self.gamePlayers)")
-                }
-            default:
-                break
-            }
-            // continue: not returning because some older messages may be JSON dicionary-like
-        }
-        
-        // Terceiro: dicionário genérico
-        guard
-            let dict = try? JSONSerialization.jsonObject(with: data) as? [String: Any],
-            let type = (dict["type"] as? String)?.lowercased()
-        else {
-            // fallback para texto simples
-            if let text = String(data: data, encoding: .utf8) {
-                DispatchQueue.main.async {
-                    self.messages.append("\(player.displayName): \(text)")
-                }
-            }
-            return
-        }
-        
-        switch type {
-        case "phraseleader":
-            if let leaderID = dict["leaderID"] as? String {
-                DispatchQueue.main.async {
-                    self.phraseLeaderID = leaderID
-                    print("📡 Líder da frase recebido: \(leaderID)")
-                    self.trySelectPhraseIfReady()
-                }
-            }
-        case "selectedphrase":
-            if let phrase = dict["currentPhrase"] as? String {
-                DispatchQueue.main.async {
-                    if self.currentPhrase.isEmpty {
-                        self.currentPhrase = phrase
-                        self.isWaitingForPhrase = false
-                        print("📡 Frase selecionada recebida: \(phrase)")
-                    } else {
-                        print("⚠️ Frase já estava definida: \(self.currentPhrase)")
-                    }
-                }
-            }
-        case "newphrase":
-            if let phrase = dict["phrase"] as? String {
-                let senderID = player.gamePlayerID
-                DispatchQueue.main.async {
-                    if !self.phrases.contains(phrase) {
-                        self.phrases.append(phrase)
-                        print("📡 Frase '\(phrase)' recebida de \(player.displayName)")
-                    }
-                    if self.submittedPhrasesByPlayer[senderID] == nil {
-                        self.submittedPhrasesByPlayer[senderID] = phrase
-                        print("🔄 Atualizando submissão do jogador \(player.displayName): \(phrase)")
-                    } else {
-                        print("⏭️ Jogador \(player.displayName) já tinha submetido uma frase")
-                    }
-                    // reintroduzido: tentar seleção quando recebemos uma frase
-                    self.trySelectPhraseIfReady()
-                }
-            }
-        case "phasestart":
-            if let ts = dict["date"] as? TimeInterval {
-                DispatchQueue.main.async { self.timerStart = Date(timeIntervalSince1970: ts) }
-            }
-        default:
-            print("⚠️ Tipo de mensagem desconhecido: \(type)")
-        }
-    }
-    
-    func match(_ match: GKMatch, player: GKPlayer, didChange state: GKPlayerConnectionState) {
-        switch state {
-        case .connected:
-            print("✅ \(player.displayName) conectado")
-            refreshPlayers()
-        case .disconnected:
-            print("❌ \(player.displayName) desconectado")
-            refreshPlayers()
-        default:
-            print("⚠️ Estado desconhecido para \(player.displayName)")
-        }
-    }
-    
-    func match(_ match: GKMatch, didFailWithError error: Error?) {
-        print("❌ Erro no match: \(error?.localizedDescription ?? "desconhecido")")
-        leaveMatch()
-    }
-}
-
-// MARK: - Listener de convites
-extension GameCenterService: GKLocalPlayerListener {
-    func player(_ player: GKPlayer, didAccept invite: GKInvite) {
-        print("📩 Convite recebido de \(invite.sender.displayName)")
-        pendingInvite = invite
-        if UIApplication.shared.applicationState == .active {
-            DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) { self.processPendingInvite() }
-        }
-    }
-    
-    func player(_ player: GKPlayer, didRequestMatchWithRecipients recipientPlayers: [GKPlayer]) {
-        print("📩 Solicitação de partida recebida para \(recipientPlayers.count) jogadores")
-        pendingPlayersToInvite = recipientPlayers
-        if UIApplication.shared.applicationState == .active {
-            DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) { self.processPendingInvite() }
         }
     }
 }

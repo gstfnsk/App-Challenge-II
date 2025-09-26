@@ -77,4 +77,8 @@ final class LobbyViewModel: ObservableObject {
         }
         return true
     }
+    
+    func resetAllPlayersReady() {
+        service.resetReadyForAllPlayers()
+    }
 }

@@ -35,8 +35,10 @@ struct ImageStackView: View {
         .frame(maxWidth: .infinity, maxHeight: .infinity)
         .padding(.horizontal, 32)
         .background(Color(.systemBackground).edgesIgnoringSafeArea(.all))
+//        .onChange(of: isDone) {
+//            viewModel.resetAllPlayersReady()
+//        }
         .navigationDestination(isPresented: $isDone) {
-            
             VotingView(phrase: submittedPhrase, imageSubmissions: imageSubmissions)
         }
     }
