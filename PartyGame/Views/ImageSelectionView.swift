@@ -52,7 +52,7 @@ struct ImageSelectionView: View {
                 .safeAreaPadding(.top, 32)
                 .padding(.horizontal)
                 
-                VStack(spacing: 90) {
+                VStack {
                     VStack(spacing: 16) {
                         VStack(alignment: .leading, spacing: 16) {
                             Text("the phrase is:")
@@ -77,7 +77,7 @@ struct ImageSelectionView: View {
                             Image(uiImage: image)
                                 .resizable()
                                 .scaledToFill()
-                                .frame(maxWidth: 300, maxHeight: 280)
+                                .frame(maxWidth: 300, maxHeight: 413)
                                 .clipShape(RoundedRectangle(cornerRadius: 24))
                                 .overlay(RoundedRectangle(cornerRadius: 24).stroke(.lighterPurple, lineWidth: 3))
                                 .padding(.horizontal)
@@ -126,14 +126,19 @@ struct ImageSelectionView: View {
                     .padding(.horizontal)
                     .padding(.vertical)
                     .background(GradientBackground())
+                    
+                    Spacer(minLength: -32)
                         
-                        ButtonView(image: "img-cameraSymbol", title: "confirm pickture", titleDone: "pickture sent", action:{
-                                if let selectedImage = selectedImage {
-                                    viewModel.submitSelectedImage(image: selectedImage)
-                                    playerReady = true
-                                }
-                            }//, state: playerReady ? .enabled : .inactive
-                        )
+                        ZStack{
+                            ButtonView(image: "img-cameraSymbol", title: "confirm pickture", titleDone: "pickture sent", action:{
+                                    if let selectedImage = selectedImage {
+                                        viewModel.submitSelectedImage(image: selectedImage)
+                                        playerReady = true
+                                    }
+                                }//, state: playerReady ? .enabled : .inactive
+                            )
+                        }
+                        .padding(.bottom)
                 }
                 .safeAreaPadding(.bottom, 32)
                 .padding(.horizontal)
