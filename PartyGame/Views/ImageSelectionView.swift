@@ -127,7 +127,6 @@ struct ImageSelectionView: View {
                     .padding(.vertical)
                     .background(GradientBackground())
                         
-//                    .safeAreaInset(edge: .bottom){
                         ButtonView(image: "img-cameraSymbol", title: "confirm pickture", titleDone: "pickture sent", action:{
                                 if let selectedImage = selectedImage {
                                     viewModel.submitSelectedImage(image: selectedImage)
@@ -135,7 +134,6 @@ struct ImageSelectionView: View {
                                 }
                             }//, state: playerReady ? .enabled : .inactive
                         )
-//                    }
                 }
                 .safeAreaPadding(.bottom, 32)
                 .padding(.horizontal)
