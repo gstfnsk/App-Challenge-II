@@ -50,9 +50,21 @@ extension GameCenterService: GKMatchmakerViewControllerDelegate, GKMatchDelegate
         switch type {
         case "newPhrase":
             if let phrase = dict["phrase"] as? String {
-                print("frase adicionada Delegate")
-                phrases.append(phrase)
-                self.trySelectPhraseIfReady()
+                let senderID = player.gamePlayerID
+                DispatchQueue.main.async {
+                    if !self.phrases.contains(phrase) {
+                        self.phrases.append(phrase)
+                        print("📡 Frase '\(phrase)' recebida de \(player.displayName)")
+                    }
+                    if self.submittedPhrasesByPlayer[senderID] == nil {
+                        self.submittedPhrasesByPlayer[senderID] = phrase
+                        print("🔄 Atualizando submissão do jogador \(player.displayName): \(phrase)")
+                    } else {
+                        print("⏭️ Jogador \(player.displayName) já tinha submetido uma frase")
+                    }
+                    // reintroduzido: tentar seleção quando recebemos uma frase
+                    self.trySelectPhraseIfReady()
+                }
             }
         case "PhraseLeader":
             if let leaderID = dict["leaderID"] as? String {
@@ -89,6 +101,11 @@ extension GameCenterService: GKMatchmakerViewControllerDelegate, GKMatchDelegate
                     self.readyMap = map
                     print("ready resetado para todos \(self.readyMap)")
                 }
+            
+        case "phasestart":
+            if let ts = dict["date"] as? TimeInterval {
+                DispatchQueue.main.async { self.timerStart = Date(timeIntervalSince1970: ts) }
+            }
             
         default:
             break

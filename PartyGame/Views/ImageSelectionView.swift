@@ -44,10 +44,10 @@ struct ImageSelectionView: View {
                                 .foregroundStyle(.ice
                                     .shadow(.inner(color: .lilac, radius: 2, y: 3)))
                                 .frame(maxWidth: .infinity, alignment: .leading)
-                            TimerComponent(duration: 30.0)
+                            TimerComponent(remainingTime: 30, duration: 30.0)
                         }
                     }
-                    ProgressBarComponent(duration: 30.0)
+                    ProgressBarComponent(progress: .constant(30.0))
                 }
                 .safeAreaPadding(.top, 32)
                 .padding(.horizontal)

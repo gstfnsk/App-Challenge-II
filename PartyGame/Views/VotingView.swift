@@ -60,10 +60,10 @@ struct VotingView: View {
                             .font(.custom("DynaPuff-Medium", size: 28))
                             .foregroundStyle(.ice
                                 .shadow(.inner(color: .lilac, radius: 2, y: 3)))
-                        TimerComponent(duration: 30.0)
+                        TimerComponent(remainingTime: 30, duration: 30.0)
                     }
                     
-                    ProgressBarComponent(duration: 30.0)
+                    ProgressBarComponent(progress: .constant(30.0))
                 }
                 .padding(.top, 59)
                 .padding(.horizontal)
