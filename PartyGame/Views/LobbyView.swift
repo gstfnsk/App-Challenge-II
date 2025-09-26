@@ -117,7 +117,7 @@ struct LobbyView: View {
             viewModel.resetAllPlayersReady()
         }
         .navigationDestination(isPresented: $startGame) {
-            PhraseView()
+            CountDownView()
         }
         .toolbar {
             ToolbarItem(placement: .topBarLeading) {

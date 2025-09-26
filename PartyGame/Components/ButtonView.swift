@@ -12,6 +12,7 @@ struct ButtonView: View {
     var title: String
     var titleDone: String
     var action: () -> Void
+    var changeToDone: Bool = true
     @State var state = ButtonState.enabled
     enum ButtonState {
         case inactive
@@ -22,7 +23,9 @@ struct ButtonView: View {
         Button {
             if state == .enabled {
                 action()
-                state = .done
+                if (changeToDone) {
+                    state = .done
+                }
             }
             else {
                 action()
