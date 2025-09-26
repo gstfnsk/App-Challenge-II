@@ -72,6 +72,14 @@ struct VotingView: View {
             // Filtra as imagens submetidas para a frase atual
             imageSubmissions = viewModel.submissions(for: phrase)
         }
+        .onChange(of: viewModel.allReady) {
+            if !viewModel.players.isEmpty {
+                goToNextRound = true
+            }
+        }
+        .navigationDestination(isPresented: $goToNextRound) {
+            PhraseView()
+        }
         .navigationBarBackButtonHidden(true)
     }
 }

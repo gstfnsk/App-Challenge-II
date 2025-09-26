@@ -48,6 +48,12 @@ extension GameCenterService: GKMatchmakerViewControllerDelegate, GKMatchDelegate
         else { return }
         
         switch type {
+        case "newPhrase":
+            if let phrase = dict["phrase"] as? String {
+                print("frase adicionada Delegate")
+                phrases.append(phrase)
+                self.trySelectPhraseIfReady()
+            }
         case "PhraseLeader":
             if let leaderID = dict["leaderID"] as? String {
                 DispatchQueue.main.async {
@@ -77,22 +83,22 @@ extension GameCenterService: GKMatchmakerViewControllerDelegate, GKMatchDelegate
             break
         }
         
-        guard
-            let dict = try? JSONSerialization.jsonObject(with: data) as? [String: Any],
-            let type = dict["type"] as? String
-        else { return }
-        
-        switch type {
-        case "newPhrase":
-            if let phrase = dict["phrase"] as? String {
-                print("frase adicionada Delegate")
-                phrases.append(phrase)
-                self.trySelectPhraseIfReady()
-            }
-            
-        default:
-            break
-        }
+//        guard
+//            let dict = try? JSONSerialization.jsonObject(with: data) as? [String: Any],
+//            let type = dict["type"] as? String
+//        else { return }
+//        
+//        switch type {
+//        case "newPhrase":
+//            if let phrase = dict["phrase"] as? String {
+//                print("frase adicionada Delegate")
+//                phrases.append(phrase)
+//                self.trySelectPhraseIfReady()
+//            }
+//            
+//        default:
+//            break
+//        }
         
         if let payload = try? JSONDecoder().decode(SubmissionPayload.self, from: data) {
             switch payload.type {
