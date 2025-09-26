@@ -51,7 +51,7 @@ struct VotingView: View {
             // Topo fixo
             VStack {
                 VStack(alignment: .leading) {
-                    Text("round 1")
+                    Text("round \(viewModel.service.currentRound)")
                         .font(.system(size: 15, weight: .medium, design: .rounded))
                         .foregroundStyle(.lilac)
                     
@@ -65,7 +65,7 @@ struct VotingView: View {
                     
                     ProgressBarComponent(progress: .constant(1.0 - (viewModel.timerManager.remainingTimeDouble/30.0)))
                     
-            }
+                }
                 .padding(.top, 59)
                 .padding(.horizontal)
                 Spacer()
@@ -128,14 +128,17 @@ struct VotingView: View {
                     .background(GradientBackground())
                     .padding()
                     .frame(maxWidth: .infinity)
-//                    .padding(.bottom, 14)
+                    //                    .padding(.bottom, 14)
                     Spacer().frame(height: 100)
                 }
             }
-                        .onAppear {
-                            imageSubmissions = viewModel.submissions(for: phrase)
-                            viewModel.timerManager.startCountdown(until: Date().addingTimeInterval(30))
-                        }
+            .onAppear {
+                imageSubmissions = viewModel.submissions(for: phrase)
+                viewModel.timerManager.startCountdown(until: Date().addingTimeInterval(30))
+            }
+            .onChange(of: viewModel.timerManager.hasTimeRunOut) {
+                //Ação após terminar o tempo
+            }
             .navigationBarBackButtonHidden(true)
             
             VStack() {
@@ -161,7 +164,7 @@ struct VotingView: View {
             gradient: Gradient(colors: [.lilac.opacity(0.5), .lighterPink.opacity(0.5)]),
             startPoint: .top,
             endPoint: .bottom)
-
+        
         var body: some View {
             RoundedRectangle(cornerRadius: 32)
                 .fill(gradientBackground

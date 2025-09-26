@@ -44,10 +44,10 @@ struct ImageSelectionView: View {
                                 .foregroundStyle(.ice
                                     .shadow(.inner(color: .lilac, radius: 2, y: 3)))
                                 .frame(maxWidth: .infinity, alignment: .leading)
-                            TimerComponent(duration: 30.0)
+                            TimerComponent(remainingTime: viewModel.timer.timeRemaining, duration: 30.0)
                         }
                     }
-                    ProgressBarComponent(duration: 30.0)
+                    ProgressBarComponent(progress: .constant(1.0 - (viewModel.timer.remainingTimeDouble/30.0)))
                 }
                 .safeAreaPadding(.top, 32)
                 .padding(.horizontal)
@@ -157,11 +157,16 @@ struct ImageSelectionView: View {
 
         .onAppear {
             currentPhrase = viewModel.setCurrentRandomPhrase()
+            viewModel.timer.startCountdown(until: Date().addingTimeInterval(30))
         }
         .onReceive(viewModel.$currentPhrase) { currentPhrase in
             self.currentPhrase = currentPhrase
         }
         .onChange(of: viewModel.haveAllPlayersSubmittedImg) {
+            goToStackView = true
+        }
+        
+        .onChange(of: viewModel.timer.hasTimeRunOut){
             goToStackView = true
         }
         .navigationBarBackButtonHidden(true)

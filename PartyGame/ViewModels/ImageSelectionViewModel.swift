@@ -18,7 +18,7 @@ final class ImageSelectionViewModel: ObservableObject {
     @Published var playerSubmissions: [PlayerSubmission] = []
     
     @Published private(set) var hasSubmitted = false
-
+    let timer = TimerManager()
     let service = GameCenterService.shared
     private var cancellables: Set<AnyCancellable> = []
 
@@ -35,6 +35,20 @@ final class ImageSelectionViewModel: ObservableObject {
         service.$playerSubmissions
             .receive(on: DispatchQueue.main)
             .assign(to: &$playerSubmissions)
+        
+        timer.onTimeout = { [weak self] in
+            guard let self else { return }
+            print("⏰ Tempo de votação acabou - computando votos automáticos")
+            
+        }
+        
+        service.$timerStart
+            .compactMap { $0 }
+            .receive(on: DispatchQueue.main)
+            .sink { [weak self] target in
+                self?.timer.startCountdown(until: target)
+            }
+            .store(in: &cancellables)
         
     }
     
