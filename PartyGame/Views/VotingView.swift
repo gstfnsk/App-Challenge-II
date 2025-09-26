@@ -60,11 +60,12 @@ struct VotingView: View {
                             .font(.custom("DynaPuff-Medium", size: 28))
                             .foregroundStyle(.ice
                                 .shadow(.inner(color: .lilac, radius: 2, y: 3)))
-                        TimerComponent(duration: 30.0)
+                        TimerComponent(remainingTime: viewModel.timerManager.timeRemaining, duration: 30.0)
                     }
                     
-                    ProgressBarComponent(duration: 30.0)
-                }
+                    ProgressBarComponent(progress: .constant(1.0 - (viewModel.timerManager.remainingTimeDouble/30.0)))
+                    
+            }
                 .padding(.top, 59)
                 .padding(.horizontal)
                 Spacer()
@@ -131,9 +132,10 @@ struct VotingView: View {
                     Spacer().frame(height: 100)
                 }
             }
-            //            .onAppear {
-            //                imageSubmissions = viewModel.submissions(for: phrase)
-            //            }
+                        .onAppear {
+                            imageSubmissions = viewModel.submissions(for: phrase)
+                            viewModel.timerManager.startCountdown(until: Date().addingTimeInterval(30))
+                        }
             .navigationBarBackButtonHidden(true)
             
             VStack() {
