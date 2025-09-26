@@ -60,7 +60,7 @@ struct VotingView: View {
                     viewModel.voteImage(id: selectedImage)
                     goToNextRound = true
                     viewModel.nextRound()
-                    viewModel.cleanAndStoreSubmissions()
+                    // viewModel.cleanAndStoreSubmissions()
             }, state: .enabled)
             } else {
                 ButtonView(image: "iconVoteButton", title: "confirm vote", titleDone: "vote confirmed", action: {

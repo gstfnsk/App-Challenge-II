@@ -189,7 +189,9 @@ class GameCenterService: NSObject, ObservableObject {
     }
     
     func attributeVotes() {
-        print(votes)
+        for player in playerSubmissions {
+            print("!!!!!!!🗯️ Jogador: \(player.playerID), Pontos: \(player.votes)")
+        }
         for vote in votes {
                 if let index = playerSubmissions.firstIndex(where: { $0.imageSubmission.id == vote.toPhoto }) {
                     playerSubmissions[index].votes += 1
@@ -199,7 +201,7 @@ class GameCenterService: NSObject, ObservableObject {
                 }
             }
         for player in playerSubmissions {
-            print("🗯️ Jogador: \(player.playerID), Pontos: \(player.votes)")
+            print("!!!!!!!🗯️ Jogador: \(player.playerID), Pontos: \(player.votes)")
         }
     }
     
@@ -403,10 +405,11 @@ class GameCenterService: NSObject, ObservableObject {
     
     func goToNextRound() {
         if currentRound < maxRounds {
+            print("nova rodada")
             currentRound += 1
             // Resetar estado da frase para a nova rodada
-            resetPhraseState()
             attributeVotes()
+            resetPhraseState()
             //TODO: resetVotes()
         }
     }
