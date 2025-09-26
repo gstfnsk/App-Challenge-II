@@ -114,7 +114,7 @@ struct LobbyView: View {
         .navigationBarTitleDisplayMode(.inline)
         .navigationBarBackButtonHidden(true)
         .navigationDestination(isPresented: $startGame) {
-            PhraseView()
+            CountDownView()
         }
         .toolbar {
             ToolbarItem(placement: .topBarLeading) {
