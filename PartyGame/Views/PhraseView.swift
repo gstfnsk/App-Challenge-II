@@ -9,6 +9,7 @@ import SwiftUI
 
 
 struct PhraseView: View {
+
     var viewModel = PhraseViewModel()
     @State var selectedPhrase: Phrase? = nil
     @State var displayedPhrases: [Phrase] = []
@@ -35,6 +36,7 @@ struct PhraseView: View {
                 VStack(spacing: 24){
                     VStack(spacing: 5){
                         Text("round \(viewModel.service.currentRound)")
+
                             .font(.system(size: 15, weight: .medium, design: .rounded))
                             .foregroundStyle(.lilac)
                             .frame(maxWidth: .infinity, alignment: .leading)
@@ -141,13 +143,11 @@ struct PhraseView: View {
         }
 
         .onChange(of: viewModel.haveTimeRunOut) { oldValue, newValue in
-            
             if newValue {
                 nextScreen = true
             }
         }
         .onChange(of: viewModel.haveAllPlayersSubmitted) { oldValue, newValue in
-            
             if newValue {
                 nextScreen = true
             }

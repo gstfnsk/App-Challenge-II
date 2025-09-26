@@ -65,6 +65,7 @@ struct VotingView: View {
                     
                     ProgressBarComponent(progress: .constant(1.0 - (viewModel.timerManager.remainingTimeDouble/30.0)))
                     
+
                 }
                 .padding(.top, 59)
                 .padding(.horizontal)
@@ -144,18 +145,35 @@ struct VotingView: View {
             VStack() {
                 Spacer()
                 if let selectedImage {
-                    ButtonView(image: "iconVoteButton", title: "confirm vote", titleDone: "vote confirmed", action: {
-                        goToNextRound = true
-                    }, state: .enabled)
-                } else {
-                    ButtonView(image: "iconVoteButton", title: "confirm vote", titleDone: "vote confirmed", action: {
-                        goToNextRound = true
-                    }, state: .inactive)
+            ButtonView(image: "iconVoteButton", title: "confirm vote", titleDone: "vote confirmed", action: {
+                viewModel.cleanAndStoreSubmissions()
+                viewModel.toggleReady()
+                    
+            }, state: .enabled)
+            } else {
+                ButtonView(image: "iconVoteButton", title: "confirm vote", titleDone: "vote confirmed", action: {
+                }, state: .inactive)
                 }
+
             }
             .padding(.bottom, 34)
             .padding(.horizontal, 16)
         }
+
+        .onAppear {
+            imageSubmissions = viewModel.submissions(for: phrase)
+        }
+        .onChange(of: viewModel.allReady) {
+            if !viewModel.players.isEmpty {
+                goToNextRound = true
+            }
+            viewModel.resetAllPlayersReady()
+        }
+        .navigationDestination(isPresented: $goToNextRound) {
+            ImageSelectionView()
+        }
+        .navigationBarBackButtonHidden(true)
+
         .background(Color.darkerPurple)
     }
     
@@ -170,6 +188,7 @@ struct VotingView: View {
                 .fill(gradientBackground
                     .shadow(.inner(color: Color.lilac, radius: 2, x: 0, y: 5)))
         }
+
     }
     
 }

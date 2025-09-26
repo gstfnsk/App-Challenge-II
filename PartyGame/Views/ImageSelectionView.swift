@@ -48,6 +48,7 @@ struct ImageSelectionView: View {
                         }
                     }
                     ProgressBarComponent(progress: .constant(1.0 - (viewModel.timer.remainingTimeDouble/30.0)))
+
                 }
                 .safeAreaPadding(.top, 32)
                 .padding(.horizontal)

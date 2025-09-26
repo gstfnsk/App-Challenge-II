@@ -17,30 +17,50 @@ final class VotingViewModel {
     var timerManager = TimerManager()
 
     
-    var players: [GKPlayer] {
-        service.gamePlayers.map { $0.player }
-    }
-    
-    var voter: GKPlayer {
-        GKLocalPlayer.local
-    }
+    var players: [GKPlayer] = []
+    var readyMap: [String: Bool] = [:]
     
     init() {
-           // ação de timeout → finalizar votação automaticamente
-           timerManager.onTimeout = { [weak self] in
+        self.players = service.gamePlayers.map { $0.player }
+        self.readyMap = service.readyMap
+        
+        timerManager.onTimeout = { [weak self] in
                guard let self else { return }
                print("⏰ Tempo de votação acabou - computando votos automáticos")
                self.finishVoting()
            }
            
-           service.$timerStart
+         service.$timerStart
                .compactMap { $0 }
                .receive(on: DispatchQueue.main)
                .sink { [weak self] target in
                    self?.timerManager.startCountdown(until: target)
                }
                .store(in: &cancellables)
-       }
+        
+    }
+
+//    var players: [GKPlayer] {
+//        service.gamePlayers.map { $0.player }
+//    }
+    
+    var voter: GKPlayer {
+        GKLocalPlayer.local
+    }
+    
+
+    func toggleReady() {
+        service.toggleReady()
+    }
+    
+    var allReady: Bool {
+        guard !players.isEmpty else { return false }
+        for p in players {
+            if readyMap[p.gamePlayerID] != true { return false }
+        }
+        return true
+    }
+
 
     // Todas as submissões para a frase atual
     func submissions(for phrase: String) -> [ImageSubmission] {
@@ -54,6 +74,15 @@ final class VotingViewModel {
     }
     
     
+
+    func cleanAndStoreSubmissions() {
+        service.cleanAndStorePlayerSubmissions()
+    }
+    
+    func resetAllPlayersReady() {
+        service.resetReadyForAllPlayers()
+    }
+
 
 //    func voteImage(id: UUID) {
 //        guard let submission = service.playerSubmissions.first(where: { $0.imageSubmission.id == id }) else {
