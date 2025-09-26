@@ -16,4 +16,8 @@ class ImageStackViewModel: ObservableObject {
             .filter { $0.phrase == phrase }
             .map { $0.imageSubmission }
     }
+    
+    func resetAllPlayersReady() {
+        service.resetReadyForAllPlayers()
+    }
 }
