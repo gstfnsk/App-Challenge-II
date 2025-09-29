@@ -41,14 +41,6 @@ final class ImageSelectionViewModel: ObservableObject {
     var haveAllPlayersSubmittedImg: Bool {
         service.haveAllPlayersSubmittedImage()
     }
-
-//    func chooseCamera() {
-//        guard UIImagePickerController.isSourceTypeAvailable(.camera) else {
-//            errorMessage = "Câmera não disponível neste dispositivo."
-//            return
-//        }
-//        //isShowingCamera = true
-//    }
     
     func setCurrentRandomPhrase() -> String {
         
@@ -58,9 +50,6 @@ final class ImageSelectionViewModel: ObservableObject {
         return currentPhrase
     }
 
-//    func chooseLibrary() {
-//        isShowingLibrary = true
-//    }
     
     func submitSelectedImage(image: UIImage) {
         let maxWidth: CGFloat = 600

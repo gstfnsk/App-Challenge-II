@@ -89,6 +89,11 @@ extension GameCenterService: GKMatchmakerViewControllerDelegate, GKMatchDelegate
         case "CleanPlayerSubmissions":
             DispatchQueue.main.async {
                 self.cleanPlayerSubmissions(broadcast: false)
+                if let indexPhrase = self.phrases.firstIndex(where: { $0 == self.currentPhrase }) {
+                    self.phrases.remove(at: indexPhrase)
+                }
+                self.currentPhrase = ""
+                self.phraseLeaderID = nil
                 print("📡 PlayerSubmissions limpo com sucesso: \(self.playerSubmissions)")
             }
             
@@ -102,7 +107,7 @@ extension GameCenterService: GKMatchmakerViewControllerDelegate, GKMatchDelegate
                     print("ready resetado para todos \(self.readyMap)")
                 }
             
-        case "phasestart":
+        case "phaseStart":
             if let ts = dict["date"] as? TimeInterval {
                 DispatchQueue.main.async { self.timerStart = Date(timeIntervalSince1970: ts) }
             }

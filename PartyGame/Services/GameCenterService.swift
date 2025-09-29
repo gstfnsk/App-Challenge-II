@@ -340,6 +340,17 @@ class GameCenterService: NSObject, ObservableObject {
     func cleanPlayerSubmissions(broadcast: Bool) {
         playerSubmissions.removeAll()
         print("playerSubmissions were cleaned")
+        print("array de phrases: \(self.phrases)")
+        if let indexPhrase = self.phrases.firstIndex(where: { $0 == self.currentPhrase }) {
+            print("index da frase: \(indexPhrase)")
+            
+            print("phrase removida \(phrases[indexPhrase])")
+            self.phrases.remove(at: indexPhrase)
+            
+            print("array de phrases: \(self.phrases)")
+        }
+        self.currentPhrase = ""
+        self.phraseLeaderID = nil
         
         guard broadcast, let match else { return }
         

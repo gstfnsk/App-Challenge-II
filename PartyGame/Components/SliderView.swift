@@ -38,7 +38,7 @@ struct SliderView: View {
                             GeometryReader { proxy in
                                 Color.clear
                                     .onAppear { trackWidth = proxy.size.width }
-                                    .onChange(of: proxy.size.width) { new in
+                                    .onChange(of: proxy.size.width) { _, new in
                                         trackWidth = new
                                     }
                             }

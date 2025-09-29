@@ -141,7 +141,6 @@ struct VotingView: View {
                 Spacer()
                 if let selectedImage {
             ButtonView(image: "iconVoteButton", title: "confirm vote", titleDone: "vote confirmed", action: {
-                viewModel.cleanAndStoreSubmissions()
                 viewModel.toggleReady()
                     
             }, state: .enabled)
@@ -160,6 +159,7 @@ struct VotingView: View {
         }
         .onChange(of: viewModel.allReady) {
             if !viewModel.players.isEmpty {
+                viewModel.cleanAndStoreSubmissions()
                 goToNextRound = true
             }
             viewModel.resetAllPlayersReady()
