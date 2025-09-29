@@ -15,13 +15,14 @@ final class TimerManager {
     private var hasProcessedTimeout = false
     
     var timeRemaining: Int = 30
-    var remainingTimeDouble: Double = 30.0
+    var remainingTimeDouble: Double = 30
     var hasTimeRunOut: Bool = false
     
     var onTimeout: (() -> Void)?   // callback para o que fazer quando acabar
     
     func startCountdown(until target: Date) {
-        timer?.invalidate()
+        stop()
+        
         hasProcessedTimeout = false
         hasTimeRunOut = false
         
@@ -47,6 +48,7 @@ final class TimerManager {
     }
     
     func stop() {
+        print("⏹️ Timer parado")
         timer?.invalidate()
         timer = nil
     }

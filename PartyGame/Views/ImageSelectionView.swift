@@ -9,7 +9,7 @@ import SwiftUI
 import GameKit
 
 struct ImageSelectionView: View {
-    @ObservedObject var viewModel = ImageSelectionViewModel()
+    @StateObject var viewModel = ImageSelectionViewModel()
     @State private var isShowingCamera = false
     @State private var isShowingLibrary = false
     @State private var showSourceMenu = false
@@ -44,10 +44,10 @@ struct ImageSelectionView: View {
                                 .foregroundStyle(.ice
                                     .shadow(.inner(color: .lilac, radius: 2, y: 3)))
                                 .frame(maxWidth: .infinity, alignment: .leading)
-                            TimerComponent(remainingTime: viewModel.timer.timeRemaining, duration: 30.0)
+                            TimerComponent(remainingTime: viewModel.timeRemaining, duration: 60.0)
                         }
                     }
-                    ProgressBarComponent(progress: .constant(1.0 - (viewModel.timer.remainingTimeDouble/30.0)))
+                    ProgressBarComponent(progress: .constant(1.0 - (viewModel.remainingTimeDouble/60.0)))
 
                 }
                 .safeAreaPadding(.top, 32)
@@ -158,7 +158,7 @@ struct ImageSelectionView: View {
 
         .onAppear {
             currentPhrase = viewModel.setCurrentRandomPhrase()
-            viewModel.timer.startCountdown(until: Date().addingTimeInterval(30))
+            viewModel.startPhase()
         }
         .onReceive(viewModel.$currentPhrase) { currentPhrase in
             self.currentPhrase = currentPhrase
@@ -167,7 +167,7 @@ struct ImageSelectionView: View {
             goToStackView = true
         }
         
-        .onChange(of: viewModel.timer.hasTimeRunOut){
+        .onChange(of: viewModel.hasProcessedTimeRunOut){
             goToStackView = true
         }
         .navigationBarBackButtonHidden(true)

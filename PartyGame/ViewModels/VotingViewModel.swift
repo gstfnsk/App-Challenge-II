@@ -11,11 +11,14 @@ import GameKit
 import Combine
 
 @Observable
-final class VotingViewModel {
+final class VotingViewModel: ObservableObject {
     let service = GameCenterService.shared
     private var cancellables = Set<AnyCancellable>()
-    var timerManager = TimerManager()
 
+    private var timer: Timer?
+    var hasProcessedTimeRunOut: Bool = false
+    var remainingTimeDouble: Double = 30.0
+    var timeRemaining: Int = 30
     
     var players: [GKPlayer] = []
     var readyMap: [String: Bool] = [:]
@@ -23,21 +26,22 @@ final class VotingViewModel {
     init() {
         self.players = service.gamePlayers.map { $0.player }
         self.readyMap = service.readyMap
-        
-        timerManager.onTimeout = { [weak self] in
-               guard let self else { return }
-               print("⏰ Tempo de votação acabou - computando votos automáticos")
-               self.finishVoting()
-           }
            
          service.$timerStart
+            .removeDuplicates()
                .compactMap { $0 }
                .receive(on: DispatchQueue.main)
                .sink { [weak self] target in
-                   self?.timerManager.startCountdown(until: target)
+                   self?.startCountdown(until: target)
                }
                .store(in: &cancellables)
         
+    }
+    
+    deinit {
+        timer?.invalidate()
+        timer = nil
+        cancellables.forEach { $0.cancel() }
     }
 
 //    var players: [GKPlayer] {
@@ -83,6 +87,37 @@ final class VotingViewModel {
         service.resetReadyForAllPlayers()
     }
 
+    private func startCountdown(until target: Date) {
+        timer?.invalidate()
+        timer = nil
+        hasProcessedTimeRunOut = false
+        updateRemaining(target: target)
+        timer = Timer.scheduledTimer(withTimeInterval: 0.1, repeats: true) { [weak self] _ in
+            self?.updateRemaining(target: target)
+        }
+        
+        
+    }
+    
+    private func updateRemaining(target: Date) {
+        let remainingSecondsDouble = target.timeIntervalSinceNow
+        
+        timeRemaining = max(0, Int(ceil(remainingSecondsDouble)))
+        remainingTimeDouble = max(0.0, remainingSecondsDouble)
+        
+        if timeRemaining == 0 && !hasProcessedTimeRunOut {
+            timer?.invalidate()
+            hasProcessedTimeRunOut = true
+        }
+    }
+    
+    func startPhase() {
+        print("🚀 Starting phase - resetting all states")
+        hasProcessedTimeRunOut = false
+        
+        service.schedulePhaseStart(delay: 30)
+    }
+    
 
 //    func voteImage(id: UUID) {
 //        guard let submission = service.playerSubmissions.first(where: { $0.imageSubmission.id == id }) else {

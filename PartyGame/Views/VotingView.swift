@@ -13,7 +13,7 @@ struct VotingView: View {
     @State var phrase: String
     @State var selectedImage: UUID?
     @State var goToNextRound: Bool = false
-    var viewModel: VotingViewModel = VotingViewModel()
+    @StateObject var viewModel: VotingViewModel = VotingViewModel()
     let columns = [
         GridItem(.flexible()),
         GridItem(.flexible()),
@@ -60,10 +60,10 @@ struct VotingView: View {
                             .font(.custom("DynaPuff-Medium", size: 28))
                             .foregroundStyle(.ice
                                 .shadow(.inner(color: .lilac, radius: 2, y: 3)))
-                        TimerComponent(remainingTime: viewModel.timerManager.timeRemaining, duration: 30.0)
+                        TimerComponent(remainingTime: viewModel.timeRemaining, duration: 30.0)
                     }
                     
-                    ProgressBarComponent(progress: .constant(1.0 - (viewModel.timerManager.remainingTimeDouble/30.0)))
+                    ProgressBarComponent(progress: .constant(1.0 - (viewModel.remainingTimeDouble/30.0)))
                     
 
                 }
@@ -133,13 +133,6 @@ struct VotingView: View {
                     Spacer().frame(height: 100)
                 }
             }
-            .onAppear {
-                imageSubmissions = viewModel.submissions(for: phrase)
-                viewModel.timerManager.startCountdown(until: Date().addingTimeInterval(30))
-            }
-            .onChange(of: viewModel.timerManager.hasTimeRunOut) {
-                //Ação após terminar o tempo
-            }
             .navigationBarBackButtonHidden(true)
             
             VStack() {
@@ -162,12 +155,17 @@ struct VotingView: View {
 
         .onAppear {
             imageSubmissions = viewModel.submissions(for: phrase)
+            viewModel.startPhase()
         }
         .onChange(of: viewModel.allReady) {
             if !viewModel.players.isEmpty {
                 goToNextRound = true
             }
             viewModel.resetAllPlayersReady()
+        }
+        .onChange(of: viewModel.hasProcessedTimeRunOut) {
+            //Ação após terminar o tempo
+            goToNextRound = true
         }
         .navigationDestination(isPresented: $goToNextRound) {
             ImageSelectionView()
