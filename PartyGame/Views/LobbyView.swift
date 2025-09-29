@@ -20,11 +20,11 @@ struct LobbyView: View {
     var body: some View {
         VStack(spacing: 0) {
             HStack(spacing: 12) {
-                Text("Jogadores conectados")
+                Text("list of Players")
                     .font(.headline)
                 Spacer()
                 if viewModel.allReady { //}&& !viewModel.players.isEmpty {
-                    Text("Todos prontos ✅")
+                    Text("Everybody ready ✅")
                         .font(.subheadline)
                         .foregroundStyle(.green)
                 } else {
@@ -125,7 +125,7 @@ struct LobbyView: View {
                     viewModel.leaveLobby()
                     viewModel.isInMatch = false
                     dismiss()
-                } label: { Text("Sair") }
+                } label: { Text("Quit") }
             }
             
             
@@ -134,11 +134,11 @@ struct LobbyView: View {
     
     var header: some View {
         HStack(spacing: 12) {
-            Text("Jogadores conectados")
+            Text("Players Connected")
                 .font(.headline)
             Spacer()
             if viewModel.allReady && !viewModel.players.isEmpty {
-                Text("Todos prontos ✅")
+                Text("Everybody ready ✅")
                     .font(.subheadline)
                     .foregroundStyle(.green)
                 
@@ -189,7 +189,7 @@ struct LobbyView: View {
             }
             .padding(.vertical, 8)
         }
-        .accessibilityLabel(Text("Lista de jogadores"))
+        .accessibilityLabel(Text("list of players"))
     }
     
     var chatArea: some View {
@@ -216,10 +216,10 @@ struct LobbyView: View {
     
     var inputBar: some View {
         HStack(spacing: 8) {
-            TextField("Digite sua mensagem...", text: $viewModel.typedMessage)
+            TextField("Send a message...", text: $viewModel.typedMessage)
                 .textFieldStyle(RoundedBorderTextFieldStyle())
             
-            Button("Enviar") {
+            Button("Send") {
                 viewModel.sendMessage()
                 scrollTrigger &+= 1
             }

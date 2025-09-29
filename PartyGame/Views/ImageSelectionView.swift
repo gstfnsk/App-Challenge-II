@@ -84,10 +84,10 @@ struct ImageSelectionView: View {
                                 .onTapGesture {
                                     showSourceMenu = true
                                 }
-                                .confirmationDialog("Escolher origem", isPresented: $showSourceMenu) {
-                                    Button("Tirar foto") { isShowingCamera = true }
-                                    Button("Escolher da Galeria") { isShowingLibrary = true }
-                                    Button("Cancelar", role: .cancel) { }
+                                .confirmationDialog("Choose Image", isPresented: $showSourceMenu) {
+                                    Button("Take a photo") { isShowingCamera = true }
+                                    Button("Upload from Photos") { isShowingLibrary = true }
+                                    Button("Cancel", role: .cancel) { }
                                 }
                         } else {
                             VStack(spacing: 8) {
@@ -116,10 +116,10 @@ struct ImageSelectionView: View {
                             .onTapGesture {
                                 showSourceMenu = true
                             }
-                            .confirmationDialog("Escolher origem", isPresented: $showSourceMenu) {
-                                Button("Tirar foto") { isShowingCamera = true }
-                                Button("Escolher da Galeria") { isShowingLibrary = true }
-                                Button("Cancelar", role: .cancel) { }
+                            .confirmationDialog("Choose Image", isPresented: $showSourceMenu) {
+                                Button("Take a photo") { isShowingCamera = true }
+                                Button("Upload from Photos") { isShowingLibrary = true }
+                                Button("Cancel", role: .cancel) { }
                             }
                         }
                     }
@@ -133,8 +133,8 @@ struct ImageSelectionView: View {
                         if let selectedImage {
                             ButtonView(
                                 image: "img-cameraSymbol",
-                                title: "confirm picture",
-                                titleDone: "picture sent",
+                                title: "confirm pickture",
+                                titleDone: "pickture sent",
                                 action: {
                                     viewModel.submitSelectedImage(image: selectedImage)
                                     playerReady = true
@@ -144,8 +144,8 @@ struct ImageSelectionView: View {
                         } else {
                             ButtonView(
                                 image: "img-cameraSymbol",
-                                title: "confirm picture",
-                                titleDone: "picture sent",
+                                title: "confirm pickture",
+                                titleDone: "pickture sent",
                                 action: {
                                     // nada acontece se não houver imagem
                                 },
