@@ -28,15 +28,15 @@ struct HomeView: View {
                             Image("img-picktureBanner")
                             Spacer()
                             VStack(alignment: .center, spacing: 16) {
-                                Button {
+                                // Button {
                                     
-                                } label: {
-                                    Text("how to enter an existing match?")
-                                        .font(Font.custom("DynaPuff-Regular", size: 17))
-                                        .foregroundStyle(.lilac)
-                                        .underline(true, color: .lilac)
+                                // } label: {
+                                //     Text("how to enter an existing match?")
+                                //         .font(Font.custom("DynaPuff-Regular", size: 17))
+                                //         .foregroundStyle(.lilac)
+                                //         .underline(true, color: .lilac)
                                         
-                                }
+                                // }
                                 ButtonView(image: "img-gameController", title: "Start Match", titleDone: "", action: { viewModel.startMultiplayerGame() }, changeToDone: false)
                             }
                         }
