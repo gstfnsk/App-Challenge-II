@@ -142,9 +142,8 @@ struct VotingView: View {
                 if let selectedImage {
                     ButtonView(image: "iconVoteButton", title: "confirm vote", titleDone: "vote confirmed", action: {
                         print("UUID da imagem:", selectedImage)
-                        viewModel.cleanAndStoreSubmissions()
+//                        viewModel.cleanAndStoreSubmissions()
                         viewModel.toggleReady()
-
                     }, state: .enabled)
                 } else {
                     ButtonView(image: "iconVoteButton", title: "confirm vote", titleDone: "vote confirmed", action: {
@@ -161,13 +160,15 @@ struct VotingView: View {
         }
         .onChange(of: viewModel.allReady) {
             if !viewModel.players.isEmpty {
-                goToNextRound = true
-                viewModel.nextRound()
+                if (viewModel.haveAllPlayersVoted) {
+                    goToNextRound = true
+                    viewModel.nextRound()
+                }
             }
             viewModel.resetAllPlayersReady()
         }
         .navigationDestination(isPresented: $goToNextRound) {
-            ImageSelectionView()
+            DebuggingView()
         }
         .navigationBarBackButtonHidden(true)
         .background(Color.darkerPurple)

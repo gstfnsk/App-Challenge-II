@@ -194,6 +194,7 @@ class GameCenterService: NSObject, ObservableObject {
                     print("⚠️ Nenhuma submissão encontrada para UUID \(vote.toPhoto)")
                 }
             }
+            
             for player in playerSubmissions {
                 print("---------------------------------------------")
                 print("2 Jogador: \(player.playerID), Pontos: \(player.votes)")
@@ -446,16 +447,16 @@ class GameCenterService: NSObject, ObservableObject {
     var maxRounds: Int { gamePlayers.count }
     
     func goToNextRound() {
-        if currentRound < maxRounds {
+//        if currentRound < maxRounds {
             if haveAllPlayersVoted() {
                 attributeVotes()
             }
-            print("nova rodada")
+//            print("nova rodada")
             currentRound += 1
             // Resetar estado da frase para a nova rodada
             resetPhraseState()
             //TODO: resetVotes()
-        }
+//        }
     }
     
     private func resetPhraseState() {
