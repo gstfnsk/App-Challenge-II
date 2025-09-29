@@ -120,7 +120,7 @@ final class ImageSelectionViewModel: ObservableObject {
         timeRemaining = 60
         updateRemaining(target: target)
         hasProcessedTimeRunOut = false
-        timer = Timer.scheduledTimer(withTimeInterval: 1.0, repeats: true) { [weak self] _ in
+        timer = Timer.scheduledTimer(withTimeInterval: 0.5, repeats: true) { [weak self] _ in
             self?.updateRemaining(target: target)
         }
         
