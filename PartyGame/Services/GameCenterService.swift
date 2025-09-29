@@ -227,30 +227,6 @@ class GameCenterService: NSObject, ObservableObject {
             }
         }
     }
-    
-
-    func ensureAllPlayersSubmittedFallback() {
-        for player in gamePlayers {
-            let playerID = player.player.gamePlayerID
-            
-            // Se já submeteu, ignora
-            if submittedPhrasesByPlayer[playerID] != nil { continue }
-            
-            // Pega 1 frase aleatória do pool de 3 daquele player
-            if let randomPhrase = localPhraseChoices[playerID]?.randomElement() {
-                print("⚠️ Auto-submit forçado para \(player.player.displayName): \(randomPhrase)")
-                submittedPhrasesByPlayer[playerID] = randomPhrase
-                phrases.append(randomPhrase)
-                submitPhrase(phrase: randomPhrase)
-            }
-            else if let backup = Phrases.all.randomElement()?.text {
-                print("⚡ Fallback global para \(player.player.displayName): \(backup)")
-                submittedPhrasesByPlayer[playerID] = backup
-                phrases.append(backup)
-                submitPhrase(phrase: backup)
-            }
-        }
-    }
 
     
     // Função para eleger o líder da frase (jogador com menor ID)
@@ -260,23 +236,6 @@ class GameCenterService: NSObject, ObservableObject {
         guard !gamePlayers.isEmpty else { return nil }
         let sortedPlayers = gamePlayers.sorted { $0.player.gamePlayerID < $1.player.gamePlayerID }
         return sortedPlayers.first?.player.gamePlayerID
-    }
-    
-
-    func autoSubmitMissingPhrases() {
-        let submittedPlayerIDs = Set(playerSubmissions.map { $0.playerID })
-
-        for player in gamePlayers {
-            let playerID = player.player.gamePlayerID
-
-            if !submittedPlayerIDs.contains(playerID) {
-                // Se o jogador não enviou frase, pegamos uma frase aleatória para ele
-                if let randomPhrase = Phrases.all.randomElement() {
-                    print("⚡ Auto-submit para jogador \(player.player.displayName): \(randomPhrase)")
-                    submitPhrase(phrase: randomPhrase.text)
-                }
-            }
-        }
     }
     
     // MARK: - Início da seleção de frase
@@ -445,11 +404,6 @@ class GameCenterService: NSObject, ObservableObject {
 
     func getSubmittedImages() -> [PlayerSubmission] {
         return self.playerSubmissions
-    }
-    
-    func haveAllPlayersSubmittedPhrase() -> Bool {
-        print("\(phrases)")
-        return (gamePlayers.count == submittedPhrasesByPlayer.count && gamePlayers.count != 0)
     }
     
     // Rounds
