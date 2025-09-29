@@ -160,10 +160,11 @@ struct VotingView: View {
         }
         .onChange(of: viewModel.allReady) {
             if !viewModel.players.isEmpty {
-                if (viewModel.haveAllPlayersVoted) {
+                    if let selectedImage {
+                        viewModel.voteImage(id: selectedImage)
+                    }
                     goToNextRound = true
                     viewModel.nextRound()
-                }
             }
             viewModel.resetAllPlayersReady()
         }

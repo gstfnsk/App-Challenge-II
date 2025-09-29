@@ -61,10 +61,6 @@ final class VotingViewModel {
         service.submitVote(id: id)
     }
     
-    var haveAllPlayersVoted: Bool {
-        service.haveAllPlayersVoted()
-    }
-    
     func nextRound() {
         service.goToNextRound()
     }

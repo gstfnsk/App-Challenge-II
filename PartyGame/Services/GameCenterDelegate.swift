@@ -117,7 +117,7 @@ extension GameCenterService: GKMatchmakerViewControllerDelegate, GKMatchDelegate
                 let vote = votePacket.submission
                 print("📡 voto recebido de \(vote.from)")
                     DispatchQueue.main.async {
-                        self.votes.append(vote)
+                        self.storeVote(vote: vote)
                     }
             default:
                 break

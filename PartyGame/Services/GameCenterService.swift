@@ -65,15 +65,15 @@ class GameCenterService: NSObject, ObservableObject {
     @Published var isPhraseSubmittedByAnyPlayer: Bool = false
     @Published var submittedPhrasesByPlayer: [String: String] = [:] // playerID -> phrase
     @Published var votes: [VoteSubmission] = []
-
+    
     
     // Networking / match
     var match: GKMatch?
-
+    
     internal var pendingInvite: GKInvite?
     internal var pendingPlayersToInvite: [GKPlayer]?
     internal var expectedPlayersCount: Int {
-
+        
         if isSinglePlayer { return 1 }
         let ids = Set(([GKLocalPlayer.local] + (match?.players ?? [])).map { $0.gamePlayerID })
         return ids.count
@@ -149,58 +149,61 @@ class GameCenterService: NSObject, ObservableObject {
     }
     
     //MARK: Submissão de voto
-        func submitVote(id: UUID) {
-            let localID = GKLocalPlayer.local.gamePlayerID
-            let vote = VoteSubmission(from: localID, toPhoto: id, round: self.currentRound)
-            votes.append(vote)
-            guard let match else { return }
+    func submitVote(id: UUID) {
+        let localID = GKLocalPlayer.local.gamePlayerID
+        let vote = VoteSubmission(from: localID, toPhoto: id, round: self.currentRound)
+        votes.append(vote)
+        guard let match else { return }
+        
+        do {
+            let payload = VoteSubmissionPayload(type: "newVote", submission: vote)
+            let data = try JSONEncoder().encode(payload)
+            try match.sendData(toAllPlayers: data, with: .reliable)
             
-            do {
-                let payload = VoteSubmissionPayload(type: "newVote", submission: vote)
-                let data = try JSONEncoder().encode(payload)
-                try match.sendData(toAllPlayers: data, with: .reliable)
-                
-            } catch {
-                print("❌ Erro ao enviar voto: \(error)")
-            }
-            print("Novo voto adicionado:", vote)
+        } catch {
+            print("❌ Erro ao enviar voto: \(error)")
+        }
+        print("Novo voto adicionado:", vote)
+    }
+    
+    func storeVote (vote: VoteSubmission){
+        self.votes.append(vote)
+            attributeVotes()
+    }
+    
+    func attributeVotes() {
+        // printa o player antes da atribuição for debugging purposes
+        for player in playerSubmissions {
+            print("---------------------------------------------")
+            print("1 Jogador: \(player.playerID), Pontos: \(player.votes)")
+            print("---------------------------------------------")
         }
         
-        func haveAllPlayersVoted() -> Bool {
-            print("\(votes)")
-            return ((gamePlayers.count == votes.count && gamePlayers.count != 0) ? true : false)
-            
+        // apenas o líder atribui os votos e depois broadcasta
+                   guard let leaderID = phraseLeaderID, GKLocalPlayer.local.gamePlayerID == leaderID else {
+                       print("❌ Não sou o líder")
+                       return
+                   }
+        // zera antes de contar novos votos
+        for i in playerSubmissions.indices {
+            playerSubmissions[i].votes = 0
+        }
+
+        for vote in votes {
+            if let index = playerSubmissions.firstIndex(where: { $0.imageSubmission.id == vote.toPhoto }) {
+                playerSubmissions[index].votes += 1
+                print("✅ Voto atribuído: \(vote.from) → \(playerSubmissions[index].playerID)")
+            } else {
+                print("⚠️ Nenhuma submissão encontrada para UUID \(vote.toPhoto)")
+            }
         }
         
-        func attributeVotes() {
-            // printa o player antes da atribuição for debugging purposes
-            for player in playerSubmissions {
-                print("---------------------------------------------")
-                print("1 Jogador: \(player.playerID), Pontos: \(player.votes)")
-                print("---------------------------------------------")
-            }
-            
-            // apenas o líder atribui os votos e depois broadcasta
-//            guard let leaderID = phraseLeaderID, GKLocalPlayer.local.gamePlayerID == leaderID else {
-//                print("❌ Não sou o líder")
-//                return
-//            }
-//            
-            for vote in votes {
-                if let index = playerSubmissions.firstIndex(where: { $0.imageSubmission.id == vote.toPhoto }) {
-                    playerSubmissions[index].votes += 1
-                    print("✅ Voto atribuído: \(vote.from) → \(playerSubmissions[index].playerID)")
-                } else {
-                    print("⚠️ Nenhuma submissão encontrada para UUID \(vote.toPhoto)")
-                }
-            }
-            
-            for player in playerSubmissions {
-                print("---------------------------------------------")
-                print("2 Jogador: \(player.playerID), Pontos: \(player.votes)")
-                print("---------------------------------------------")
-            }
+        for player in playerSubmissions {
+            print("---------------------------------------------")
+            print("2 Jogador: \(player.playerID), Pontos: \(player.votes)")
+            print("---------------------------------------------")
         }
+    }
     
     func handleReceivedData(_ data: Data) {
         guard
@@ -381,7 +384,7 @@ class GameCenterService: NSObject, ObservableObject {
         return ((gamePlayers.count == playerSubmissions.count && gamePlayers.count != 0) ? true : false)
     }
     
-
+    
     // MARK: - Image submission
     func cleanAndStorePlayerSubmissions() {
         addSubmissionToPlayers()
@@ -447,16 +450,17 @@ class GameCenterService: NSObject, ObservableObject {
     var maxRounds: Int { gamePlayers.count }
     
     func goToNextRound() {
-//        if currentRound < maxRounds {
-            if haveAllPlayersVoted() {
-                attributeVotes()
-            }
-//            print("nova rodada")
-            currentRound += 1
-            // Resetar estado da frase para a nova rodada
-            resetPhraseState()
-            //TODO: resetVotes()
-//        }
+        //        if currentRound < maxRounds {
+        //            if haveAllPlayersVoted() {
+        //                attributeVotes()
+        //            }
+        attributeVotes()
+        //            print("nova rodada")
+        currentRound += 1
+        // Resetar estado da frase para a nova rodada
+        resetPhraseState()
+        //TODO: resetVotes()
+        //        }
     }
     
     private func resetPhraseState() {
@@ -467,7 +471,7 @@ class GameCenterService: NSObject, ObservableObject {
         phrases.removeAll()
     }
     
-
+    
     // Zera o readyMap para todos os jogadores. Se broadcast = true, sincroniza com os demais dispositivos.
     func resetReadyForAllPlayers(broadcast: Bool = true) {
         DispatchQueue.main.async {
@@ -509,9 +513,9 @@ class GameCenterService: NSObject, ObservableObject {
         }
     }
     
-
+    
     internal func refreshPlayers() {
-
+        
         var everyone: [GKPlayer] = [GKLocalPlayer.local as GKPlayer]
         if let remotes = match?.players { everyone.append(contentsOf: remotes) }
         DispatchQueue.main.async {
