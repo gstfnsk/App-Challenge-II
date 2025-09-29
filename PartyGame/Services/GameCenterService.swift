@@ -1,9 +1,3 @@
-//
-//  GameCenterService.swift
-//  PartyGame
-//
-//  Consolidated + reviewed by ChatGPT
-//
 
 import SwiftUI
 import GameKit
@@ -40,8 +34,10 @@ struct SubmissionPayload: Codable {
     let submission: PlayerSubmission
 }
 
-// NOTE: Player, PlayerSubmission, ImageSubmission, Phrases must exist elsewhere in your project.
-// This file assumes those types are defined like in your original project.
+struct VoteSubmissionPayload: Codable {
+    let type: String
+    let submission: VoteSubmission
+}
 
 class GameCenterService: NSObject, ObservableObject {
     
@@ -68,6 +64,8 @@ class GameCenterService: NSObject, ObservableObject {
     
     @Published var isPhraseSubmittedByAnyPlayer: Bool = false
     @Published var submittedPhrasesByPlayer: [String: String] = [:] // playerID -> phrase
+    @Published var votes: [VoteSubmission] = []
+
     
     // Networking / match
     var match: GKMatch?
@@ -149,6 +147,59 @@ class GameCenterService: NSObject, ObservableObject {
             print("❌ Erro ao enviar phaseStart: \(error)")
         }
     }
+    
+    //MARK: Submissão de voto
+        func submitVote(id: UUID) {
+            let localID = GKLocalPlayer.local.gamePlayerID
+            let vote = VoteSubmission(from: localID, toPhoto: id, round: self.currentRound)
+            votes.append(vote)
+            guard let match else { return }
+            
+            do {
+                let payload = VoteSubmissionPayload(type: "newVote", submission: vote)
+                let data = try JSONEncoder().encode(payload)
+                try match.sendData(toAllPlayers: data, with: .reliable)
+                
+            } catch {
+                print("❌ Erro ao enviar voto: \(error)")
+            }
+            print("Novo voto adicionado:", vote)
+        }
+        
+        func haveAllPlayersVoted() -> Bool {
+            print("\(votes)")
+            return ((gamePlayers.count == votes.count && gamePlayers.count != 0) ? true : false)
+            
+        }
+        
+        func attributeVotes() {
+            // printa o player antes da atribuição for debugging purposes
+            for player in playerSubmissions {
+                print("---------------------------------------------")
+                print("1 Jogador: \(player.playerID), Pontos: \(player.votes)")
+                print("---------------------------------------------")
+            }
+            
+            // apenas o líder atribui os votos e depois broadcasta
+//            guard let leaderID = phraseLeaderID, GKLocalPlayer.local.gamePlayerID == leaderID else {
+//                print("❌ Não sou o líder")
+//                return
+//            }
+//            
+            for vote in votes {
+                if let index = playerSubmissions.firstIndex(where: { $0.imageSubmission.id == vote.toPhoto }) {
+                    playerSubmissions[index].votes += 1
+                    print("✅ Voto atribuído: \(vote.from) → \(playerSubmissions[index].playerID)")
+                } else {
+                    print("⚠️ Nenhuma submissão encontrada para UUID \(vote.toPhoto)")
+                }
+            }
+            for player in playerSubmissions {
+                print("---------------------------------------------")
+                print("2 Jogador: \(player.playerID), Pontos: \(player.votes)")
+                print("---------------------------------------------")
+            }
+        }
     
     func handleReceivedData(_ data: Data) {
         guard
@@ -396,8 +447,14 @@ class GameCenterService: NSObject, ObservableObject {
     
     func goToNextRound() {
         if currentRound < maxRounds {
+            if haveAllPlayersVoted() {
+                attributeVotes()
+            }
+            print("nova rodada")
             currentRound += 1
+            // Resetar estado da frase para a nova rodada
             resetPhraseState()
+            //TODO: resetVotes()
         }
     }
     
