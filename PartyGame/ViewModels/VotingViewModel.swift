@@ -57,11 +57,16 @@ final class VotingViewModel {
     }
 
     func voteImage(id: UUID) {
+        let playerID = GKLocalPlayer.local.gamePlayerID
         print("votando")
-        service.submitVote(id: id)
+        service.submitVote(id: id, player: playerID)
     }
     
     func nextRound() {
         service.goToNextRound()
+    }
+    
+    var isVotingSessionDone: Bool  {
+        service.expectedPlayersCount == service.votes.values.count
     }
 }
