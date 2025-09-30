@@ -56,11 +56,17 @@ final class VotingViewModel {
         service.resetReadyForAllPlayers()
     }
 
-//    func voteImage(id: UUID) {
-//        guard let submission = service.playerSubmissions.first(where: { $0.imageSubmission.id == id }) else {
-//            print("Nenhuma submissão encontrada para essa imagem")
-//            return
-//        }
-//        submission.votes += 1
-//    }
+    func voteImage(id: UUID) {
+        let playerID = GKLocalPlayer.local.gamePlayerID
+        print("votando")
+        service.submitVote(id: id, player: playerID)
+    }
+    
+    func nextRound() {
+        service.goToNextRound()
+    }
+    
+    var isVotingSessionDone: Bool  {
+        service.expectedPlayersCount == service.votes.values.count
+    }
 }

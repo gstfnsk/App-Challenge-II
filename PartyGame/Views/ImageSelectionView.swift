@@ -129,15 +129,31 @@ struct ImageSelectionView: View {
                     
                     Spacer(minLength: -32)
                         
-                        ZStack{
-                            ButtonView(image: "img-cameraSymbol", title: "confirm pickture", titleDone: "pickture sent", action:{
-                                    if let selectedImage = selectedImage {
-                                        viewModel.submitSelectedImage(image: selectedImage)
-                                        playerReady = true
-                                    }
-                                }//, state: playerReady ? .enabled : .inactive
+                    ZStack {
+                        if let selectedImage {
+                            ButtonView(
+                                image: "img-cameraSymbol",
+                                title: "confirm picture",
+                                titleDone: "picture sent",
+                                action: {
+                                    viewModel.submitSelectedImage(image: selectedImage)
+                                    playerReady = true
+                                },
+                                state: .enabled
+                            )
+                        } else {
+                            ButtonView(
+                                image: "img-cameraSymbol",
+                                title: "confirm picture",
+                                titleDone: "picture sent",
+                                action: {
+                                    // nada acontece se não houver imagem
+                                },
+                                state: .inactive
                             )
                         }
+                    }
+
                         .padding(.bottom)
                 }
                 .safeAreaPadding(.bottom, 32)
