@@ -8,15 +8,22 @@
 import SwiftUI
 
 struct DebuggingView: View {
-    var viewModel: VotingViewModel = VotingViewModel()
-    
+    @State private var displayVotes = false
+    var viewModel = VotingViewModel()
+
     var body: some View {
-        
-//        @State var showAlert = false
-        Text("Votes: \(viewModel.service.votes)")
-        Text("-------")
-        ForEach(viewModel.service.playerSubmissions, id: \.playerID) { player in
-            Text("\(player.playerID) - \(player.votes)")
+        VStack {
+            if displayVotes {
+                Text("Votes: \(viewModel.service.votes)")
+            }
+            
+            Text("-------")
+            ForEach(viewModel.service.playerSubmissions, id: \.playerID) { player in
+                Text("\(player.playerID) - \(player.votes)")
+            }
+        }
+        .onChange(of: viewModel.isVotingSessionDone) { _ in
+            displayVotes = viewModel.isVotingSessionDone
         }
     }
 }
