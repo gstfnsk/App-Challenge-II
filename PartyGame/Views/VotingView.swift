@@ -19,26 +19,6 @@ struct VotingView: View {
         GridItem(.flexible()),
     ]
     @State var imageSubmissions: [ImageSubmission] = [
-        ImageSubmission(
-            playerID: "", image: UIImage(named: "img-placeholder16x9")!.jpegData(compressionQuality: 1.0)!,
-            submissionTime: Date()
-        ),
-        ImageSubmission(
-            playerID: "", image: UIImage(named: "img-placeholder1x1")!.jpegData(compressionQuality: 1.0)!,
-            submissionTime: Date()
-        ),
-        ImageSubmission(
-            playerID: "", image: UIImage(named: "img-placeholder9x16")!.jpegData(compressionQuality: 1.0)!,
-            submissionTime: Date()
-        ),
-        ImageSubmission(
-            playerID: "", image: UIImage(named: "img-placeholder9x16")!.jpegData(compressionQuality: 1.0)!,
-            submissionTime: Date()
-        ),
-        ImageSubmission(
-            playerID: "", image: UIImage(named: "img-placeholder9x16")!.jpegData(compressionQuality: 1.0)!,
-            submissionTime: Date()
-        )
     ]
     
     var body: some View {
@@ -87,6 +67,7 @@ struct VotingView: View {
                                 Button {
                                     selectedImage = photo.id
                                 } label: {
+                                    // Text(photo.id.uuidString)
                                     if let data = photo.image, let uiImage = UIImage(data: data) {
                                         Image(uiImage: uiImage)
                                             .resizable()
@@ -108,7 +89,6 @@ struct VotingView: View {
                                                         .resizable()
                                                         .frame(width: 40, height: 40)
                                                         .offset(x: 10, y: -10)
-                                                    
                                                 }
                                             }
                                     } else {
