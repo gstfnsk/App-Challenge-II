@@ -127,11 +127,11 @@ struct VotingView: View {
                     .background(GradientBackground())
                     .padding()
                     .frame(maxWidth: .infinity)
-//                    .padding(.bottom, 14)
+                    //                    .padding(.bottom, 14)
                     Spacer().frame(height: 100)
                 }
             }
-
+            
             //            .onAppear {
             //                imageSubmissions = viewModel.submissions(for: phrase)
             //            }
@@ -140,53 +140,52 @@ struct VotingView: View {
             VStack() {
                 Spacer()
                 if let selectedImage {
-            ButtonView(image: "iconVoteButton", title: "confirm vote", titleDone: "vote confirmed", action: {
-                viewModel.cleanAndStoreSubmissions()
-                viewModel.toggleReady()
-                    
-            }, state: .enabled)
-            } else {
-                ButtonView(image: "iconVoteButton", title: "confirm vote", titleDone: "vote confirmed", action: {
-                }, state: .inactive)
+                    ButtonView(image: "iconVoteButton", title: "confirm vote", titleDone: "vote confirmed", action: {
+                        viewModel.cleanAndStoreSubmissions()
+                        viewModel.toggleReady()
+                        
+                    }, state: .enabled)
+                } else {
+                    ButtonView(image: "iconVoteButton", title: "confirm vote", titleDone: "vote confirmed", action: {
+                    }, state: .inactive)
                 }
-
+                
             }
             .padding(.bottom, 34)
             .padding(.horizontal, 16)
-        }
-
-        .onAppear {
-            imageSubmissions = viewModel.submissions(for: phrase)
-        }
-        .onChange(of: viewModel.allReady) {
-            if !viewModel.players.isEmpty {
-                goToNextRound = true
+            
+            
+            .onAppear {
+                imageSubmissions = viewModel.submissions(for: phrase)
             }
-            viewModel.resetAllPlayersReady()
+            .onChange(of: viewModel.allReady) {
+                if !viewModel.players.isEmpty {
+                    goToNextRound = true
+                }
+                viewModel.resetAllPlayersReady()
+            }
+            .navigationDestination(isPresented: $goToNextRound) {
+                ImageSelectionView()
+            }
+            .navigationBarBackButtonHidden(true)
+            
+            .background(Color.darkerPurple)
         }
-        .navigationDestination(isPresented: $goToNextRound) {
-            ImageSelectionView()
-        }
-        .navigationBarBackButtonHidden(true)
-
-        .background(Color.darkerPurple)
     }
-    
-    struct GradientBackground: View {
-        let gradientBackground = LinearGradient(
-            gradient: Gradient(colors: [.lilac.opacity(0.5), .lighterPink.opacity(0.5)]),
-            startPoint: .top,
-            endPoint: .bottom)
-
-        var body: some View {
-            RoundedRectangle(cornerRadius: 32)
-                .fill(gradientBackground
-                    .shadow(.inner(color: Color.lilac, radius: 2, x: 0, y: 5)))
+        struct GradientBackground: View {
+            let gradientBackground = LinearGradient(
+                gradient: Gradient(colors: [.lilac.opacity(0.5), .lighterPink.opacity(0.5)]),
+                startPoint: .top,
+                endPoint: .bottom)
+            
+            var body: some View {
+                RoundedRectangle(cornerRadius: 32)
+                    .fill(gradientBackground
+                        .shadow(.inner(color: Color.lilac, radius: 2, x: 0, y: 5)))
+            }
+            
         }
-
     }
-    
-}
 #Preview {
     VotingView(phrase: "teste")
 }
