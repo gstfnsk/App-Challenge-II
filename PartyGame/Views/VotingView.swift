@@ -141,16 +141,20 @@ struct VotingView: View {
                     if let selectedImage {
                         viewModel.voteImage(id: selectedImage)
                         viewModel.cleanAndStoreSubmissions()
+                        goToNextRound = true
+                        viewModel.nextRound()
+                        viewModel.resetAllPlayersReady()
                     }
-                    goToNextRound = true
-                    viewModel.nextRound()
+                    
+                    
             }
             
         }
-        .onChange(of: viewModel.hasProcessedTimeRunOut) {
-            goToNextRound = true
-            viewModel.nextRound()
-        }
+//        .onChange(of: viewModel.hasProcessedTimeRunOut) {
+//            goToNextRound = true
+//            viewModel.nextRound()
+//          //  viewModel.resetAllPlayersReady()
+//        }
         .navigationDestination(isPresented: $goToNextRound) {
             ImageSelectionView()
         }

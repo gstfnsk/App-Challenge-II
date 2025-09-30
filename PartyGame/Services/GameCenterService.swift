@@ -251,13 +251,13 @@ class GameCenterService: NSObject, ObservableObject {
             if let randomPhrase = localPhraseChoices[playerID]?.randomElement() {
                 print("⚠️ Auto-submit forçado para \(player.player.displayName): \(randomPhrase)")
                 submittedPhrasesByPlayer[playerID] = randomPhrase
-                if !phrases.contains(randomPhrase) { phrases.append(randomPhrase) }
-                submitPhrase(phrase: randomPhrase)
+            //    if !phrases.contains(randomPhrase) { phrases.append(randomPhrase) }
+              //  submitPhrase(phrase: randomPhrase)
             } else if let backup = Phrases.all.randomElement()?.text {
                 print("⚡ Fallback global para \(player.player.displayName): \(backup)")
                 submittedPhrasesByPlayer[playerID] = backup
-                if !phrases.contains(backup) { phrases.append(backup) }
-                submitPhrase(phrase: backup)
+             //   if !phrases.contains(backup) { phrases.append(backup) }
+              //  submitPhrase(phrase: backup)
             }
         }
     }
@@ -270,7 +270,7 @@ class GameCenterService: NSObject, ObservableObject {
             if !submittedPlayerIDs.contains(playerID) {
                 if let randomPhrase = Phrases.all.randomElement() {
                     print("⚡ Auto-submit para jogador \(player.player.displayName): \(randomPhrase)")
-                    submitPhrase(phrase: randomPhrase.text)
+                 //   submitPhrase(phrase: randomPhrase.text)
                 }
             }
         }
@@ -473,11 +473,14 @@ class GameCenterService: NSObject, ObservableObject {
     
     private func resetPhraseState() {
 
+        if let index = phrases.firstIndex(where: {$0 == currentPhrase}) {
+            phrases.remove(at: index)
+        }
         currentPhrase = ""
         phraseLeaderID = nil
         isWaitingForPhrase = false
         submittedPhrasesByPlayer.removeAll()
-        phrases.removeAll()
+        //phrases.removeAll()
     }
 
     
