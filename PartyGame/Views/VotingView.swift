@@ -135,7 +135,6 @@ struct VotingView: View {
         .onAppear {
             imageSubmissions = viewModel.submissions(for: phrase)
             viewModel.startPhase()
-            viewModel.resetAllPlayersReady()
         }
         .onChange(of: viewModel.allReady) {
             if !viewModel.players.isEmpty {
@@ -150,9 +149,10 @@ struct VotingView: View {
         }
         .onChange(of: viewModel.hasProcessedTimeRunOut) {
             goToNextRound = true
+            viewModel.nextRound()
         }
         .navigationDestination(isPresented: $goToNextRound) {
-            DebuggingView()
+            ImageSelectionView()
         }
         .navigationBarBackButtonHidden(true)
         .background(Color.darkerPurple)
