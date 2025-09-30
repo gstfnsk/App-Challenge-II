@@ -37,7 +37,7 @@ struct HomeView: View {
                                 //         .underline(true, color: .lilac)
                                         
                                 // }
-                                ButtonView(image: "img-gameController", title: "Start Match", titleDone: "", action: { viewModel.startSinglePlayerGame() }, changeToDone: false)
+                                ButtonView(image: "img-gameController", title: "Start Match", titleDone: "", action: { viewModel.startMultiplayerGame() }, changeToDone: false)
                             }
                         }
                         .padding()
