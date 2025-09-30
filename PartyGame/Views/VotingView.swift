@@ -98,7 +98,7 @@ struct VotingView: View {
                                                 RoundedRectangle(cornerRadius: 28)
                                                     .stroke(
                                                         selectedImage == photo.id
-                                                        ? Color.lightGreen : Color.lilac,
+                                                        ? Color.lighterGreen : Color.lilac,
                                                         lineWidth: 4
                                                     )
                                             )
