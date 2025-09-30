@@ -111,10 +111,6 @@ struct VotingView: View {
                     Spacer().frame(height: 100)
                 }
             }
-            
-            //            .onAppear {
-            //                imageSubmissions = viewModel.submissions(for: phrase)
-            //            }
             .navigationBarBackButtonHidden(true)
             
             VStack() {
@@ -122,7 +118,6 @@ struct VotingView: View {
                 if let selectedImage {
                     ButtonView(image: "iconVoteButton", title: "confirm vote", titleDone: "vote confirmed", action: {
                         print("UUID da imagem:", selectedImage)
-//                        viewModel.cleanAndStoreSubmissions()
                         viewModel.toggleReady()
                     }, state: .enabled)
                 } else {
@@ -142,6 +137,7 @@ struct VotingView: View {
             if !viewModel.players.isEmpty {
                     if let selectedImage {
                         viewModel.voteImage(id: selectedImage)
+                        viewModel.cleanAndStoreSubmissions()
                     }
                     goToNextRound = true
                     viewModel.nextRound()
@@ -166,9 +162,7 @@ struct VotingView: View {
                 .fill(gradientBackground
                     .shadow(.inner(color: Color.lilac, radius: 2, x: 0, y: 5)))
         }
-        
     }
-    
 }
 #Preview {
     VotingView(phrase: "teste")
