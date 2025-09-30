@@ -25,7 +25,7 @@ final class LobbyViewModel: ObservableObject {
     
     init() {
         
-        self.players = service.gamePlayers.map { $0.player }
+//        self.players = service.gamePlayers.map { $0.player }
         
         //service.$gamePlayers
         //    .receive(on: DispatchQueue.main)

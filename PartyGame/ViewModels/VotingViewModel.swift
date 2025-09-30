@@ -17,7 +17,7 @@ final class VotingViewModel {
     var readyMap: [String: Bool] = [:]
     
     init() {
-        self.players = service.gamePlayers.map { $0.player }
+//        self.players = service.gamePlayers.map { $0.player }
         self.readyMap = service.readyMap
     }
 

@@ -1,84 +1,114 @@
-//import SwiftUI
-//import GameKit
-//
-//struct MatchRankingView: View {
-//    @ObservedObject var viewModel: MatchRankingViewModel
-//    
-//    let players: [Player]
-//    
-//    var winner: Player? {
-//        var votes = 0
-//        var winner: Player?
-//        for player in players {
-//            if player.votes >= votes {
-//                winner = player
-//                votes = player.votes
-//            }
-//        }
-//        return winner
-//    }
-//    
-//    init(viewModel: MatchRankingViewModel) {
-//        self.viewModel = viewModel
-//        
-//        let imageSubmission = ImageSubmission(
-//            image: UIImage(systemName: "square.and.arrow.up")!.pngData(),
-//            submissionTime: Date()
-//        )
-//        
-//        let mockPlayer1 = MockPlayer(displayName: "Tester 1", gamePlayerID: "12345")
-//        let mockPlayer2 = MockPlayer(displayName: "Tester 2", gamePlayerID: "12345")
-//        let mockPlayer3 = MockPlayer(displayName: "Tester 3", gamePlayerID: "12345")
-//        let mockPlayer4 = MockPlayer(displayName: "Tester 4", gamePlayerID: "12345")
-//        
-//        let playerSubmission1 = PlayerSubmission(player: mockPlayer1, phrase: "", imageSubmission: imageSubmission, votes: 10)
-//        let playerSubmission2 = PlayerSubmission(player: mockPlayer2, phrase: "", imageSubmission: imageSubmission, votes: 21)
-//        let playerSubmission3 = PlayerSubmission(player: mockPlayer3, phrase: "", imageSubmission: imageSubmission, votes: 18)
-//        let playerSubmission4 = PlayerSubmission(player: mockPlayer4, phrase: "", imageSubmission: imageSubmission, votes: 40)
-//        
-//        self.players = [
-//            Player(player: mockPlayer1, submissions: [playerSubmission1, playerSubmission2]),
-//            Player(player: mockPlayer2, submissions: [playerSubmission3, playerSubmission4]),
-//            Player(player: mockPlayer3, submissions: [playerSubmission4]),
-//            Player(player: mockPlayer4, submissions: [playerSubmission2, playerSubmission3])
-//        ]
-//    }
-//    
-//    var body: some View {
-//        VStack(spacing: 16) {
-//            VStack(spacing: 0) {
-//                Text("The winner is:")
-//                    .font(Font.custom("DynaPuff-Regular", size: 16))
-//                    .foregroundColor(.darkerPurple)
-//
-//                Text(winner?.player.displayName ?? "No winner")
-//                    .font(Font.custom("DynaPuff-Regular", size: 32))
-//                    .foregroundColor(.darkerPurple)
-//            }
-//            
-//            ScrollView {
-//                RankingComponent(players: players)
-//            }
-//            Spacer()
-//            ButtonHighFidelityView(image: "", title: "Play Again", action: {})
-//            ButtonHighFidelityView(image: "", title: "Quit", action: {})
-//        }
-//        .padding(.all)
-//    }
-//}
-//
-//protocol PlayerRepresentable {
-//    var displayName: String { get }
-//    var gamePlayerID: String { get }
-//}
-//
-//extension GKPlayer: PlayerRepresentable {}
-//
-//struct MockPlayer: PlayerRepresentable {
-//    var displayName: String
-//    var gamePlayerID: String
-//}
-//
-//#Preview {
-//    MatchRankingView(viewModel: MatchRankingViewModel(service: GameCenterService.shared))
-//}
+import SwiftUI
+import GameKit
+
+struct MatchRankingView: View {
+    @ObservedObject var viewModel: MatchRankingViewModel
+    
+    let players: [Player]
+    
+    var winner: Player? {
+        var votes = 0
+        var winner: Player?
+        for player in players {
+            if player.votes >= votes {
+                winner = player
+                votes = player.votes
+            }
+        }
+        return winner
+    }
+    
+    init(viewModel: MatchRankingViewModel) {
+        self.viewModel = viewModel
+        
+        let imageSubmission = ImageSubmission(
+            playerID: "1", image: UIImage(systemName: "square.and.arrow.up")!.pngData(),
+            submissionTime: Date()
+        )
+        
+        let mockPlayer1 = MockPlayer(displayName: "Tester 1", gamePlayerID: "12345")
+        let mockPlayer2 = MockPlayer(displayName: "Tester 2", gamePlayerID: "12345")
+        let mockPlayer3 = MockPlayer(displayName: "Tester 3", gamePlayerID: "12345")
+        let mockPlayer4 = MockPlayer(displayName: "Tester 4", gamePlayerID: "12345")
+        
+        let playerSubmission1 = PlayerSubmission(playerID: "mockPlayer1", phrase: "", imageSubmission: imageSubmission, votes: 10)
+        let playerSubmission2 = PlayerSubmission(playerID: "mockPlayer2", phrase: "", imageSubmission: imageSubmission, votes: 21)
+        let playerSubmission3 = PlayerSubmission(playerID: "mockPlayer3", phrase: "", imageSubmission: imageSubmission, votes: 18)
+        let playerSubmission4 = PlayerSubmission(playerID: "mockPlayer4", phrase: "", imageSubmission: imageSubmission, votes: 40)
+        
+        self.players = [
+            Player(player: mockPlayer1, submissions: [playerSubmission1, playerSubmission2]),
+            Player(player: mockPlayer2, submissions: [playerSubmission3, playerSubmission4]),
+            Player(player: mockPlayer3, submissions: [playerSubmission4]),
+            Player(player: mockPlayer4, submissions: [playerSubmission2, playerSubmission3])
+        ]
+    }
+    
+    var body: some View {
+        ZStack{
+            Image("img-texture2")
+                .resizable()
+                .scaledToFill()
+                .frame(minWidth: 0)
+                .edgesIgnoringSafeArea(.all)
+            ScrollView{
+                VStack(spacing: 26) {
+                    
+                    VStack(alignment: .leading, spacing: 5) {
+                        Text("game over")
+                            .font(.system(size: 15, weight: .bold, design: .rounded))
+                            .foregroundColor(.darkerPurple)
+                            .tint(.lilac)
+                        
+                        Text("final results")
+                            .font(Font.custom("DynaPuff-Regular", size: 32))
+                            .fontWeight(.bold)
+                            .foregroundStyle(.ice
+                                .shadow(.inner(color: .lilac, radius: 2, y: 3)))
+                    }
+                    .frame(maxWidth: .infinity, alignment: .leading)
+                    .padding(.all)
+                    VStack(spacing: 48){
+                        HStack(alignment: .center, spacing: 16){
+                            CircleComponent(isWinner: false, name: "mrlorenzo1608", points: 9, secondImage: "img-second")
+                                .offset(y:71)
+                            CircleComponent(isWinner: true, name: "mrfernandos", points: 10, secondImage: "img-winner")
+                            CircleComponent(isWinner: false, name: "rntoneto", points: 8, secondImage: "img-third")
+                                .offset(y:71)
+                        }
+                        .padding(16)
+                        
+                        //Highlight picktures
+                        
+                        RoundedRectangle(cornerRadius: 32)
+                            .frame(width: 361, height: 517)
+                            .foregroundStyle(LinearGradient(
+                                gradient: Gradient(colors: [.lilac.opacity(0.5), .lighterPink.opacity(0.5)]),
+                                startPoint: .top,
+                                endPoint: .bottom).shadow(.inner(color: .ice, radius: 2, y: 5)))
+                    }
+                    .padding(.top)
+                }
+            }
+        }
+        .background(Color(.darkerPurple))
+
+    }
+}
+
+
+protocol PlayerRepresentable {
+    var displayName: String { get }
+    var gamePlayerID: String { get }
+}
+
+extension GKPlayer: PlayerRepresentable {}
+
+struct MockPlayer: PlayerRepresentable {
+    var displayName: String
+    var gamePlayerID: String
+}
+
+#Preview {
+    MatchRankingView(viewModel: MatchRankingViewModel(service: GameCenterService.shared))
+}
