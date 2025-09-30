@@ -27,7 +27,7 @@ struct HomeView: View {
                             Spacer()
                             Image("img-picktureBanner")
                             Spacer()
-                            VStack(alignment: .center, spacing: 16) {
+                        VStack(alignment: .center, spacing: 16) {
                                 // Button {
                                     
                                 // } label: {

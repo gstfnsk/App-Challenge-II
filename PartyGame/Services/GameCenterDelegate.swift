@@ -111,6 +111,19 @@ extension GameCenterService: GKMatchmakerViewControllerDelegate, GKMatchDelegate
             break
         }
         
+        if let votePacket = try? JSONDecoder().decode(VoteSubmissionPayload.self, from: data) {
+            switch votePacket.type {
+            case "newVote":
+                let vote = votePacket.submission
+                print("📡 voto recebido de \(vote.from)")
+                    DispatchQueue.main.async {
+                        self.storeVote(vote: vote)
+                    }
+            default:
+                break
+            }
+        }
+        
         if let payload = try? JSONDecoder().decode(SubmissionPayload.self, from: data) {
             switch payload.type {
             case "newImage":
