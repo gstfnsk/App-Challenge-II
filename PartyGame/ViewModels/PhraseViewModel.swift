@@ -128,7 +128,7 @@ final class PhraseViewModel {
         hasSubmittedPhrase = true
         
         if let randomPhrase = selectablePhrases.randomElement()?.text {
-            service.submitPhrase(phrase: randomPhrase)
+          //  service.submitPhrase(phrase: randomPhrase)
             print("⏰ Auto-submission: \(randomPhrase)")
         }
     }

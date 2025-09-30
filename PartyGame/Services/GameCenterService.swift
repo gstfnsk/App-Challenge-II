@@ -1,9 +1,3 @@
-//
-//  GameCenterService.swift
-//  PartyGame
-//
-//  Consolidated + reviewed by ChatGPT
-//
 
 import SwiftUI
 import GameKit
@@ -40,8 +34,10 @@ struct SubmissionPayload: Codable {
     let submission: PlayerSubmission
 }
 
-// NOTE: Player, PlayerSubmission, ImageSubmission, Phrases must exist elsewhere in your project.
-// This file assumes those types are defined like in your original project.
+struct VoteSubmissionPayload: Codable {
+    let type: String
+    let submission: VoteSubmission
+}
 
 class GameCenterService: NSObject, ObservableObject {
     
@@ -67,15 +63,18 @@ class GameCenterService: NSObject, ObservableObject {
     @Published var timerStart: Date? = nil
     
     @Published var isPhraseSubmittedByAnyPlayer: Bool = false
+
     @Published var submittedPhrasesByPlayer: [String: String] = [:] // playerID -> phrase
+    @Published var votes: [String : VoteSubmission] = [:] //
+    
     
     // Networking / match
     var match: GKMatch?
-
+    
     internal var pendingInvite: GKInvite?
     internal var pendingPlayersToInvite: [GKPlayer]?
     internal var expectedPlayersCount: Int {
-
+        
         if isSinglePlayer { return 1 }
         let ids = Set(([GKLocalPlayer.local] + (match?.players ?? [])).map { $0.gamePlayerID })
         return ids.count
@@ -103,7 +102,7 @@ class GameCenterService: NSObject, ObservableObject {
             object: nil
         )
     }
-    
+     
     @objc private func appDidBecomeActive() {
         DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
             self.processPendingInvite()
@@ -150,6 +149,56 @@ class GameCenterService: NSObject, ObservableObject {
         }
     }
     
+    //MARK: Submissão de voto
+    func submitVote(id: UUID, player: String) {
+        let vote = VoteSubmission(from: player, toPhoto: id, round: self.currentRound)
+        self.votes[vote.from] = vote
+        guard let match else { return }
+        do {
+            let payload = VoteSubmissionPayload(type: "newVote", submission: vote)
+            let data = try JSONEncoder().encode(payload)
+            try match.sendData(toAllPlayers: data, with: .reliable)
+            
+        } catch {
+            print("❌ Erro ao enviar voto: \(error)")
+        }
+        print("Novo voto adicionado:", vote)
+    }
+    
+    func storeVote (vote: VoteSubmission) {
+        self.votes[vote.from] = vote
+        attributeVotes()
+    }
+    
+    func attributeVotes() {
+        // printa o player antes da atribuição for debugging purposes
+        for player in playerSubmissions {
+            print("---------------------------------------------")
+            print("1 Jogador: \(player.playerID), Pontos: \(player.votes)")
+            print("---------------------------------------------")
+        }
+        
+        // zera antes de contar novos votos
+        for i in playerSubmissions.indices {
+            playerSubmissions[i].votes = 0
+        }
+        
+        for vote in votes.values {
+            if let index = playerSubmissions.firstIndex(where: { $0.imageSubmission.id == vote.toPhoto }) {
+                playerSubmissions[index].votes += 1
+                print("✅ Voto atribuído: \(vote.from) → \(playerSubmissions[index].playerID)")
+            } else {
+                print("⚠️ Nenhuma submissão encontrada para UUID \(vote.toPhoto)")
+            }
+        }
+        
+        for player in playerSubmissions {
+            print("---------------------------------------------")
+            print("2 Jogador: \(player.playerID), Pontos: \(player.votes)")
+            print("---------------------------------------------")
+        }
+    }
+    
     func handleReceivedData(_ data: Data) {
         guard
             let dict = try? JSONSerialization.jsonObject(with: data) as? [String: Any],
@@ -161,6 +210,7 @@ class GameCenterService: NSObject, ObservableObject {
         }
     }
     
+
     // MARK: - Phrase submission (local & broadcast)
     func submitPhrase(phrase: String) {
         let playerID = localPlayerID
@@ -170,11 +220,11 @@ class GameCenterService: NSObject, ObservableObject {
             return
         }
         
-        // Registra localmente
+
         submittedPhrasesByPlayer[playerID] = phrase
-        if !phrases.contains(phrase) { phrases.append(phrase) }
+        phrases.append(phrase)
         
-        // Broadcast
+
         guard let match else { return }
         let payload: [String: Any] = [
             "type": "newPhrase",
@@ -201,13 +251,13 @@ class GameCenterService: NSObject, ObservableObject {
             if let randomPhrase = localPhraseChoices[playerID]?.randomElement() {
                 print("⚠️ Auto-submit forçado para \(player.player.displayName): \(randomPhrase)")
                 submittedPhrasesByPlayer[playerID] = randomPhrase
-                if !phrases.contains(randomPhrase) { phrases.append(randomPhrase) }
-                submitPhrase(phrase: randomPhrase)
+            //    if !phrases.contains(randomPhrase) { phrases.append(randomPhrase) }
+              //  submitPhrase(phrase: randomPhrase)
             } else if let backup = Phrases.all.randomElement()?.text {
                 print("⚡ Fallback global para \(player.player.displayName): \(backup)")
                 submittedPhrasesByPlayer[playerID] = backup
-                if !phrases.contains(backup) { phrases.append(backup) }
-                submitPhrase(phrase: backup)
+             //   if !phrases.contains(backup) { phrases.append(backup) }
+              //  submitPhrase(phrase: backup)
             }
         }
     }
@@ -220,21 +270,26 @@ class GameCenterService: NSObject, ObservableObject {
             if !submittedPlayerIDs.contains(playerID) {
                 if let randomPhrase = Phrases.all.randomElement() {
                     print("⚡ Auto-submit para jogador \(player.player.displayName): \(randomPhrase)")
-                    submitPhrase(phrase: randomPhrase.text)
+                 //   submitPhrase(phrase: randomPhrase.text)
                 }
             }
         }
     }
+
     
+    // Função para eleger o líder da frase (jogador com menor ID)
     // MARK: - Leader election & phrase selection
+
     private func electPhraseLeader() -> String? {
         guard !gamePlayers.isEmpty else { return nil }
         let sortedPlayers = gamePlayers.sorted { $0.player.gamePlayerID < $1.player.gamePlayerID }
         return sortedPlayers.first?.player.gamePlayerID
     }
     
+    // MARK: - Início da seleção de frase
     func initiatePhraseSelection() {
-        // Garante que todos tenham uma frase (fallback)
+        // Antes de qualquer coisa, garantir que todos os jogadores têm uma frase
+
         ensureAllPlayersSubmittedFallback()
         
         if Phrases.all.isEmpty {
@@ -268,17 +323,21 @@ class GameCenterService: NSObject, ObservableObject {
     
     private func selectRandomPhrase() {
         if !currentPhrase.isEmpty {
-            print("⚠️ Seleção já foi feita: \(currentPhrase)")
-            return
-        }
+                print("⚠️ Seleção já foi feita: \(currentPhrase)")
+                return
+            }
+        
+
         guard !phrases.isEmpty else {
             print("❌ Nenhuma frase disponível para seleção")
             return
         }
+
         if let selected = phrases.randomElement() {
             currentPhrase = selected
             print("🎯 Líder selecionou a frase: \(selected)")
             broadcastSelectedPhrase(selected)
+
         }
     }
     
@@ -329,7 +388,7 @@ class GameCenterService: NSObject, ObservableObject {
         return ((gamePlayers.count == playerSubmissions.count && gamePlayers.count != 0) ? true : false)
     }
     
-
+    
     // MARK: - Image submission
     func cleanAndStorePlayerSubmissions() {
         addSubmissionToPlayers()
@@ -382,43 +441,59 @@ class GameCenterService: NSObject, ObservableObject {
         print("todas images: \(playerSubmissions)")
     }
     
-    func getSubmittedImages() -> [PlayerSubmission] {
-        return self.playerSubmissions
-    }
+
     
     func haveAllPlayersSubmittedPhrase() -> Bool {
         print("\(phrases)")
         return (gamePlayers.count == submittedPhrasesByPlayer.count && gamePlayers.count != 0)
+        
+    }
+    
+
+    func getSubmittedImages() -> [PlayerSubmission] {
+        return self.playerSubmissions
     }
     
     // Rounds
     var maxRounds: Int { gamePlayers.count }
     
     func goToNextRound() {
-        if currentRound < maxRounds {
-            currentRound += 1
-            resetPhraseState()
-        }
+        //        if currentRound < maxRounds {
+        //            if haveAllPlayersVoted() {
+        //                attributeVotes()
+        //            }
+        attributeVotes()
+        //            print("nova rodada")
+        currentRound += 1
+        // Resetar estado da frase para a nova rodada
+        resetPhraseState()
+        //TODO: resetVotes()
+        //        }
     }
     
     private func resetPhraseState() {
+
+        if let index = phrases.firstIndex(where: {$0 == currentPhrase}) {
+            phrases.remove(at: index)
+        }
         currentPhrase = ""
         phraseLeaderID = nil
         isWaitingForPhrase = false
         submittedPhrasesByPlayer.removeAll()
-        phrases.removeAll()
+        //phrases.removeAll()
     }
-    
 
+    
+    
     // Zera o readyMap para todos os jogadores. Se broadcast = true, sincroniza com os demais dispositivos.
     func resetReadyForAllPlayers(broadcast: Bool = true) {
-        DispatchQueue.main.async {
+       // DispatchQueue.main.async {
             var map = self.readyMap
             for key in map.keys {
                 map[key] = false
             }
             self.readyMap = map
-        }
+       // }
         
         guard broadcast, !isSinglePlayer, let match = match else { return }
         do {
@@ -451,9 +526,9 @@ class GameCenterService: NSObject, ObservableObject {
         }
     }
     
-
+    
     internal func refreshPlayers() {
-
+        
         var everyone: [GKPlayer] = [GKLocalPlayer.local as GKPlayer]
         if let remotes = match?.players { everyone.append(contentsOf: remotes) }
         DispatchQueue.main.async {

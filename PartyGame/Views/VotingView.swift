@@ -13,32 +13,12 @@ struct VotingView: View {
     @State var phrase: String
     @State var selectedImage: UUID?
     @State var goToNextRound: Bool = false
-    var viewModel: VotingViewModel = VotingViewModel()
+    @StateObject var viewModel: VotingViewModel = VotingViewModel()
     let columns = [
         GridItem(.flexible()),
         GridItem(.flexible()),
     ]
     @State var imageSubmissions: [ImageSubmission] = [
-        ImageSubmission(
-            playerID: "", image: UIImage(named: "img-placeholder16x9")!.jpegData(compressionQuality: 1.0)!,
-            submissionTime: Date()
-        ),
-        ImageSubmission(
-            playerID: "", image: UIImage(named: "img-placeholder1x1")!.jpegData(compressionQuality: 1.0)!,
-            submissionTime: Date()
-        ),
-        ImageSubmission(
-            playerID: "", image: UIImage(named: "img-placeholder9x16")!.jpegData(compressionQuality: 1.0)!,
-            submissionTime: Date()
-        ),
-        ImageSubmission(
-            playerID: "", image: UIImage(named: "img-placeholder9x16")!.jpegData(compressionQuality: 1.0)!,
-            submissionTime: Date()
-        ),
-        ImageSubmission(
-            playerID: "", image: UIImage(named: "img-placeholder9x16")!.jpegData(compressionQuality: 1.0)!,
-            submissionTime: Date()
-        )
     ]
     
     var body: some View {
@@ -51,7 +31,7 @@ struct VotingView: View {
             // Topo fixo
             VStack {
                 VStack(alignment: .leading) {
-                    Text("round 1")
+                    Text("round \(viewModel.service.currentRound)")
                         .font(.system(size: 15, weight: .medium, design: .rounded))
                         .foregroundStyle(.lilac)
                     
@@ -60,10 +40,12 @@ struct VotingView: View {
                             .font(.custom("DynaPuff-Medium", size: 28))
                             .foregroundStyle(.ice
                                 .shadow(.inner(color: .lilac, radius: 2, y: 3)))
-                        TimerComponent(remainingTime: 30, duration: 30.0)
+                        TimerComponent(remainingTime: viewModel.timeRemaining, duration: 30.0)
                     }
                     
-                    ProgressBarComponent(progress: .constant(30.0))
+                    ProgressBarComponent(progress: .constant(1.0 - (viewModel.remainingTimeDouble/30.0)))
+                    
+
                 }
                 .padding(.top, 59)
                 .padding(.horizontal)
@@ -87,6 +69,7 @@ struct VotingView: View {
                                 Button {
                                     selectedImage = photo.id
                                 } label: {
+                                    // Text(photo.id.uuidString)
                                     if let data = photo.image, let uiImage = UIImage(data: data) {
                                         Image(uiImage: uiImage)
                                             .resizable()
@@ -98,7 +81,7 @@ struct VotingView: View {
                                                 RoundedRectangle(cornerRadius: 28)
                                                     .stroke(
                                                         selectedImage == photo.id
-                                                        ? Color.lightGreen : Color.lilac,
+                                                        ? Color.lighterGreen : Color.lilac,
                                                         lineWidth: 4
                                                     )
                                             )
@@ -108,7 +91,6 @@ struct VotingView: View {
                                                         .resizable()
                                                         .frame(width: 40, height: 40)
                                                         .offset(x: 10, y: -10)
-                                                    
                                                 }
                                             }
                                     } else {
@@ -127,48 +109,56 @@ struct VotingView: View {
                     .background(GradientBackground())
                     .padding()
                     .frame(maxWidth: .infinity)
-//                    .padding(.bottom, 14)
+                    //                    .padding(.bottom, 14)
                     Spacer().frame(height: 100)
                 }
             }
-
-            //            .onAppear {
-            //                imageSubmissions = viewModel.submissions(for: phrase)
-            //            }
             .navigationBarBackButtonHidden(true)
             
             VStack() {
                 Spacer()
                 if let selectedImage {
-            ButtonView(image: "iconVoteButton", title: "confirm vote", titleDone: "vote confirmed", action: {
-                viewModel.cleanAndStoreSubmissions()
-                viewModel.toggleReady()
-                    
-            }, state: .enabled)
-            } else {
-                ButtonView(image: "iconVoteButton", title: "confirm vote", titleDone: "vote confirmed", action: {
-                }, state: .inactive)
+                    ButtonView(image: "iconVoteButton", title: "confirm vote", titleDone: "vote confirmed", action: {
+                        print("UUID da imagem:", selectedImage)
+                        viewModel.toggleReady()
+                    }, state: .enabled)
+                } else {
+                    ButtonView(image: "iconVoteButton", title: "confirm vote", titleDone: "vote confirmed", action: {
+                    }, state: .inactive)
                 }
-
+                
             }
             .padding(.bottom, 34)
             .padding(.horizontal, 16)
         }
-
+        
         .onAppear {
             imageSubmissions = viewModel.submissions(for: phrase)
+            viewModel.startPhase()
         }
         .onChange(of: viewModel.allReady) {
             if !viewModel.players.isEmpty {
-                goToNextRound = true
+                    if let selectedImage {
+                        viewModel.voteImage(id: selectedImage)
+                        viewModel.cleanAndStoreSubmissions()
+                        goToNextRound = true
+                        viewModel.nextRound()
+                        viewModel.resetAllPlayersReady()
+                    }
+                    
+                    
             }
-            viewModel.resetAllPlayersReady()
+            
         }
+//        .onChange(of: viewModel.hasProcessedTimeRunOut) {
+//            goToNextRound = true
+//            viewModel.nextRound()
+//          //  viewModel.resetAllPlayersReady()
+//        }
         .navigationDestination(isPresented: $goToNextRound) {
             ImageSelectionView()
         }
         .navigationBarBackButtonHidden(true)
-
         .background(Color.darkerPurple)
     }
     
@@ -177,15 +167,13 @@ struct VotingView: View {
             gradient: Gradient(colors: [.lilac.opacity(0.5), .lighterPink.opacity(0.5)]),
             startPoint: .top,
             endPoint: .bottom)
-
+        
         var body: some View {
             RoundedRectangle(cornerRadius: 32)
                 .fill(gradientBackground
                     .shadow(.inner(color: Color.lilac, radius: 2, x: 0, y: 5)))
         }
-
     }
-    
 }
 #Preview {
     VotingView(phrase: "teste")

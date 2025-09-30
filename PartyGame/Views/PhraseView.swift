@@ -9,7 +9,7 @@ import SwiftUI
 
 
 struct PhraseView: View {
-    private let service = GameCenterService.shared
+
     var viewModel = PhraseViewModel()
     @State var selectedPhrase: Phrase? = nil
     @State var displayedPhrases: [Phrase] = []
@@ -32,10 +32,13 @@ struct PhraseView: View {
                 .frame(minWidth: 0)
                 .edgesIgnoringSafeArea(.all)
             
+            
+            
             VStack(spacing: 85){
                 VStack(spacing: 24){
                     VStack(spacing: 5){
-                        Text("round \(service.currentRound)")
+                        Text("round \(viewModel.service.currentRound)")
+
                             .font(.system(size: 15, weight: .medium, design: .rounded))
                             .foregroundStyle(.lilac)
                             .frame(maxWidth: .infinity, alignment: .leading)
@@ -142,13 +145,11 @@ struct PhraseView: View {
         }
 
         .onChange(of: viewModel.haveTimeRunOut) { oldValue, newValue in
-            print("🔥 Time run out changed: \(oldValue) -> \(newValue)")
             if newValue {
                 nextScreen = true
             }
         }
         .onChange(of: viewModel.haveAllPlayersSubmitted) { oldValue, newValue in
-            print("👥 All players submitted changed: \(oldValue) -> \(newValue)")
             if newValue {
                 nextScreen = true
             }
@@ -168,3 +169,8 @@ struct GradientBackground: View {
                 .shadow(.inner(color: Color.lilac, radius: 2, x: 0, y: 5)))
     }
 }
+
+#Preview {
+    PhraseView()
+}
+
