@@ -6,7 +6,6 @@
 //
 
 import SwiftUI
-import GameKit
 
 struct LobbyView: View {
     @ObservedObject var viewModel = LobbyViewModel()
@@ -32,7 +31,7 @@ struct LobbyView: View {
                 
                 VStack(spacing: 16) {
                     HStack (spacing: 16){
-                        Text("\(viewModel.players.count) players")
+                        Text("\(viewModel.playerRows.count) players")
                             .font(.custom("Dynapuff-Regular", size: 22))
                             .foregroundStyle(.ice)
                             .frame(maxWidth: 205, alignment: .leading)
@@ -47,12 +46,9 @@ struct LobbyView: View {
                     
                     ScrollView(.vertical, showsIndicators: false) {
                         LazyVStack(alignment: .leading, spacing: 0) {
-                            ForEach(viewModel.players, id: \.gamePlayerID) { p in
-                                let ready = viewModel.readyMap[p.gamePlayerID] ?? false
-                                let isMe  = p.gamePlayerID == viewModel.localPlayerID
-                                
+                            ForEach(viewModel.playerRows) { row in
                                 HStack(spacing: 14) {
-                                    if let img = viewModel.avatar(for: p.gamePlayerID) {
+                                    if let img = viewModel.avatar(for: row.id) {
                                         Image(uiImage: img)
                                             .resizable()
                                             .scaledToFill()
@@ -62,31 +58,31 @@ struct LobbyView: View {
                                         ZStack {
                                             RoundedRectangle(cornerRadius: 7)
                                                 .fill(Color.white.opacity(0.12))
-                                            Text(p.displayName.split(separator: " ")
+                                            Text(row.name.split(separator: " ")
                                                 .prefix(2).compactMap { $0.first }
                                                 .map(String.init).joined().uppercased())
-                                            .font(.system(size: 11, weight: .bold, design: .rounded))
-                                            .foregroundStyle(.ice)
+                                                .font(.system(size: 11, weight: .bold, design: .rounded))
+                                                .foregroundStyle(.ice)
                                         }
                                         .frame(width: 30, height: 30)
                                         .clipShape(RoundedRectangle(cornerRadius: 7))
                                     }
                                     
-                                    Text(isMe ? "\(p.displayName) (you)" : p.displayName)
+                                    Text(row.isMe ? "\(row.name) (you)" : row.name)
                                         .font(.system(size: 17, weight: .semibold, design: .rounded))
                                         .frame(maxWidth: 207, alignment: .leading)
                                         .multilineTextAlignment(.leading)
                                     
                                     Spacer(minLength: 0)
                                     
-                                    Image(ready ? "img-ready" : "img-notReady")
+                                    Image(row.isReady ? "img-ready" : "img-notReady")
                                 }
                                 .padding(.horizontal, 16)
                                 .padding(.vertical, 14)
                                 .frame(maxWidth: .infinity, alignment: .leading)
-                                .background(isMe ? Color.darkerPurple.opacity(0.6) : .clear)
+                                .background(row.isMe ? Color.darkerPurple.opacity(0.6) : .clear)
                                 .overlay(alignment: .bottom) {
-                                    if p.gamePlayerID != viewModel.players.last?.gamePlayerID {
+                                    if row.id != viewModel.playerRows.last?.id {
                                         Rectangle()
                                             .fill(Color.black.opacity(0.12))
                                             .frame(height: 1)
@@ -139,7 +135,6 @@ struct LobbyView: View {
                             Text(sliderText)
                                 .foregroundColor(Color.ice)
                                 .font(Font.custom("DynaPuff-Medium", size: 24))
-                            
                                 .shadow(color: .black.opacity(0.2), radius: 1)
                                 .animation(.easeInOut(duration: 0.2), value: sliderText)
                         }
@@ -157,7 +152,6 @@ struct LobbyView: View {
                         Image(systemName: knobIcon)
                             .foregroundStyle(knobColor)
                             .fontWeight(.black)
-                        
                     }
                 )
                 .padding(.horizontal, 16)
@@ -180,8 +174,8 @@ struct LobbyView: View {
         }
         .background(Color.darkerPurple)
         .navigationBarBackButtonHidden(true)
-        .onChange(of: viewModel.allReady) { oldValue, newValue in
-            if newValue && !viewModel.players.isEmpty {
+        .onChange(of: viewModel.allReady) { _, newValue in
+            if newValue && !viewModel.playerRows.isEmpty {
                 startGame = true
             }
         }
@@ -200,7 +194,6 @@ struct LobbyView: View {
                 } label: { Image(systemName: "chevron.left") }
             }
         }
-
         .onReceive(NotificationCenter.default.publisher(for: UIResponder.keyboardWillChangeFrameNotification)) { note in
             guard
                 let end = note.userInfo?[UIResponder.keyboardFrameEndUserInfoKey] as? CGRect,
@@ -226,13 +219,12 @@ struct LobbyView: View {
             Text("Jogadores conectados")
                 .font(.headline)
             Spacer()
-            if viewModel.allReady && !viewModel.players.isEmpty {
+            if viewModel.allReady && !viewModel.playerRows.isEmpty {
                 Text("Todos prontos ✅")
                     .font(.subheadline)
                     .foregroundStyle(.green)
-                
             } else {
-                Text("\(viewModel.players.count)")
+                Text("\(viewModel.playerRows.count)")
                     .font(.subheadline)
                     .foregroundStyle(.secondary)
             }
@@ -240,7 +232,6 @@ struct LobbyView: View {
         .padding()
     }
         
-    
     enum GradientState: Equatable {
         case initial
         case startDragging
@@ -260,8 +251,8 @@ struct LobbyView: View {
                 return .completed
             }
         }
-        else if dragProgress == 0{
-            return.initial
+        else if dragProgress == 0 {
+            return .initial
         } else {
             return .startDragging
         }
@@ -275,21 +266,18 @@ struct LobbyView: View {
                 startPoint: .leading,
                 endPoint: .trailing
             )
-            
         case .startDragging:
             return LinearGradient(
                 colors: [Color.darkerRed, Color.darkerGreen],
                 startPoint: .leading,
                 endPoint: .trailing
             )
-            
         case .midDragging:
             return LinearGradient(
                 colors: [Color.darkerRed, Color.darkerGreen, Color.lighterGreen],
                 startPoint: .leading,
                 endPoint: .trailing
             )
-            
         case .completed:
             return LinearGradient(
                 colors: [Color.lighterGreen, Color.darkerGreen],
@@ -401,7 +389,6 @@ private struct ChatCard: View {
         )
         .contentShape(Rectangle())
         .onTapGesture { inputFocused = false }
-
         .toolbar {
             ToolbarItemGroup(placement: .keyboard) {
                 Spacer()

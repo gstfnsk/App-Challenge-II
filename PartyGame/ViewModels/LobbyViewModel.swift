@@ -20,11 +20,18 @@ final class LobbyViewModel: ObservableObject {
         let text: String
     }
 
+    struct PlayerRow: Identifiable, Equatable {
+        let id: String
+        let name: String
+        let isMe: Bool
+        let isReady: Bool
+    }
+
     @Published var chat: [ChatItem] = []
     @Published var messages: [String] = []
     @Published var typedMessage: String = ""
 
-    @Published var players: [GKPlayer] = []
+    @Published var playerRows: [PlayerRow] = []
     @Published var isInMatch: Bool = false
     @Published var readyMap: [String: Bool] = [:]
 
@@ -36,16 +43,31 @@ final class LobbyViewModel: ObservableObject {
     private let service = GameCenterService.shared
     private var cancellables: Set<AnyCancellable> = []
 
+    private var players: [GKPlayer] = []
+
+    var localPlayerID: String { GKLocalPlayer.local.gamePlayerID }
+
+    var isLocalReady: Bool { readyMap[localPlayerID] ?? false }
+    var allReady: Bool {
+        guard !playerRows.isEmpty else { return false }
+        for row in playerRows where row.isReady == false { return false }
+        return true
+    }
+
     init() {
         self.players = service.gamePlayers.map { $0.player }
+        self.buildPlayerRows(from: players, ready: service.readyMap)
         self.loadAvatars(for: self.players)
 
-        service.$gamePlayers
+        Publishers.CombineLatest(service.$gamePlayers, service.$readyMap)
             .receive(on: DispatchQueue.main)
-            .map { $0.map { $0.player } }
-            .sink { [weak self] gks in
-                self?.players = gks
-                self?.loadAvatars(for: gks)
+            .sink { [weak self] gamePlayers, ready in
+                guard let self else { return }
+                let gks = gamePlayers.map { $0.player }
+                self.players = gks
+                self.readyMap = ready
+                self.buildPlayerRows(from: gks, ready: ready)
+                self.loadAvatars(for: gks)
             }
             .store(in: &cancellables)
 
@@ -64,10 +86,6 @@ final class LobbyViewModel: ObservableObject {
         service.$isInMatch
             .receive(on: DispatchQueue.main)
             .assign(to: &$isInMatch)
-
-        service.$readyMap
-            .receive(on: DispatchQueue.main)
-            .assign(to: &$readyMap)
     }
 
     func sendMessage() {
@@ -94,18 +112,20 @@ final class LobbyViewModel: ObservableObject {
         isSliderComplete = false
     }
 
-    var localPlayerID: String { GKLocalPlayer.local.gamePlayerID }
-    var isLocalReady: Bool { readyMap[localPlayerID] ?? false }
-    var allReady: Bool {
-        guard !players.isEmpty else { return false }
-        for p in players {
-            if readyMap[p.gamePlayerID] != true { return false }
-        }
-        return true
-    }
-
     func resetAllPlayersReady() {
         service.resetReadyForAllPlayers()
+    }
+
+    private func buildPlayerRows(from gks: [GKPlayer], ready: [String: Bool]) {
+        let meID = localPlayerID
+        self.playerRows = gks.map {
+            PlayerRow(
+                id: $0.gamePlayerID,
+                name: $0.displayName,
+                isMe: $0.gamePlayerID == meID,
+                isReady: ready[$0.gamePlayerID] ?? false
+            )
+        }
     }
 
     private func loadAvatars(for players: [GKPlayer]) {
