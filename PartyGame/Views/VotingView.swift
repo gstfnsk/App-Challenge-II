@@ -159,8 +159,9 @@ struct VotingView: View {
         }
         .onChange(of: viewModel.allReady) {
             if !viewModel.players.isEmpty {
-                viewModel.cleanAndStoreSubmissions()
+               // viewModel.cleanAndStoreSubmissions()
                 goToNextRound = true
+                viewModel.goToNextRound()
             }
             viewModel.resetAllPlayersReady()
         }

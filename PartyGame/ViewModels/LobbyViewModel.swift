@@ -55,6 +55,10 @@ final class LobbyViewModel: ObservableObject {
         service.leaveMatch()
     }
     
+    func electLeader() {
+        service.electPhraseLeader()
+    }
+    
     func toggleReady() {
         service.toggleReady()
     }

@@ -114,6 +114,7 @@ struct LobbyView: View {
         .navigationBarTitleDisplayMode(.inline)
         .navigationBarBackButtonHidden(true)
         .onChange(of: startGame) {
+            viewModel.electLeader()
             viewModel.resetAllPlayersReady()
         }
         .navigationDestination(isPresented: $startGame) {

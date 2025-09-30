@@ -44,7 +44,7 @@ final class ImageSelectionViewModel: ObservableObject {
     
     func setCurrentRandomPhrase() -> String {
         
-        if currentPhrase.isEmpty && service.phraseLeaderID == nil {
+        if currentPhrase.isEmpty && service.phraseLeaderID == String(GKLocalPlayer.local.gamePlayerID) {
             service.initiatePhraseSelection()
         }
         return currentPhrase

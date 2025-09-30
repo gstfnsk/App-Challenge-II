@@ -227,10 +227,12 @@ class GameCenterService: NSObject, ObservableObject {
     }
     
     // MARK: - Leader election & phrase selection
-    private func electPhraseLeader() -> String? {
-        guard !gamePlayers.isEmpty else { return nil }
+    func electPhraseLeader() {
+       // guard !gamePlayers.isEmpty else { return nil }
         let sortedPlayers = gamePlayers.sorted { $0.player.gamePlayerID < $1.player.gamePlayerID }
-        return sortedPlayers.first?.player.gamePlayerID
+        let leaderID = sortedPlayers.first!.player.gamePlayerID
+       // return sortedPlayers.first?.player.gamePlayerID
+        broadcastPhraseLeader(leaderID)
     }
     
     func initiatePhraseSelection() {
@@ -242,31 +244,28 @@ class GameCenterService: NSObject, ObservableObject {
             return
         }
         
-        guard currentPhrase.isEmpty && phraseLeaderID == nil else {
-            print("⚠️ Seleção de frase já em andamento ou frase já selecionada")
+        guard currentPhrase.isEmpty else {
+            print("⚠️ Frase já selecionada")
             return
         }
         
-        let localID = localPlayerID
-        guard let leaderID = electPhraseLeader() else {
-            print("❌ Não foi possível eleger um líder")
-            return
-        }
+//        let localID = localPlayerID
+//        guard let leaderID = electPhraseLeader() else {
+//            print("❌ Não foi possível eleger um líder")
+//            return
+//        }
+//        
+//        self.phraseLeaderID = leaderID
         
-        phraseLeaderID = leaderID
-        
-        if isSinglePlayer {
-            selectRandomPhrase()
-        } else {
-            broadcastPhraseLeader(leaderID)
-            if localID != leaderID {
-                isWaitingForPhrase = true
-            }
-            DispatchQueue.main.async { self.trySelectPhraseIfReady() }
-        }
+       // broadcastPhraseLeader(leaderID)
+     //   if localPlayerID != self.phraseLeaderID {
+     //       isWaitingForPhrase = true
+     //   } else {
+            DispatchQueue.main.async { self.selectRandomPhrase() }
+       // }
     }
     
-    private func selectRandomPhrase() {
+     func selectRandomPhrase() {
         if !currentPhrase.isEmpty {
             print("⚠️ Seleção já foi feita: \(currentPhrase)")
             return
@@ -275,11 +274,15 @@ class GameCenterService: NSObject, ObservableObject {
             print("❌ Nenhuma frase disponível para seleção")
             return
         }
-        if let selected = phrases.randomElement() {
-            currentPhrase = selected
-            print("🎯 Líder selecionou a frase: \(selected)")
-            broadcastSelectedPhrase(selected)
+        
+        if localPlayerID == phraseLeaderID {
+            if let selected = phrases.randomElement() {
+                currentPhrase = selected
+                print("🎯 Líder selecionou a frase: \(selected)")
+                broadcastSelectedPhrase(selected)
+            }
         }
+        
     }
     
     private func broadcastPhraseLeader(_ leaderID: String) {
@@ -332,9 +335,10 @@ class GameCenterService: NSObject, ObservableObject {
 
     // MARK: - Image submission
     func cleanAndStorePlayerSubmissions() {
-        addSubmissionToPlayers()
-        
-        cleanPlayerSubmissions(broadcast: true)
+        if localPlayerID == phraseLeaderID {
+            addSubmissionToPlayers()
+            cleanPlayerSubmissions(broadcast: true)
+        }
     }
     
     func cleanPlayerSubmissions(broadcast: Bool) {
@@ -347,10 +351,11 @@ class GameCenterService: NSObject, ObservableObject {
             print("phrase removida \(phrases[indexPhrase])")
             self.phrases.remove(at: indexPhrase)
             
+            
             print("array de phrases: \(self.phrases)")
         }
+        
         self.currentPhrase = ""
-        self.phraseLeaderID = nil
         
         guard broadcast, let match else { return }
         
@@ -408,13 +413,12 @@ class GameCenterService: NSObject, ObservableObject {
     func goToNextRound() {
         if currentRound < maxRounds {
             currentRound += 1
-            resetPhraseState()
+            //resetPhraseState()
         }
     }
     
     private func resetPhraseState() {
         currentPhrase = ""
-        phraseLeaderID = nil
         isWaitingForPhrase = false
         submittedPhrasesByPlayer.removeAll()
         phrases.removeAll()

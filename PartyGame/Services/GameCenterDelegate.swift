@@ -89,11 +89,6 @@ extension GameCenterService: GKMatchmakerViewControllerDelegate, GKMatchDelegate
         case "CleanPlayerSubmissions":
             DispatchQueue.main.async {
                 self.cleanPlayerSubmissions(broadcast: false)
-                if let indexPhrase = self.phrases.firstIndex(where: { $0 == self.currentPhrase }) {
-                    self.phrases.remove(at: indexPhrase)
-                }
-                self.currentPhrase = ""
-                self.phraseLeaderID = nil
                 print("📡 PlayerSubmissions limpo com sucesso: \(self.playerSubmissions)")
             }
             
