@@ -85,7 +85,7 @@ final class ImageSelectionViewModel: ObservableObject {
         let player = GKLocalPlayer.local.gamePlayerID
         let imageSubmission = ImageSubmission(playerID: player, image: data, submissionTime: Date())
         let phrase = currentPhrase
-        service.addSubmission(playerID: player, phrase: phrase, image: imageSubmission)
+        service.addSubmission(playerID: player, phrase: phrase, image: imageSubmission, time: imageSubmission.submissionTime)
 
         hasSubmitted = true
         

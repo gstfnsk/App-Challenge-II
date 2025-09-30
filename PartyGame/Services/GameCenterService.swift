@@ -365,7 +365,7 @@ class GameCenterService: NSObject, ObservableObject {
     }
     
     //MARK: submissão de imagem do jogador para a frase atual
-    func addSubmission(playerID: String, phrase: String, image: ImageSubmission) {
+    func addSubmission(playerID: String, phrase: String, image: ImageSubmission, time: Date ) {
         let submission = PlayerSubmission(playerID: playerID, phrase: phrase, imageSubmission: image, votes: 0)
         playerSubmissions.append(submission)
         
