@@ -23,10 +23,24 @@ final class VotingViewModel: ObservableObject {
     var players: [GKPlayer] = []
     var readyMap: [String: Bool] = [:]
     
+    var allReady: Bool {
+        guard !players.isEmpty else { return false }
+        for p in players {
+            if readyMap[p.gamePlayerID] != true { return false }
+        }
+        return true
+    }
+    
     init() {
         self.players = service.gamePlayers.map { $0.player }
-        self.readyMap = service.readyMap
-           
+        
+        service.$readyMap
+                    .receive(on: DispatchQueue.main)
+                    .sink { [weak self] newMap in
+                        self?.readyMap = newMap
+                    }
+                    .store(in: &cancellables)
+        
          service.$timerStart
             .removeDuplicates()
                .compactMap { $0 }
@@ -57,13 +71,7 @@ final class VotingViewModel: ObservableObject {
         service.toggleReady()
     }
     
-    var allReady: Bool {
-        guard !players.isEmpty else { return false }
-        for p in players {
-            if readyMap[p.gamePlayerID] != true { return false }
-        }
-        return true
-    }
+    
 
 
     // Todas as submissões para a frase atual

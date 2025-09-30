@@ -156,15 +156,17 @@ struct VotingView: View {
         .onAppear {
             imageSubmissions = viewModel.submissions(for: phrase)
             viewModel.startPhase()
-        }
-        .onChange(of: viewModel.allReady) {
-            if !viewModel.players.isEmpty {
-                goToNextRound = true
-            }
             viewModel.resetAllPlayersReady()
         }
+        .onChange(of: viewModel.readyMap) {
+            print("Entrou no Onchange")
+            if viewModel.allReady {
+                goToNextRound = true
+                viewModel.resetAllPlayersReady()
+            }
+            
+        }
         .onChange(of: viewModel.hasProcessedTimeRunOut) {
-            //Ação após terminar o tempo
             goToNextRound = true
         }
         .navigationDestination(isPresented: $goToNextRound) {
