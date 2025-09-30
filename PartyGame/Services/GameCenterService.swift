@@ -487,13 +487,13 @@ class GameCenterService: NSObject, ObservableObject {
     
     // Zera o readyMap para todos os jogadores. Se broadcast = true, sincroniza com os demais dispositivos.
     func resetReadyForAllPlayers(broadcast: Bool = true) {
-        DispatchQueue.main.async {
+       // DispatchQueue.main.async {
             var map = self.readyMap
             for key in map.keys {
                 map[key] = false
             }
             self.readyMap = map
-        }
+       // }
         
         guard broadcast, !isSinglePlayer, let match = match else { return }
         do {
