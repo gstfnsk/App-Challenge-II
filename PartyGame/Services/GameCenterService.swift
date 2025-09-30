@@ -64,7 +64,7 @@ class GameCenterService: NSObject, ObservableObject {
     
     @Published var isPhraseSubmittedByAnyPlayer: Bool = false
     @Published var submittedPhrasesByPlayer: [String: String] = [:] // playerID -> phrase
-    @Published var votes: [VoteSubmission] = []
+    @Published var votes: [String : VoteSubmission] = [:] //
     
     
     // Networking / match
@@ -149,12 +149,10 @@ class GameCenterService: NSObject, ObservableObject {
     }
     
     //MARK: Submissão de voto
-    func submitVote(id: UUID) {
-        let localID = GKLocalPlayer.local.gamePlayerID
-        let vote = VoteSubmission(from: localID, toPhoto: id, round: self.currentRound)
-        votes.append(vote)
+    func submitVote(id: UUID, player: String) {
+        let vote = VoteSubmission(from: player, toPhoto: id, round: self.currentRound)
+        self.votes[vote.from] = vote
         guard let match else { return }
-        
         do {
             let payload = VoteSubmissionPayload(type: "newVote", submission: vote)
             let data = try JSONEncoder().encode(payload)
@@ -166,9 +164,9 @@ class GameCenterService: NSObject, ObservableObject {
         print("Novo voto adicionado:", vote)
     }
     
-    func storeVote (vote: VoteSubmission){
-        self.votes.append(vote)
-            attributeVotes()
+    func storeVote (vote: VoteSubmission) {
+        self.votes[vote.from] = vote
+        attributeVotes()
     }
     
     func attributeVotes() {
@@ -179,17 +177,12 @@ class GameCenterService: NSObject, ObservableObject {
             print("---------------------------------------------")
         }
         
-        // apenas o líder atribui os votos e depois broadcasta
-                   guard let leaderID = phraseLeaderID, GKLocalPlayer.local.gamePlayerID == leaderID else {
-                       print("❌ Não sou o líder")
-                       return
-                   }
         // zera antes de contar novos votos
         for i in playerSubmissions.indices {
             playerSubmissions[i].votes = 0
         }
-
-        for vote in votes {
+        
+        for vote in votes.values {
             if let index = playerSubmissions.firstIndex(where: { $0.imageSubmission.id == vote.toPhoto }) {
                 playerSubmissions[index].votes += 1
                 print("✅ Voto atribuído: \(vote.from) → \(playerSubmissions[index].playerID)")
