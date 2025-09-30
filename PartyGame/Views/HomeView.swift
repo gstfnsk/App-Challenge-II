@@ -69,6 +69,7 @@ struct HomeView: View {
             .navigationDestination(isPresented: $goToLobby) {
                 LobbyView()
             }
+            .navigationBarBackButtonHidden(true)
         }
     }
 }

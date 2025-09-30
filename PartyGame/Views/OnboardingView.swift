@@ -41,6 +41,7 @@ let pages = [
 
 struct OnboardingView: View {
     @State var goToHomeView: Bool = false
+    @AppStorage("hasSeenOnboarding") var hasSeenOnboarding: Bool = false
     
     var body: some View {
         NavigationStack {
@@ -60,6 +61,7 @@ struct OnboardingView: View {
                             Spacer()
                             Button {
                                 goToHomeView = true
+                                hasSeenOnboarding = true
                             } label: {
                                 Text("skip").font(.system(size: 15, weight: .medium, design: .rounded))
                                     .foregroundStyle(.lilac)
