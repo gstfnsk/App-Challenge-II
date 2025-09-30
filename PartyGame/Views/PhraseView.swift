@@ -32,6 +32,8 @@ struct PhraseView: View {
                 .frame(minWidth: 0)
                 .edgesIgnoringSafeArea(.all)
             
+            
+            
             VStack(spacing: 85){
                 VStack(spacing: 24){
                     VStack(spacing: 5){
@@ -168,3 +170,8 @@ struct GradientBackground: View {
                 .shadow(.inner(color: Color.lilac, radius: 2, x: 0, y: 5)))
     }
 }
+
+#Preview {
+    PhraseView()
+}
+
