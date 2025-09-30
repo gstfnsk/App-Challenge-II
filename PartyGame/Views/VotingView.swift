@@ -13,7 +13,7 @@ struct VotingView: View {
     @State var phrase: String
     @State var selectedImage: UUID?
     @State var goToNextRound: Bool = false
-    var viewModel: VotingViewModel = VotingViewModel()
+    @StateObject var viewModel: VotingViewModel = VotingViewModel()
     let columns = [
         GridItem(.flexible()),
         GridItem(.flexible()),
@@ -31,7 +31,7 @@ struct VotingView: View {
             // Topo fixo
             VStack {
                 VStack(alignment: .leading) {
-                    Text("round 1")
+                    Text("round \(viewModel.service.currentRound)")
                         .font(.system(size: 15, weight: .medium, design: .rounded))
                         .foregroundStyle(.lilac)
                     
@@ -40,10 +40,12 @@ struct VotingView: View {
                             .font(.custom("DynaPuff-Medium", size: 28))
                             .foregroundStyle(.ice
                                 .shadow(.inner(color: .lilac, radius: 2, y: 3)))
-                        TimerComponent(remainingTime: 30, duration: 30.0)
+                        TimerComponent(remainingTime: viewModel.timeRemaining, duration: 30.0)
                     }
                     
-                    ProgressBarComponent(progress: .constant(30.0))
+                    ProgressBarComponent(progress: .constant(1.0 - (viewModel.remainingTimeDouble/30.0)))
+                    
+
                 }
                 .padding(.top, 59)
                 .padding(.horizontal)
@@ -132,20 +134,29 @@ struct VotingView: View {
         
         .onAppear {
             imageSubmissions = viewModel.submissions(for: phrase)
+            viewModel.startPhase()
         }
         .onChange(of: viewModel.allReady) {
             if !viewModel.players.isEmpty {
                     if let selectedImage {
                         viewModel.voteImage(id: selectedImage)
                         viewModel.cleanAndStoreSubmissions()
+                        goToNextRound = true
+                        viewModel.nextRound()
+                        viewModel.resetAllPlayersReady()
                     }
-                    goToNextRound = true
-                    viewModel.nextRound()
+                    
+                    
             }
-            viewModel.resetAllPlayersReady()
+            
         }
+//        .onChange(of: viewModel.hasProcessedTimeRunOut) {
+//            goToNextRound = true
+//            viewModel.nextRound()
+//          //  viewModel.resetAllPlayersReady()
+//        }
         .navigationDestination(isPresented: $goToNextRound) {
-            DebuggingView()
+            ImageSelectionView()
         }
         .navigationBarBackButtonHidden(true)
         .background(Color.darkerPurple)
