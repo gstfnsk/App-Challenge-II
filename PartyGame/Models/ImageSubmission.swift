@@ -8,7 +8,7 @@
 import SwiftUI
 
 struct ImageSubmission: Identifiable, Hashable, Codable {
-    let id = UUID()
+    let id: UUID
     let playerID: String
     let image: Data?
     let submissionTime: Date
@@ -19,6 +19,7 @@ struct ImageSubmission: Identifiable, Hashable, Codable {
     }
     
     init(playerID: String, image: Data?, submissionTime: Date) {
+        self.id = UUID()
         self.playerID = playerID
         self.image = image
         self.submissionTime = submissionTime

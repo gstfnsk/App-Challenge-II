@@ -16,8 +16,12 @@ final class ImageSelectionViewModel: ObservableObject {
     @Published var currentPhrase: String = ""
     
     @Published var playerSubmissions: [PlayerSubmission] = []
-    
     @Published private(set) var hasSubmitted = false
+    
+    private var timer: Timer?
+    @Published var hasProcessedTimeRunOut: Bool = false
+    @Published var remainingTimeDouble: Double = 60.0
+    @Published var timeRemaining: Int = 60
     
     let service = GameCenterService.shared
     private var cancellables: Set<AnyCancellable> = []
@@ -36,6 +40,20 @@ final class ImageSelectionViewModel: ObservableObject {
             .receive(on: DispatchQueue.main)
             .assign(to: &$playerSubmissions)
         
+        service.$timerStart
+            .compactMap { $0 }
+            .removeDuplicates()
+            .receive(on: DispatchQueue.main)
+            .sink { [weak self] target in
+                self?.startCountdown(until: target)
+            }
+            .store(in: &cancellables)
+        
+    }
+    
+    deinit {
+        timer?.invalidate()
+        cancellables.forEach { $0.cancel() }
     }
     
     var haveAllPlayersSubmittedImg: Bool {
@@ -95,5 +113,45 @@ final class ImageSelectionViewModel: ObservableObject {
     func getSubmittedImages() -> [ImageSubmission] {
         return service.playerSubmissions.map { $0.imageSubmission }
     }
+    
+    private func startCountdown(until target: Date) {
+        timer?.invalidate()
+        timer = nil
+        timeRemaining = 60
+        updateRemaining(target: target)
+        hasProcessedTimeRunOut = false
+        timer = Timer.scheduledTimer(withTimeInterval: 0.5, repeats: true) { [weak self] _ in
+            self?.updateRemaining(target: target)
+        }
+        
+        
+    }
+    
+    private func updateRemaining(target: Date) {
+        let remainingSecondsDouble = target.timeIntervalSinceNow
+        
+        timeRemaining = max(0, Int(ceil(remainingSecondsDouble)))
+        remainingTimeDouble = max(0.0, remainingSecondsDouble)
+        
+        if timeRemaining == 0  {
+            timer?.invalidate()
+            
+            if !hasProcessedTimeRunOut {
+                hasProcessedTimeRunOut = true
+
+            }
+        }
+    }
+    
+    func startPhase() {
+        print("🚀 Starting phase - resetting all states")
+        hasProcessedTimeRunOut = false
+        remainingTimeDouble = 60.0
+        timeRemaining = 60
+        
+        service.schedulePhaseStart(delay: 60)
+    }
+    
+   
 
 }

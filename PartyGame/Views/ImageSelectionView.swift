@@ -9,7 +9,7 @@ import SwiftUI
 import GameKit
 
 struct ImageSelectionView: View {
-    @ObservedObject var viewModel = ImageSelectionViewModel()
+    @StateObject var viewModel = ImageSelectionViewModel()
     @State private var isShowingCamera = false
     @State private var isShowingLibrary = false
     @State private var showSourceMenu = false
@@ -44,10 +44,11 @@ struct ImageSelectionView: View {
                                 .foregroundStyle(.ice
                                     .shadow(.inner(color: .lilac, radius: 2, y: 3)))
                                 .frame(maxWidth: .infinity, alignment: .leading)
-                            TimerComponent(remainingTime: 30, duration: 30.0)
+                            TimerComponent(remainingTime: viewModel.timeRemaining, duration: 60.0)
                         }
                     }
-                    ProgressBarComponent(progress: .constant(30.0))
+                    ProgressBarComponent(progress: .constant(1.0 - (viewModel.remainingTimeDouble/60.0)))
+
                 }
                 .safeAreaPadding(.top, 32)
                 .padding(.horizontal)
@@ -103,7 +104,6 @@ struct ImageSelectionView: View {
                                     .underline()
                                     .foregroundStyle(.white)
                                     .frame(maxWidth: .infinity, alignment: .center)
-                                    .padding(.horizontal, 100)
                                 
                                 Spacer(minLength: 8)
                                     .frame(maxHeight: 114)
@@ -133,8 +133,8 @@ struct ImageSelectionView: View {
                         if let selectedImage {
                             ButtonView(
                                 image: "img-cameraSymbol",
-                                title: "confirm pickture",
-                                titleDone: "pickture sent",
+                                title: String(localized: "confirm pickture"),
+                                titleDone: String(localized: "pickture sent"),
                                 action: {
                                     viewModel.submitSelectedImage(image: selectedImage)
                                     playerReady = true
@@ -147,7 +147,6 @@ struct ImageSelectionView: View {
                                 title: "confirm pickture",
                                 titleDone: "pickture sent",
                                 action: {
-                                    // nada acontece se não houver imagem
                                 },
                                 state: .inactive
                             )
@@ -173,11 +172,16 @@ struct ImageSelectionView: View {
 
         .onAppear {
             currentPhrase = viewModel.setCurrentRandomPhrase()
+            viewModel.startPhase()
         }
         .onReceive(viewModel.$currentPhrase) { currentPhrase in
             self.currentPhrase = currentPhrase
         }
         .onChange(of: viewModel.haveAllPlayersSubmittedImg) {
+            goToStackView = true
+        }
+        
+        .onChange(of: viewModel.hasProcessedTimeRunOut){
             goToStackView = true
         }
         .navigationBarBackButtonHidden(true)
