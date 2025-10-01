@@ -17,13 +17,24 @@ struct ImageStackView: View {
     @State private var isDone: Bool = false
 
     var body: some View {
-        HStack {
+        ZStack {
+            Image("img-textureI")
+                .resizable()
+                .scaledToFill()
+                .frame(minWidth: 0)
+                .edgesIgnoringSafeArea(.all)
+            
             VStack {
+                Text("check the picktures sent")
+                    .font(.system(size: 15, weight: .medium, design: .rounded))
+                    .foregroundStyle(Color.lilac)
+                    .padding(.bottom, 8)
                 
-                Text(submittedPhrase)
-                    .font(.headline)
-                    .lineLimit(3)
+                Text("\"\(submittedPhrase)\"")
+                    .font(.custom("Dynapuff-Medium", size: 28))
+                    .lineLimit(6)
                     .multilineTextAlignment(.center)
+                    .foregroundStyle(Color.ice)
                 
                 ImageStackComponent(cards: $imageSubmissions, isDone: $isDone, timer: timer)
             }
