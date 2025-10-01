@@ -398,6 +398,7 @@ class GameCenterService: NSObject, ObservableObject {
     
     func cleanPlayerSubmissions(broadcast: Bool) {
         playerSubmissions.removeAll()
+        votes.removeAll()
         print("playerSubmissions were cleaned")
         
         guard broadcast, let match else { return }
