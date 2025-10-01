@@ -138,7 +138,8 @@ final class VotingViewModel: ObservableObject {
     }
     
     var isGameOver: Bool {
-        service.isGameOver
+//        service.isPhrasesEmpty && isVotingSessionDone
+        return false
     }
     
     var isVotingSessionDone: Bool  {
