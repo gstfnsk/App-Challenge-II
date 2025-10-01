@@ -2,9 +2,10 @@ import SwiftUI
 import GameKit
 
 struct MatchRankingView: View {
-    @ObservedObject var viewModel: MatchRankingViewModel
+    @StateObject var viewModel = MatchRankingViewModel()
+    @State var closeRanking = false
     
-    let players: [Player]
+    let players: [Player] = []
     
     var winner: Player? {
         var votes = 0
@@ -17,10 +18,6 @@ struct MatchRankingView: View {
         }
         return winner
     }
-    
-    init(viewModel: MatchRankingViewModel) {
-        self.viewModel = viewModel
-        
         let imageSubmission = ImageSubmission(
             playerID: "1", image: UIImage(systemName: "square.and.arrow.up")!.pngData(),
             submissionTime: Date()
@@ -31,13 +28,12 @@ struct MatchRankingView: View {
         let mockPlayer3 = MockPlayer(displayName: "Tester 3", gamePlayerID: "12345")
         let mockPlayer4 = MockPlayer(displayName: "Tester 4", gamePlayerID: "12345")
         
-        let playerSubmission1 = PlayerSubmission(playerID: "mockPlayer1", phrase: "", imageSubmission: imageSubmission, votes: 10)
-        let playerSubmission2 = PlayerSubmission(playerID: "mockPlayer2", phrase: "", imageSubmission: imageSubmission, votes: 21)
-        let playerSubmission3 = PlayerSubmission(playerID: "mockPlayer3", phrase: "", imageSubmission: imageSubmission, votes: 18)
-        let playerSubmission4 = PlayerSubmission(playerID: "mockPlayer4", phrase: "", imageSubmission: imageSubmission, votes: 40)
-        
-        self.players = []
-    }
+//        let playerSubmission1 = PlayerSubmission(playerID: "mockPlayer1", phrase: "", imageSubmission: imageSubmission, votes: 10)
+//        let playerSubmission2 = PlayerSubmission(playerID: "mockPlayer2", phrase: "", imageSubmission: imageSubmission, votes: 21)
+//        let playerSubmission3 = PlayerSubmission(playerID: "mockPlayer3", phrase: "", imageSubmission: imageSubmission, votes: 18)
+//        let playerSubmission4 = PlayerSubmission(playerID: "mockPlayer4", phrase: "", imageSubmission: imageSubmission, votes: 40)
+//
+//       let players = []
     
     var body: some View {
         ZStack{
@@ -47,22 +43,27 @@ struct MatchRankingView: View {
                 .frame(minWidth: 0)
                 .edgesIgnoringSafeArea(.all)
             ScrollView{
-                VStack(spacing: 26) {
-                    
+                // Topo fixo
+                VStack (spacing: 0){
                     VStack(alignment: .leading, spacing: 5) {
-                        Text("game over")
-                            .font(.system(size: 15, weight: .bold, design: .rounded))
-                            .foregroundColor(.darkerPurple)
-                            .tint(.lilac)
-                        
+                        HStack {
+                            Text("game over!")
+                                .font(.system(size: 15, weight: .medium, design: .rounded))
+                                .foregroundStyle(.lilac)
+                            Spacer()
+                            //                            Button {
+//                            } label: {
+//
+//                            }
+                        }
                         Text("final results")
-                            .font(Font.custom("DynaPuff-Regular", size: 32))
+                            .font(.custom("DynaPuff-Regular", size: 32))
                             .fontWeight(.bold)
                             .foregroundStyle(.ice
                                 .shadow(.inner(color: .lilac, radius: 2, y: 3)))
                     }
-                    .frame(maxWidth: .infinity, alignment: .leading)
-                    .padding(.all)
+                    .padding(.top, 30)
+                    .padding(.horizontal)
                     VStack(spacing: 48){
                         HStack(alignment: .center, spacing: 16){
                             CircleComponent(isWinner: false, name: "mrlorenzo1608", points: 9, secondImage: "img-second")
@@ -103,5 +104,5 @@ struct MockPlayer: PlayerRepresentable {
 }
 
 #Preview {
-    MatchRankingView(viewModel: MatchRankingViewModel(service: GameCenterService.shared))
+    MatchRankingView()
 }
