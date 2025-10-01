@@ -33,7 +33,7 @@ struct MatchRankingView: View {
                                 Button {
                                     goHome = true
                                     viewModel.service.leaveMatch()
-                                    resetManager.resetApp()
+//                                  /  resetManager.resetApp()
                                 } label: {
                                     Image("close-button")
                                 }
