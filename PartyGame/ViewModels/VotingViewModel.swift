@@ -145,4 +145,12 @@ final class VotingViewModel: ObservableObject {
     var isVotingSessionDone: Bool  {
         service.expectedPlayersCount == service.votes.values.count
     }
+    
+    func isPhraseArrayEmpty() -> Bool {
+        if service.phrases.isEmpty {
+            return true
+        } else {
+            return false
+        }
+    }
 }
