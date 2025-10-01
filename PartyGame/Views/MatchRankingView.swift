@@ -5,8 +5,8 @@ struct MatchRankingView: View {
     var viewModel = MatchRankingViewModel()
     @EnvironmentObject var resetManager: AppResetManagerViewModel
     @State var goHome = false
-//    var highlightPictures: [PlayerSubmission] 
-
+    ////    var highlightPictures: [PlayerSubmission] var highlightPictures: [PlayerSubmission]
+    
     let imageSubmission = ImageSubmission(
         playerID: "1", image: UIImage(systemName: "square.and.arrow.up")!.pngData(),
         submissionTime: Date()
@@ -14,16 +14,16 @@ struct MatchRankingView: View {
     
     var body: some View {
         let top3 = viewModel.topPlayers()
-        let remaining = viewModel.remainingPlayers()
+        let remainingPlayers = viewModel.remainingPlayers()
         
         NavigationStack{
             
             ZStack(alignment: .bottom){
-            Image("img-texture2")
-                .resizable()
-                .scaledToFill()
-                .frame(minWidth: 0)
-                .ignoresSafeArea(.all)
+                Image("img-texture2")
+                    .resizable()
+                    .scaledToFill()
+                    .frame(minWidth: 0)
+                    .ignoresSafeArea(.all)
                 
                 ScrollView{
                     // Topo fixo
@@ -55,7 +55,7 @@ struct MatchRankingView: View {
                                     )
                                     .offset(y: 71)
                                 }
-
+                                
                                 if top3.indices.contains(0) {
                                     let first = top3[0]
                                     CircleComponent(
@@ -65,7 +65,7 @@ struct MatchRankingView: View {
                                         secondImage: "img-winner"
                                     )
                                 }
-
+                                
                                 if top3.indices.contains(2) {
                                     let third = top3[2]
                                     CircleComponent(
@@ -81,7 +81,7 @@ struct MatchRankingView: View {
                             VStack(spacing: 24){
                                 // Highlight picktures
                                 VStack(spacing: 28){
-
+                                    
                                     Text("highlight pictures")
                                         .font(Font.custom("DynaPuff-Regular", size: 22))
                                         .foregroundStyle(.ice)
@@ -90,7 +90,7 @@ struct MatchRankingView: View {
                                                 .frame(width: 329, height: 50)
                                                 .foregroundStyle(.lighterPurple)
                                         )
-
+                                    
                                     VStack(spacing: 8){
                                         VStack(spacing: 8){
                                             Image("img-teste")
@@ -120,11 +120,11 @@ struct MatchRankingView: View {
                                                         .foregroundStyle(Color(.ice))
                                                 }
                                                 Spacer()
-
+                                                
                                                 Text("x votes")
                                             }
                                             PageIndicator(numberOfPages: 3, currentPage: 0)
-
+                                            
                                         }
                                     }
                                     .padding(.all)
@@ -146,17 +146,17 @@ struct MatchRankingView: View {
                                         .background(RoundedRectangle(cornerRadius: 26)
                                             .fill(.lighterPurple)
                                             .frame(width: 329, height: 50))
-
+                                    
                                     VStack(spacing: 0){
-                                        RemainingPlayers(remaining: remaining, viewModel: viewModel)
+                                        RemainingPlayers(remaining: remainingPlayers, viewModel: viewModel)
                                     }
-
-
+                                    
+                                    
                                     .background(RoundedRectangle(cornerRadius: 24)
                                         .foregroundStyle(.lighterPurple.shadow(.inner(color: .darkerPurple, radius: 2, y: 3))))
-
+                                    
                                 }
-
+                                
                                 .padding(.vertical, 28)
                                 .frame(width: 329)
                                 .padding(.horizontal, 16)
@@ -165,87 +165,84 @@ struct MatchRankingView: View {
                                         gradient: Gradient(colors: [.lilac.opacity(0.5), .lighterPink.opacity(0.5)]),
                                         startPoint: .top,
                                         endPoint: .bottom).shadow(.inner(color: .ice, radius: 2, y: 5))))
-
+                                
                             }
                             .padding(16)
                             .padding(.top, 28)
                         }
                     }
-
+                    
                 }
-                    ButtonView(image: "img-gameController", title: "end match", titleDone: "", action: {})
-                        .padding(.horizontal)
-                        .offset(x: 0, y: -64)
-                       
-        }
-        .background(Color(.darkerPurple))
+                ButtonView(image: "img-gameController", title: "end match", titleDone: "", action: {})
+                    .padding(.horizontal)
+                    .offset(x: 0, y: -64)
+                
+            }
+            .background(Color(.darkerPurple))
         }
         .navigationBarBackButtonHidden(true)
         .navigationDestination(isPresented: $goHome) {
             HomeView()
         }
     }
-}
-
-import SwiftUI
-
-struct PageIndicator: View {
-    var numberOfPages: Int
-    var currentPage: Int
     
-    var body: some View {
-        HStack(spacing: 8) {
-            ForEach(0..<numberOfPages, id: \.self) { index in
-                Circle()
-                    .fill(index == currentPage ? Color.darkerPurple : Color.darkerPurple.opacity(0.3))
-                    .frame(width: 10, height: 10)
-            }
-        }
-    }
-}
-
-struct ContentView: View {
-    @State private var currentPage = 0
-    
-    var body: some View {
-        VStack {
-            // Indicador
-            PageIndicator(numberOfPages: 3, currentPage: currentPage)
-                .padding()
-            
-            // Botões para testar
-            HStack {
-                Button("Anterior") {
-                    if currentPage > 0 { currentPage -= 1 }
-                }
-                Button("Próximo") {
-                    if currentPage < 2 { currentPage += 1 }
+    struct PageIndicator: View {
+        var numberOfPages: Int
+        var currentPage: Int
+        
+        var body: some View {
+            HStack(spacing: 8) {
+                ForEach(0..<numberOfPages, id: \.self) { index in
+                    Circle()
+                        .fill(index == currentPage ? Color.darkerPurple : Color.darkerPurple.opacity(0.3))
+                        .frame(width: 10, height: 10)
                 }
             }
         }
     }
-}
-
-struct RemainingPlayers: View {
-    var remaining: [(Player, Int)]
-    var viewModel = MatchRankingViewModel()
     
-    var body: some View {
-        VStack(spacing: 8) {
-            ForEach(Array(remaining.enumerated()), id: \.1.0.id) { index, element in
-                let player = element.0
-                let points = element.1
+    struct ContentView: View {
+        @State private var currentPage = 0
+        
+        var body: some View {
+            VStack {
+                // Indicador
+                PageIndicator(numberOfPages: 3, currentPage: currentPage)
+                    .padding()
                 
-                PlayerRankingComponent(
-                    position: index + 4,
-                    player: player,
-                    avatar: viewModel.avatar(for: player.player.gamePlayerID)
-                )
+                // Botões para testar
+                HStack {
+                    Button("Anterior") {
+                        if currentPage > 0 { currentPage -= 1 }
+                    }
+                    Button("Próximo") {
+                        if currentPage < 2 { currentPage += 1 }
+                    }
+                }
+            }
+        }
+    }
+    
+    struct RemainingPlayers: View {
+        var remaining: [(Player, Int)]
+        var viewModel = MatchRankingViewModel()
+        
+        var body: some View {
+            VStack(spacing: 8) {
+                ForEach(Array(remaining.enumerated()), id: \.1.0.id) { index, element in
+                    let player = element.0
+                    let points = element.1
+                    
+                    PlayerRankingComponent(
+                        position: index + 4,
+                        player: player,
+                        avatar: viewModel.avatar(for: player.player.gamePlayerID)
+                    )
+                }
             }
         }
     }
 }
-
 
 
 protocol PlayerRepresentable {
