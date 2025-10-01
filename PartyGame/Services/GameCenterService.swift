@@ -458,13 +458,8 @@ class GameCenterService: NSObject, ObservableObject {
     var maxRounds: Int { gamePlayers.count }
     
     func goToNextRound() {
-        //        if currentRound < maxRounds {
-        //            if haveAllPlayersVoted() {
-        //                attributeVotes()
-        //            }
         attributeVotes()
         //            print("nova rodada")
-        currentRound += 1
         // Resetar estado da frase para a nova rodada
         resetPhraseState()
         //TODO: resetVotes()
@@ -475,6 +470,7 @@ class GameCenterService: NSObject, ObservableObject {
 
         if let index = phrases.firstIndex(where: {$0 == currentPhrase}) {
             phrases.remove(at: index)
+            currentRound += 1
         }
         currentPhrase = ""
         phraseLeaderID = nil
