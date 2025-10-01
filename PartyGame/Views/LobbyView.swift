@@ -16,6 +16,7 @@ struct LobbyView: View {
     @State private var isDragging: Bool = false
     @State private var keyboardHeight: CGFloat = 0
     
+    @State var resetSlider: Bool = false
     var body: some View {
         ZStack{
             Image("img-textureI")
@@ -116,7 +117,9 @@ struct LobbyView: View {
                     onDrag: { progress in
                         dragProgress = progress
                         isDragging = true
-                    },configuration: SliderViewConfiguration {
+                    },
+                    shouldReset: $resetSlider,
+                    configuration: SliderViewConfiguration {
                         ZStack(alignment: .center){
                             Capsule()
                                 .fill(smoothBackgroundGradient)
@@ -178,6 +181,9 @@ struct LobbyView: View {
             if newValue && !viewModel.playerRows.isEmpty {
                 startGame = true
             }
+        }
+        .onAppear {
+            resetSlider.toggle()
         }
         .onChange(of: startGame) {
             viewModel.resetAllPlayersReady()

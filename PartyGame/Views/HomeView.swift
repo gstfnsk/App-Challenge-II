@@ -4,7 +4,7 @@ import GameKit
 struct HomeView: View {
     @ObservedObject var viewModel = HomeViewModel()
     @State var showPopover = false
-    @State private var goToLobby = false
+    @State var goToLobby = false
     
     let floatingImages = [
         FloatingImage(name: "img-homeSymbolOrange", x: 0.40, y: 0.15),
@@ -109,11 +109,14 @@ struct HomeView: View {
             }
             .onAppear { viewModel.processPendingInvite() }
             .onChange(of: viewModel.isInMatch) {
-                if viewModel.isInMatch { goToLobby = true }
+                if viewModel.isInMatch {
+                    goToLobby = true
+                }
             }
             
             .navigationDestination(isPresented: $goToLobby) {
                 LobbyView()
+//                goToLobby = false
             }
             .navigationBarBackButtonHidden(true)
         }

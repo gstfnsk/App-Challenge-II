@@ -50,7 +50,6 @@ class GameCenterService: NSObject, ObservableObject {
     @Published var readyMap: [String: Bool] = [:]
     @Published var messages: [String] = []
     @Published var isSinglePlayer = false
-    @Published var totalRounds: Int = 10
     @Published var currentRound: Int = 1
     @Published var phrases: [String] = []
     
@@ -400,6 +399,7 @@ class GameCenterService: NSObject, ObservableObject {
     
     func cleanPlayerSubmissions(broadcast: Bool) {
         playerSubmissions.removeAll()
+        votes.removeAll()
         print("playerSubmissions were cleaned")
         
         guard broadcast, let match else { return }
@@ -549,16 +549,30 @@ class GameCenterService: NSObject, ObservableObject {
         if !isSinglePlayer {
             match?.disconnect()
         }
-        
         match = nil
-        DispatchQueue.main.async {
+//        DispatchQueue.main.async {
             self.isInMatch = false
             self.isSinglePlayer = false
             self.gamePlayers.removeAll()
             self.readyMap.removeAll()
             self.messages.removeAll()
-            self.resetPhraseState()
-        }
+            
+            self.isSinglePlayer = false
+            self.currentRound = 1
+            self.phrases.removeAll()
+            self.currentPhrase = ""
+            self.phraseLeaderID = nil
+            self.isWaitingForPhrase = false
+            self.localPhraseChoices.removeAll()
+            self.playerSubmissions.removeAll()
+            self.timerStart = nil
+            self.isPhraseSubmittedByAnyPlayer = false
+            self.submittedPhrasesByPlayer.removeAll()
+            self.votes.removeAll()
+            self.isPhrasesEmpty = false
+            //            self.resetPhraseState()
+//        }
+        
     }
     
     // MARK: - Invitations & match creation
