@@ -67,6 +67,8 @@ class GameCenterService: NSObject, ObservableObject {
     @Published var submittedPhrasesByPlayer: [String: String] = [:] // playerID -> phrase
     @Published var votes: [String : VoteSubmission] = [:] //
     
+    @Published var isPhrasesEmpty = false
+    
     
     // Networking / match
     var match: GKMatch?
@@ -459,13 +461,8 @@ class GameCenterService: NSObject, ObservableObject {
     var maxRounds: Int { gamePlayers.count }
     
     func goToNextRound() {
-        //        if currentRound < maxRounds {
-        //            if haveAllPlayersVoted() {
-        //                attributeVotes()
-        //            }
         attributeVotes()
         //            print("nova rodada")
-        currentRound += 1
         // Resetar estado da frase para a nova rodada
         resetPhraseState()
         //TODO: resetVotes()
@@ -476,6 +473,11 @@ class GameCenterService: NSObject, ObservableObject {
 
         if let index = phrases.firstIndex(where: {$0 == currentPhrase}) {
             phrases.remove(at: index)
+            currentRound += 1
+            // se eu descomento esse if abaixo o currentRound buga:
+//            if currentRound > expectedPlayersCount {
+//                isPhrasesEmpty = true
+//            }
         }
         currentPhrase = ""
         phraseLeaderID = nil

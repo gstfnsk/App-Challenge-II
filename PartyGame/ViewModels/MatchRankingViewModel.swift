@@ -7,11 +7,14 @@
 import SwiftUI
 import GameKit
 
-class MatchRankingViewModel: ObservableObject {
+@Observable
+class MatchRankingViewModel {
         
-    private let service: GameCenterService
+    let service = GameCenterService.shared
     
-    init(service: GameCenterService = GameCenterService()) {
-        self.service = service
+    func topPlayers(limit: Int = 3) -> [(Player, Int)] {
+        let ranking = service.gamePlayers.map { ($0, $0.votes) }
+        return ranking.sorted { $0.1 > $1.1 }.prefix(limit).map { $0 }
     }
+
 }
