@@ -37,7 +37,7 @@ extension GameCenterService: GKMatchmakerViewControllerDelegate, GKMatchDelegate
             self.readyMap = map
         }
         
-        sendMessage("Olá, galera!")
+//        sendMessage("Olá, galera!")
     }
     
     func match(_ match: GKMatch, didReceive data: Data, fromRemotePlayer player: GKPlayer) {

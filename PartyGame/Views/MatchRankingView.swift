@@ -45,7 +45,7 @@ struct MatchRankingView: View {
                                     .shadow(.inner(color: .lilac, radius: 2, y: 3)))
                         }
                         //                    .padding(.top, 30)
-                        .padding(.top, 130)
+                        .padding(.top, 60)
                         .padding(.horizontal)
                         
                         VStack(spacing: 48) {
@@ -83,7 +83,7 @@ struct MatchRankingView: View {
                                 }
                             }
                         }
-
+                        .padding(.top, 59)
                     }
                 }
             }
