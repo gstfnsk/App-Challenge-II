@@ -13,6 +13,8 @@ struct VotingView: View {
     @State var phrase: String
     @State var selectedImage: UUID?
     @State var goToNextRound: Bool = false
+    @State var endGame: Bool = false
+    
     @StateObject var viewModel: VotingViewModel = VotingViewModel()
     let columns = [
         GridItem(.flexible()),
@@ -141,12 +143,15 @@ struct VotingView: View {
                     if let selectedImage {
                         viewModel.voteImage(id: selectedImage)
                         viewModel.cleanAndStoreSubmissions()
-                        goToNextRound = true
                         viewModel.nextRound()
+                        self.selectedImage = nil
+                        if viewModel.isPhraseArrayEmpty() {
+                            endGame = true
+                        } else {
+                            goToNextRound = true
+                        }
                         viewModel.resetAllPlayersReady()
                     }
-                    
-                    
             }
             
         }
@@ -157,11 +162,17 @@ struct VotingView: View {
 //        }
         
         .navigationDestination(isPresented: $goToNextRound) {
-            if viewModel.isGameOver {
-                MatchRankingView()
-            } else {
+//            if viewModel.isGameOver {
+//                MatchRankingView()
+//            } else {
                 ImageSelectionView()
-            }
+//            }
+        }
+        .navigationBarBackButtonHidden(true)
+        .background(Color.darkerPurple)
+        
+        .navigationDestination(isPresented: $endGame) {
+            MatchRankingView()
         }
         .navigationBarBackButtonHidden(true)
         .background(Color.darkerPurple)

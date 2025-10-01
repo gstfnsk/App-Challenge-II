@@ -13,7 +13,7 @@ struct ImageStackView: View {
     
     @State var imageSubmissions: [ImageSubmission]
     
-    @State private var timer = Timer.publish(every: 1.5, on: .main, in: .common).autoconnect()
+    @State private var timer = Timer.publish(every: 2.5, on: .main, in: .common).autoconnect()
     @State private var isDone: Bool = false
 
     var body: some View {

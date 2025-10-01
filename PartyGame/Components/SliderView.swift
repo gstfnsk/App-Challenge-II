@@ -16,6 +16,7 @@ struct SliderView: View {
     
     var contentsClipped: Bool = false
     
+    @Binding var shouldReset: Bool
     
     @State private var knobXOffset: CGFloat = 0
     @State private var knobWidth: CGFloat = 0
@@ -47,6 +48,9 @@ struct SliderView: View {
                     
                     
                 }
+                .onChange(of: shouldReset) {
+                    resetSlider()
+                }
                 .onGeometryChange(for: CGSize.self, of: { proxy in
                     proxy.size // get the modified view's size
                 }, action: { size in
@@ -59,7 +63,6 @@ struct SliderView: View {
         .frame(height: 60)
         
     }
-    
     private func dragGesture(with geomProxy: GeometryProxy) -> some Gesture {
         DragGesture()
             .onChanged { value in
@@ -111,36 +114,42 @@ struct SliderView: View {
                 }
             }
     }
+    
+    func resetSlider() {
+        knobXOffset = 0
+        knobStartOffset = 0
+        onComplete(false)
+        didComplete = false
+    }
 }
 
 
-
-#Preview {
-    SliderView(
-        latchesOn: false,
-        
-        onComplete: { isReady in
-        },
-        onDrag: { progress in
-            //Atualizar UI enquanto Drag
-        },configuration: SliderViewConfiguration {
-            ZStack(alignment: .center){
-                Capsule()
-                    .fill(Color.red)
-                    .frame(height: 53)
-                    .frame(maxWidth: .infinity)
-                Text("ready?")
-            }
-        } foreground: {
-            EmptyView()
-        } track: {
-            Circle()
-                .frame(height: 40)
-                .foregroundStyle(Color.white)
-                .padding(8)
-        } knob: {
-            Image(systemName: "chevron.right")
-                .foregroundStyle(.black)
-        }
-    )
-}
+//#Preview {
+//    SliderView(
+//        latchesOn: false,
+//        
+//        onComplete: { isReady in
+//        },
+//        onDrag: { progress in
+//            //Atualizar UI enquanto Drag
+//        },configuration: SliderViewConfiguration {
+//            ZStack(alignment: .center){
+//                Capsule()
+//                    .fill(Color.red)
+//                    .frame(height: 53)
+//                    .frame(maxWidth: .infinity)
+//                Text("ready?")
+//            }
+//        } foreground: {
+//            EmptyView()
+//        } track: {
+//            Circle()
+//                .frame(height: 40)
+//                .foregroundStyle(Color.white)
+//                .padding(8)
+//        } knob: {
+//            Image(systemName: "chevron.right")
+//                .foregroundStyle(.black)
+//        }
+//    )
+//}

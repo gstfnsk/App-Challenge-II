@@ -400,6 +400,7 @@ class GameCenterService: NSObject, ObservableObject {
     
     func cleanPlayerSubmissions(broadcast: Bool) {
         playerSubmissions.removeAll()
+        votes.removeAll()
         print("playerSubmissions were cleaned")
         
         guard broadcast, let match else { return }
@@ -548,7 +549,7 @@ class GameCenterService: NSObject, ObservableObject {
     func leaveMatch() {
         if !isSinglePlayer {
             match?.disconnect()
-        }
+    }
         
         match = nil
         DispatchQueue.main.async {

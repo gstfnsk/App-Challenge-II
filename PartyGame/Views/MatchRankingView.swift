@@ -3,13 +3,14 @@ import GameKit
 
 struct MatchRankingView: View {
     var viewModel = MatchRankingViewModel()
-    @State var closeRanking = false
-//    var highlightPictures: [PlayerSubmission] 
+    @EnvironmentObject var resetManager: AppResetManagerViewModel
+    @State var goHome = false
+////    var highlightPictures: [PlayerSubmission] var highlightPictures: [PlayerSubmission] 
 
-        let imageSubmission = ImageSubmission(
-            playerID: "1", image: UIImage(systemName: "square.and.arrow.up")!.pngData(),
-            submissionTime: Date()
-        )
+    let imageSubmission = ImageSubmission(
+        playerID: "1", image: UIImage(systemName: "square.and.arrow.up")!.pngData(),
+        submissionTime: Date()
+    )
     
     var body: some View {
         let top3 = viewModel.topPlayers()
@@ -48,8 +49,8 @@ struct MatchRankingView: View {
                                     let second = top3[1]
                                     CircleComponent(
                                         isWinner: false,
-                                        name: second.0.player.displayName,
-                                        points: second.1,
+                                        name: second.name,
+                                        points: second.votes,
                                         secondImage: "img-second"
                                     )
                                     .offset(y: 71)
@@ -59,8 +60,8 @@ struct MatchRankingView: View {
                                     let first = top3[0]
                                     CircleComponent(
                                         isWinner: true,
-                                        name: first.0.player.displayName,
-                                        points: first.1,
+                                        name: first.name,
+                                        points: first.votes,
                                         secondImage: "img-winner"
                                     )
                                 }
@@ -69,8 +70,8 @@ struct MatchRankingView: View {
                                     let third = top3[2]
                                     CircleComponent(
                                         isWinner: false,
-                                        name: third.0.player.displayName,
-                                        points: third.1,
+                                        name: third.name,
+                                        points: third.votes,
                                         secondImage: "img-third"
                                     )
                                     .offset(y: 71)
@@ -180,6 +181,8 @@ struct MatchRankingView: View {
         .background(Color(.darkerPurple))
         }
         .navigationBarBackButtonHidden(true)
+        .navigationDestination(isPresented: $goHome) {
+            HomeView()
     }
 }
 

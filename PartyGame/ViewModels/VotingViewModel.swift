@@ -74,10 +74,10 @@ final class VotingViewModel: ObservableObject {
     
 
 
-    // Todas as submissões para a frase atual
+     // Todas as submissões para a frase atual, menos a minha
     func submissions(for phrase: String) -> [ImageSubmission] {
         service.playerSubmissions
-            .filter { $0.phrase == phrase }
+            .filter { $0.phrase == phrase && $0.playerID != GKLocalPlayer.local.gamePlayerID }
             .map { $0.imageSubmission }
     }
     
@@ -144,5 +144,13 @@ final class VotingViewModel: ObservableObject {
     
     var isVotingSessionDone: Bool  {
         service.expectedPlayersCount == service.votes.values.count
+    }
+    
+    func isPhraseArrayEmpty() -> Bool {
+        if service.phrases.isEmpty {
+            return true
+        } else {
+            return false
+        }
     }
 }

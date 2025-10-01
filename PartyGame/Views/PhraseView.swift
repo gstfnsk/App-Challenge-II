@@ -144,11 +144,11 @@ struct PhraseView: View {
             viewModel.startPhase()
         }
 
-        .onChange(of: viewModel.haveTimeRunOut) { oldValue, newValue in
-            if newValue {
-                nextScreen = true
-            }
-        }
+//        .onChange(of: viewModel.haveTimeRunOut) { oldValue, newValue in
+//            if newValue {
+//                nextScreen = true
+//            }
+//        }
         .onChange(of: viewModel.haveAllPlayersSubmitted) { oldValue, newValue in
             if newValue {
                 nextScreen = true
