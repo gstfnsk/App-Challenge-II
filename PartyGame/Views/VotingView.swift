@@ -155,8 +155,13 @@ struct VotingView: View {
 //            viewModel.nextRound()
 //          //  viewModel.resetAllPlayersReady()
 //        }
+        
         .navigationDestination(isPresented: $goToNextRound) {
-            ImageSelectionView()
+            if viewModel.isGameOver {
+                MatchRankingView()
+            } else {
+                ImageSelectionView()
+            }
         }
         .navigationBarBackButtonHidden(true)
         .background(Color.darkerPurple)

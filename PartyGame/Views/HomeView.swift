@@ -35,7 +35,6 @@ struct HomeView: View {
                                         .font(Font.custom("DynaPuff-Regular", size: 17))
                                         .foregroundStyle(.lilac)
                                         .underline(true, color: .lilac)
-                                    
                                 }
                                 ButtonView(image: "img-gameController", title: "Start Match", titleDone: "", action: { viewModel.startMultiplayerGame() }, changeToDone: false)
                             }
@@ -116,6 +115,7 @@ struct HomeView: View {
             .navigationDestination(isPresented: $goToLobby) {
                 LobbyView()
             }
+            .navigationBarBackButtonHidden(true)
         }
     }
 }

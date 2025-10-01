@@ -52,7 +52,7 @@ struct ImageStackComponent: View {
 
 struct ImageCard: View {
     static let palette: [Color] = [
-        .yellow, .lighterPink, .lightRed, .lighterGreen,
+        .yellow, .lighterPink, .lighterRed, .lighterGreen,
         .lilac, .lighterBlue, .ice, .orange
     ]
     
