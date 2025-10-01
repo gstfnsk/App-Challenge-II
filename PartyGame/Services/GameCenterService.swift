@@ -549,7 +549,7 @@ class GameCenterService: NSObject, ObservableObject {
     func leaveMatch() {
         if !isSinglePlayer {
             match?.disconnect()
-        }
+    }
         
         match = nil
         DispatchQueue.main.async {

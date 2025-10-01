@@ -3,7 +3,8 @@ import GameKit
 
 struct MatchRankingView: View {
     var viewModel = MatchRankingViewModel()
-    @State var closeRanking = false
+    @EnvironmentObject var resetManager: AppResetManagerViewModel
+    @State var goHome = false
     
 
     let imageSubmission = ImageSubmission(
@@ -30,7 +31,9 @@ struct MatchRankingView: View {
                                     .foregroundStyle(.lilac)
                                 Spacer()
                                 Button {
-                                    viewModel.leaveMatch()
+                                    goHome = true
+                                    viewModel.service.leaveMatch()
+                                    resetManager.resetApp()
                                 } label: {
                                     Image("close-button")
                                 }
@@ -44,58 +47,52 @@ struct MatchRankingView: View {
                         //                    .padding(.top, 30)
                         .padding(.top, 130)
                         .padding(.horizontal)
-                        VStack(spacing: 48){
-                            HStack(alignment: .center, spacing: 16){
+                        
+                        VStack(spacing: 48) {
+                            HStack(alignment: .center, spacing: 16) {
                                 if top3.indices.contains(1) {
                                     let second = top3[1]
                                     CircleComponent(
                                         isWinner: false,
-                                        name: second.0.player.displayName,
-                                        points: second.1,
+                                        name: second.name,
+                                        points: second.votes,
                                         secondImage: "img-second"
                                     )
                                     .offset(y: 71)
                                 }
-                                
+
                                 if top3.indices.contains(0) {
                                     let first = top3[0]
                                     CircleComponent(
                                         isWinner: true,
-                                        name: first.0.player.displayName,
-                                        points: first.1,
+                                        name: first.name,
+                                        points: first.votes,
                                         secondImage: "img-winner"
                                     )
                                 }
-                                
+
                                 if top3.indices.contains(2) {
                                     let third = top3[2]
                                     CircleComponent(
                                         isWinner: false,
-                                        name: third.0.player.displayName,
-                                        points: third.1,
+                                        name: third.name,
+                                        points: third.votes,
                                         secondImage: "img-third"
                                     )
                                     .offset(y: 71)
                                 }
                             }
-                            .padding(16)
-                            
-                            //Highlight picktures
-                            
-                            //                        RoundedRectangle(cornerRadius: 32)
-                            //                            .frame(width: 361, height: 517)
-                            //                            .foregroundStyle(LinearGradient(
-                            //                                gradient: Gradient(colors: [.lilac.opacity(0.5), .lighterPink.opacity(0.5)]),
-                            //                                startPoint: .top,
-                            //                                endPoint: .bottom).shadow(.inner(color: .ice, radius: 2, y: 5)))
                         }
-                        //                    .padding(.top)
+
                     }
                 }
             }
             .background(Color(.darkerPurple))
         }
         .navigationBarBackButtonHidden(true)
+        .navigationDestination(isPresented: $goHome) {
+            HomeView()
+        }
     }
 }
 
