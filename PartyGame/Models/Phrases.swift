@@ -71,6 +71,12 @@ enum Phrases {
         Phrase(text: String(localized: "a moment in family"), category: .feeling),
         Phrase(text: String(localized: "a day I didn't want to end"), category: .feeling),
         Phrase(text: String(localized: "a moment that felt like a movie"), category: .feeling),
+        Phrase(text: String(localized: "a memory from a life I never lived"), category: .feeling),
+        Phrase(text: String(localized: "the look of a dream that makes no sense at all"), category: .feeling),
+        Phrase(text: String(localized: "the perfect definition of \"opression\""), category: .feeling),
+        Phrase(text: String(localized: "the perfect definition of \"freedom\""), category: .feeling),
+        Phrase(text: String(localized: "my spirit animal, without a doubt"), category: .feeling),
+
 
         // MARK: Opinions
         Phrase(text: String(localized: "looks like a face"), category: .opinion),
@@ -90,6 +96,9 @@ enum Phrases {
         Phrase(text: String(localized: "something i'd gift a friend"), category: .opinion),
         Phrase(text: String(localized: "something i'd tattoo on my skin"), category: .opinion),
         Phrase(text: String(localized: "I would live in here"), category: .opinion),
+        Phrase(text: String(localized: "something unusual"), category: .opinion),
+        Phrase(text: String(localized: "this is so 90's"), category: .opinion),
+
 
         // MARK: Size
         Phrase(text: String(localized: "something tiny"), category: .size),
@@ -132,5 +141,8 @@ enum Phrases {
         Phrase(text: String(localized: "a secret place to go"), category: .random),
         Phrase(text: String(localized: "a funny pet"), category: .random),
         Phrase(text: String(localized: "a moment in nature"), category: .random),
+        Phrase(text: String(localized: "my last brain cell trying to function"), category: .random),
+        Phrase(text: String(localized: "my mom looks exactly like this"), category: .random),
+
     ]
 }
