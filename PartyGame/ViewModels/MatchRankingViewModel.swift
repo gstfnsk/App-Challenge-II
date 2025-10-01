@@ -16,5 +16,8 @@ class MatchRankingViewModel {
         let ranking = service.gamePlayers.map { ($0, $0.votes) }
         return ranking.sorted { $0.1 > $1.1 }.prefix(limit).map { $0 }
     }
-
+    
+    func leaveMatch() {
+        service.leaveMatch()
+    }
 }
