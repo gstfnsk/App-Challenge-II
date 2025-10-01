@@ -120,12 +120,12 @@ struct VotingView: View {
             VStack() {
                 Spacer()
                 if let selectedImage {
-                    ButtonView(image: "iconVoteButton", title: "confirm vote", titleDone: "vote confirmed", action: {
+                    ButtonView(image: "iconVoteButton", title: String(localized: "confirm vote"), titleDone: String(localized: "vote confirmed"), action: {
                         print("UUID da imagem:", selectedImage)
                         viewModel.toggleReady()
                     }, state: .enabled)
                 } else {
-                    ButtonView(image: "iconVoteButton", title: "confirm vote", titleDone: "vote confirmed", action: {
+                    ButtonView(image: "iconVoteButton", title: String(localized: "confirm vote"), titleDone: String(localized: "vote confirmed"), action: {
                     }, state: .inactive)
                 }
                 
