@@ -2,7 +2,7 @@ import SwiftUI
 import GameKit
 
 struct MatchRankingView: View {
-    @StateObject var viewModel = MatchRankingViewModel()
+    var viewModel = MatchRankingViewModel()
     @State var closeRanking = false
     
     let players: [Player] = []
@@ -22,20 +22,9 @@ struct MatchRankingView: View {
             playerID: "1", image: UIImage(systemName: "square.and.arrow.up")!.pngData(),
             submissionTime: Date()
         )
-        
-        let mockPlayer1 = MockPlayer(displayName: "Tester 1", gamePlayerID: "12345")
-        let mockPlayer2 = MockPlayer(displayName: "Tester 2", gamePlayerID: "12345")
-        let mockPlayer3 = MockPlayer(displayName: "Tester 3", gamePlayerID: "12345")
-        let mockPlayer4 = MockPlayer(displayName: "Tester 4", gamePlayerID: "12345")
-        
-//        let playerSubmission1 = PlayerSubmission(playerID: "mockPlayer1", phrase: "", imageSubmission: imageSubmission, votes: 10)
-//        let playerSubmission2 = PlayerSubmission(playerID: "mockPlayer2", phrase: "", imageSubmission: imageSubmission, votes: 21)
-//        let playerSubmission3 = PlayerSubmission(playerID: "mockPlayer3", phrase: "", imageSubmission: imageSubmission, votes: 18)
-//        let playerSubmission4 = PlayerSubmission(playerID: "mockPlayer4", phrase: "", imageSubmission: imageSubmission, votes: 40)
-//
-//       let players = []
     
     var body: some View {
+        NavigationStack{
         ZStack{
             Image("img-texture2")
                 .resizable()
@@ -88,6 +77,8 @@ struct MatchRankingView: View {
             }
         }
         .background(Color(.darkerPurple))
+        }
+        .navigationBarBackButtonHidden(true)
     }
 }
 
