@@ -21,7 +21,7 @@ struct HomeView: View {
                 ZStack {
                     VStack {
                         VStack {
-                            Text(viewModel.isAuthenticated ? "Autenticado: \(GKLocalPlayer.local.displayName)" : "Autenticando...")
+                            Text(viewModel.isAuthenticated ? "" : "")
                                 .font(.subheadline)
                                 .foregroundColor(viewModel.isAuthenticated ? .green : .yellow)
                             Spacer()
