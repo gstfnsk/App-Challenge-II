@@ -55,10 +55,20 @@ enum Phrases {
         Phrase(text: "This gives me nostalgia", category: .feeling),
         Phrase(text: "This reminds me of school", category: .feeling),
         Phrase(text: "This makes me hungry", category: .feeling),
+        Phrase(text: "That is my favortite food", category: .feeling),
+        Phrase(text: "On fridays this is my pastime", category: .feeling),
+        Phrase(text: "My least favorite hobby", category: .feeling),
+        Phrase(text: "Makes me cry everytime", category: .feeling),
         Phrase(text: "This gives me second-hand embarrassment", category: .feeling),
+        Phrase(text: "A memory from a life I never lived", category: .feeling),
+        Phrase(text: "The look of a dream that makes no sense at all", category: .feeling),
+        Phrase(text: "The perfect definition of \"opression\"", category: .feeling),
+        Phrase(text: "The perfect definition of \"freedom\"", category: .feeling),
+        Phrase(text: "My spirit animal, without a doubt", category: .feeling),
 
         // MARK: Opinions
         Phrase(text: "Looks like a face", category: .opinion),
+        Phrase(text: "Looks like a clown", category: .opinion),
         Phrase(text: "Something useless", category: .opinion),
         Phrase(text: "Nice texture", category: .opinion),
         Phrase(text: "Something cute", category: .opinion),
@@ -68,7 +78,9 @@ enum Phrases {
         Phrase(text: "Something that’s definitely broken", category: .opinion),
         Phrase(text: "Looks like something my grandma owns", category: .opinion),
         Phrase(text: "An object that only exists to annoy people", category: .opinion),
-
+        Phrase(text: "Something unusual", category: .opinion),
+        Phrase(text: "This is so 90s", category: .opinion),
+        
         // MARK: Size
         Phrase(text: "Something tiny", category: .size),
         Phrase(text: "Something huge", category: .size),
@@ -102,6 +114,8 @@ enum Phrases {
         Phrase(text: "Something that looks alive", category: .random),
         Phrase(text: "Something I’d adopt as a pet", category: .random),
         Phrase(text: "Something that should have a mustache", category: .random),
-        Phrase(text: "Something that looks like it’s judging you", category: .random)
+        Phrase(text: "Something that looks like it’s judging you", category: .random),
+        Phrase(text: "My last brain cell trying to function", category: .random),
+        Phrase(text: "My mom looks exactly like this", category: .opinion),
     ]
 }
