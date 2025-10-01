@@ -144,6 +144,7 @@ struct VotingView: View {
                         viewModel.voteImage(id: selectedImage)
                         viewModel.cleanAndStoreSubmissions()
                         viewModel.nextRound()
+                        self.selectedImage = nil
                         if viewModel.isPhraseArrayEmpty() {
                             endGame = true
                         } else {
@@ -151,8 +152,6 @@ struct VotingView: View {
                         }
                         viewModel.resetAllPlayersReady()
                     }
-                    
-                    
             }
             
         }
@@ -163,11 +162,11 @@ struct VotingView: View {
 //        }
         
         .navigationDestination(isPresented: $goToNextRound) {
-            if viewModel.isGameOver {
-                MatchRankingView()
-            } else {
+//            if viewModel.isGameOver {
+//                MatchRankingView()
+//            } else {
                 ImageSelectionView()
-            }
+//            }
         }
         .navigationBarBackButtonHidden(true)
         .background(Color.darkerPurple)
