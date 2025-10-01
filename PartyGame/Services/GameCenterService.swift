@@ -67,6 +67,8 @@ class GameCenterService: NSObject, ObservableObject {
     @Published var submittedPhrasesByPlayer: [String: String] = [:] // playerID -> phrase
     @Published var votes: [String : VoteSubmission] = [:] //
     
+    @Published var isGameOver = false
+    
     
     // Networking / match
     var match: GKMatch?
@@ -471,6 +473,9 @@ class GameCenterService: NSObject, ObservableObject {
         if let index = phrases.firstIndex(where: {$0 == currentPhrase}) {
             phrases.remove(at: index)
             currentRound += 1
+            if phrases.isEmpty {
+                isGameOver = true
+            }
         }
         currentPhrase = ""
         phraseLeaderID = nil
