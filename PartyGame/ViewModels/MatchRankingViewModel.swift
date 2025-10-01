@@ -43,22 +43,5 @@ class MatchRankingViewModel {
             }
         }
     }
-    
-    func remainingPlayers(limit: Int = 3) -> [(Player, Int)] {
-        let ranking = service.gamePlayers.map { ($0, $0.votes) }
-            .sorted { $0.1 > $1.1 }
-        return Array(ranking.dropFirst(limit))
-    }
-    
-    private func loadAvatars(for players: [GKPlayer]) {
-        for p in players {
-            p.loadPhoto(for: .small) { [weak self] img, _ in
-                guard let self else { return }
-                DispatchQueue.main.async {
-                    self.avatarByID[p.gamePlayerID] = img
-                }
-            }
-        }
-    }
 
 }
