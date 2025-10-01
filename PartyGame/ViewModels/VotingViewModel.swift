@@ -137,6 +137,10 @@ final class VotingViewModel: ObservableObject {
         service.goToNextRound()
     }
     
+    var isGameOver: Bool {
+        service.isGameOver
+    }
+    
     var isVotingSessionDone: Bool  {
         service.expectedPlayersCount == service.votes.values.count
     }

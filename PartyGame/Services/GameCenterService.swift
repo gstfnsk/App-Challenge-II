@@ -473,7 +473,7 @@ class GameCenterService: NSObject, ObservableObject {
         if let index = phrases.firstIndex(where: {$0 == currentPhrase}) {
             phrases.remove(at: index)
             currentRound += 1
-            if phrases.isEmpty {
+            if currentRound > expectedPlayersCount {
                 isGameOver = true
             }
         }
