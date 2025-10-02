@@ -11,7 +11,7 @@ import PinterestLikeGrid
 
 struct VotingView: View {
     @State var phrase: String
-    @State var selectedImage: UUID?
+    @State var selectedImage: ImageSubmission?
     @State var goToNextRound: Bool = false
     @State var endGame: Bool = false
     
@@ -69,7 +69,7 @@ struct VotingView: View {
                         VStack {
                             PinterestLikeGrid($imageSubmissions, columns: 2, spacing: 16) { photo, index in
                                 Button {
-                                    selectedImage = photo.id
+                                    selectedImage = photo
                                 } label: {
                                     // Text(photo.id.uuidString)
                                     if let data = photo.image, let uiImage = UIImage(data: data) {
@@ -82,13 +82,13 @@ struct VotingView: View {
                                             .overlay(
                                                 RoundedRectangle(cornerRadius: 28)
                                                     .stroke(
-                                                        selectedImage == photo.id
+                                                        selectedImage?.id == photo.id
                                                         ? Color.lighterGreen : Color.lilac,
                                                         lineWidth: 4
                                                     )
                                             )
                                             .overlay(alignment: .topTrailing) {
-                                                if selectedImage == photo.id {
+                                                if selectedImage?.id == photo.id {
                                                     Image("img-check")
                                                         .resizable()
                                                         .frame(width: 40, height: 40)
@@ -121,7 +121,7 @@ struct VotingView: View {
                 Spacer()
                 if let selectedImage {
                     ButtonView(image: "iconVoteButton", title: String(localized: "confirm vote"), titleDone: String(localized: "vote confirmed"), action: {
-                        print("UUID da imagem:", selectedImage)
+                        print("UUID da imagem:", selectedImage.id)
                         viewModel.toggleReady()
                     }, state: .enabled)
                 } else {
@@ -141,8 +141,8 @@ struct VotingView: View {
         .onChange(of: viewModel.allReady) {
             if !viewModel.players.isEmpty {
                     if let selectedImage {
-                        viewModel.voteImage(id: selectedImage)
-                        viewModel.cleanAndStoreSubmissions()
+                        viewModel.voteImage(id: selectedImage.id)
+                      //  viewModel.cleanAndStoreSubmissions()
                         viewModel.nextRound()
                         self.selectedImage = nil
                         if viewModel.isPhraseArrayEmpty() {

@@ -44,10 +44,10 @@ struct CircleComponent: View {
                     .foregroundStyle(.lilac)
                     .lineLimit(1)
 //                
-//                Text("\(points) points")
-//                    .font(.system(size: 15, weight: .regular, design: .rounded))
-//                    .foregroundStyle(.ice)
-//                    .lineLimit(1)
+                Text("\(points) points")
+                    .font(.system(size: 15, weight: .regular, design: .rounded))
+                    .foregroundStyle(.ice)
+                    .lineLimit(1)
             }
         }
         .frame(width: isWinner ? 120 : 104)
