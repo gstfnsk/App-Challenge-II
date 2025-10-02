@@ -172,7 +172,7 @@ struct VotingView: View {
         .background(Color.darkerPurple)
         
         .navigationDestination(isPresented: $endGame) {
-            MatchRankingView()
+            MatchRankingView(viewModel: MatchRankingViewModel(gamePlayers: viewModel.getGamePlayers()))
         }
         .navigationBarBackButtonHidden(true)
         .background(Color.darkerPurple)
