@@ -6,12 +6,6 @@ struct MatchRankingView: View {
     @EnvironmentObject var resetManager: AppResetManagerViewModel
     @State var goHome = false
     
-    let imageSubmission = ImageSubmission(
-        playerID: "1",
-        image: UIImage(systemName: "square.and.arrow.up")!.pngData(),
-        submissionTime: Date()
-    )
-    
     var body: some View {
         let top3 = viewModel.topPlayers()
         let remainingPlayers = viewModel.remainingPlayers()
@@ -24,8 +18,8 @@ struct MatchRankingView: View {
                     .scaledToFill()
                     .frame(minWidth: 0)
                     .edgesIgnoringSafeArea(.all)
+                
                 ScrollView {
-                    // Topo fixo
                     VStack(spacing: 0) {
                         
                         // Cabeçalho
@@ -83,8 +77,9 @@ struct MatchRankingView: View {
                             // Highlights
                             VStack(spacing: 24) {
                                 HighlightsView(imagesHighlights: imagesHighlights, viewModel: viewModel)
-                                   }
-                    }
+                            }
+                        }
+                        
                         // Complete Rank
                         VStack(spacing: 16) {
                             Text("complete rank")
@@ -162,7 +157,6 @@ struct RemainingPlayers: View {
         VStack(spacing: 8) {
             ForEach(Array(remaining.enumerated()), id: \.1.0.id) { index, element in
                 let player = element.0
-                let points = element.1
                 
                 PlayerRankingComponent(
                     position: index + 4,
@@ -191,13 +185,12 @@ struct HighlightsView: View {
                         .frame(width: 329, height: 50)
                         .foregroundStyle(.lighterPurple)
                 )
-               
             
-            ScrollView(.horizontal, showsIndicators: false) {
-                HStack(spacing: 16) {
-                    TabView(selection: $currentPage){
+            VStack(alignment: .center, spacing: 16) {
+                TabView(selection: $currentPage) {
                     ForEach(Array(imagesHighlights.enumerated()), id: \.0) { index, highlight in
                         VStack {
+                            Text("Placeholder: Highlight content should be here.")
                             if let data = highlight.playerSubmission.imageSubmission.uiImage {
                                 Image(uiImage: data)
                                     .resizable()
@@ -228,15 +221,12 @@ struct HighlightsView: View {
                         .tag(index)
                         .background(RoundedRectangle(cornerRadius: 16).fill(Color.lighterPurple))
                         .padding()
-                        
                     }
                 }
-                    .tabViewStyle(.page(indexDisplayMode: .never))
-                    PageIndicator(numberOfPages: imagesHighlights.count, currentPage: currentPage)
-                }
-                
-                
+                .tabViewStyle(.page(indexDisplayMode: .never))
+                PageIndicator(numberOfPages: imagesHighlights.count, currentPage: currentPage)
             }
+            .frame(maxWidth: .infinity)
         }
         .padding(.vertical, 28)
         .frame(width: 329)
@@ -254,106 +244,3 @@ struct HighlightsView: View {
         )
     }
 }
-
-// MARK: - Protocols & Mocks
-protocol PlayerRepresentable {
-    var displayName: String { get }
-    var gamePlayerID: String { get }
-}
-
-extension GKPlayer: PlayerRepresentable {}
-
-struct MockPlayer: PlayerRepresentable {
-    var displayName: String
-    var gamePlayerID: String
-}
-
-// MARK: - Mock ImageSubmission
-extension ImageSubmission {
-    static var mock: ImageSubmission {
-        ImageSubmission(
-            playerID: "1",
-            image: UIImage(named: "img-teste")?.pngData(),
-            submissionTime: Date()
-        )
-    }
-}
-
-// MARK: - Mock PlayerSubmission
-extension PlayerSubmission {
-    static func mock(playerID: String, votes: Int, round: Int) -> PlayerSubmission {
-        PlayerSubmission(
-            playerID: playerID,
-            phrase: "Mock phrase for player \(playerID)",
-            imageSubmission: .mock,
-            votes: votes,
-            round: round
-        )
-    }
-}
-
-// MARK: - Mock Player
-extension Player {
-    static func mock(id: String, name: String, submissions: [PlayerSubmission]) -> Player {
-        let mockGKPlayer = MockGKPlayer(gamePlayerID: id, displayName: name)
-        return Player(player: mockGKPlayer, submissions: submissions)
-    }
-}
-
-// MARK: - Mock GKPlayer
-struct MockGKPlayer: PlayerRepresentable {
-    var gamePlayerID: String
-    var displayName: String
-}
-
-// MARK: - Mock ViewModel
-final class MockMatchRankingViewModel: MatchRankingViewModel {
-    var mockHighlights: [RoundHighlight]
-    
-    init() {
-        let player1 = Player.mock(id: "1", name: "Alice", submissions: [
-            .mock(playerID: "1", votes: 5, round: 1),
-            .mock(playerID: "1", votes: 3, round: 2)
-        ])
-        
-        let player2 = Player.mock(id: "2", name: "Bob", submissions: [
-            .mock(playerID: "2", votes: 8, round: 1),
-            .mock(playerID: "2", votes: 2, round: 2)
-        ])
-        
-        let player3 = Player.mock(id: "3", name: "Carol", submissions: [
-            .mock(playerID: "3", votes: 4, round: 1),
-            .mock(playerID: "3", votes: 7, round: 2)
-        ])
-        
-        let mockPlayers = [player1, player2, player3]
-        
-        let mockImageSubmission = ImageSubmission.mock
-        let mockPlayerSubmission = PlayerSubmission.mock(playerID: "1", votes: 10, round: 1)
-        
-        let mockHighlight = RoundHighlight(
-            round: 1,
-            playerSubmission: mockPlayerSubmission,
-            playerName: "Alice"
-        )
-        self.mockHighlights = [mockHighlight]
-        
-        super.init(gamePlayers: mockPlayers)
-    }
-    
-    override func getRoundHighlights() -> [RoundHighlight] {
-        return mockHighlights
-    }
-}
-
-// MARK: - Preview
-struct MatchRankingView_Previews: PreviewProvider {
-    static var previews: some View {
-        MatchRankingView(viewModel: MockMatchRankingViewModel())
-            .environmentObject(AppResetManagerViewModel())
-    }
-}
-
-//#Preview {
-//    MatchRankingView()
-//}
