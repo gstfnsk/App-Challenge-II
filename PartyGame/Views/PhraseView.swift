@@ -120,8 +120,8 @@ struct PhraseView: View {
                     
                     ButtonView(
                         image: "img-pencilSymbol",
-                        title: "confirm Phrase",
-                        titleDone: "phrase Submitted",
+                        title: String(localized: "confirm phrase"),
+                        titleDone: String(localized: "phrase submitted"),
                         action: {
                             print("Submitted phrase: \(selectedPhrase)")
                             if let phrase = selectedPhrase {

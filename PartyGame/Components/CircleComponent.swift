@@ -43,7 +43,7 @@ struct CircleComponent: View {
                     .font(.system(size: 17, weight: .semibold, design: .rounded))
                     .foregroundStyle(.lilac)
                     .lineLimit(1)
-                
+//                
                 Text("\(points) points")
                     .font(.system(size: 15, weight: .regular, design: .rounded))
                     .foregroundStyle(.ice)

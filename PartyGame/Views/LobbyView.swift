@@ -69,7 +69,7 @@ struct LobbyView: View {
                                         .clipShape(RoundedRectangle(cornerRadius: 7))
                                     }
                                     
-                                    Text(row.isMe ? "\(row.name) (you)" : row.name)
+                                    Text(row.isMe ? "\(row.name) \(String(localized: "(you)"))" : row.name)
                                         .font(.system(size: 17, weight: .semibold, design: .rounded))
                                         .frame(maxWidth: 207, alignment: .leading)
                                         .multilineTextAlignment(.leading)
@@ -219,24 +219,6 @@ struct LobbyView: View {
             }
         }
     }
-    
-    var header: some View {
-        HStack(spacing: 12) {
-            Text("Jogadores conectados")
-                .font(.headline)
-            Spacer()
-            if viewModel.allReady && !viewModel.playerRows.isEmpty {
-                Text("Todos prontos ✅")
-                    .font(.subheadline)
-                    .foregroundStyle(.green)
-            } else {
-                Text("\(viewModel.playerRows.count)")
-                    .font(.subheadline)
-                    .foregroundStyle(.secondary)
-            }
-        }
-        .padding()
-    }
         
     enum GradientState: Equatable {
         case initial
@@ -294,13 +276,15 @@ struct LobbyView: View {
     }
     
     var sliderText: String {
+        let readyQ = String(localized: "ready_question", defaultValue: "ready?")
+        let readyE = String(localized: "ready_exclamation", defaultValue: "ready!")
         switch currentGradientState {
         case .initial, .startDragging:
-            return "ready?"
+            return readyQ
         case .midDragging:
-            return dragProgress > 0.8 ? "ready!" : "ready?"
+            return dragProgress > 0.8 ? readyE : readyQ
         case .completed:
-            return "ready!"
+            return readyE
         }
     }
     
@@ -429,7 +413,7 @@ private struct MessageRow: View {
             .clipShape(RoundedRectangle(cornerRadius: 6))
 
             (
-                Text(item.isLocal ? "\(item.senderName) (you)" : item.senderName)
+                Text(item.isLocal ? "\(item.senderName) \(String(localized: "(you)"))" : item.senderName)
                     .font(.custom("DynaPuff-Medium", size: 20))
                     .foregroundStyle(item.isLocal ? Color.lilac : Color.yellow)
                 + Text(": ")
