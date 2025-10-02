@@ -26,10 +26,27 @@ struct LobbyView: View {
                 .edgesIgnoringSafeArea(.all)
 
             VStack(spacing: 26) {
-                Text("match lobby")
-                    .font(.system(size: 17, weight: .medium, design: .rounded))
-                    .foregroundColor(.ice)
-                
+                ZStack {
+                    Text("match lobby")
+                        .font(.system(size: 17, weight: .medium, design: .rounded))
+                        .foregroundColor(.ice)
+                        .frame(maxWidth: .infinity, alignment: .center)
+
+                    HStack {
+                        Button {
+                            viewModel.leaveLobby()
+                            viewModel.isInMatch = false
+                            dismiss()
+                        } label: {
+                            Image(systemName: "chevron.left")
+                                .font(.system(size: 17, weight: .semibold))
+                                .foregroundStyle(.lilac)
+                                .padding(.leading, 10)
+                        }
+                        Spacer()
+                    }
+                }
+                .frame(maxWidth: .infinity)
                 VStack(spacing: 16) {
                     HStack (spacing: 16){
                         Text("\(viewModel.playerRows.count) players")
@@ -177,6 +194,22 @@ struct LobbyView: View {
         }
         .background(Color.darkerPurple)
         .navigationBarBackButtonHidden(true)
+        .toolbar(.hidden, for: .navigationBar)
+//        .overlay(alignment: .topLeading) {
+//            Button {
+//                viewModel.leaveLobby()
+//                viewModel.isInMatch = false
+//                dismiss()
+//            } label: {
+//                Image(systemName: "chevron.left")
+//                    .font(.system(size: 17, weight: .semibold))
+//                    .foregroundStyle(.ice)
+//                    .padding(10)
+//                    .background(.ultraThinMaterial, in: Circle())
+//            }
+//            .padding(.top, 10)
+//            .padding(.leading, 16)
+//        }
         .onChange(of: viewModel.allReady) { _, newValue in
             if newValue && !viewModel.playerRows.isEmpty {
                 startGame = true
@@ -191,15 +224,15 @@ struct LobbyView: View {
         .navigationDestination(isPresented: $startGame) {
             CountDownView()
         }
-        .toolbar {
-            ToolbarItem(placement: .topBarLeading) {
-                Button(role: .cancel) {
-                    viewModel.leaveLobby()
-                    viewModel.isInMatch = false
-                    dismiss()
-                } label: { Image(systemName: "chevron.left") }
-            }
-        }
+//        .toolbar {
+//            ToolbarItem(placement: .topBarLeading) {
+//                Button(role: .cancel) {
+//                    viewModel.leaveLobby()
+//                    viewModel.isInMatch = false
+//                    dismiss()
+//                } label: { Image(systemName: "chevron.left") }
+//            }
+//        }
         .onReceive(NotificationCenter.default.publisher(for: UIResponder.keyboardWillChangeFrameNotification)) { note in
             guard
                 let end = note.userInfo?[UIResponder.keyboardFrameEndUserInfoKey] as? CGRect,
@@ -311,6 +344,7 @@ private struct ChatCard: View {
             Text("chat with your friends")
                 .font(.custom("DynaPuff-Medium", size: 28))
                 .foregroundStyle(.ice)
+                .multilineTextAlignment(.center)
 
             ScrollViewReader { proxy in
                 ScrollView {
@@ -362,7 +396,7 @@ private struct ChatCard: View {
                     inputFocused = false
                 } label: {
                     ZStack {
-                        Circle().fill(Color.lilac.shadow(.inner(color: .ice, radius: 2, y: 3))).frame(width: 48, height: 48)
+                        Circle().fill(Color.lilac.shadow(.inner(color: .ice, radius: 2, y: 3))).frame(width: 35, height: 36)
                         Image(systemName: "paperplane.fill")
                             .font(.system(size: 20, weight: .bold))
                             .foregroundStyle(Color.darkerPurple)
@@ -414,10 +448,10 @@ private struct MessageRow: View {
 
             (
                 Text(item.isLocal ? "\(item.senderName) \(String(localized: "(you)"))" : item.senderName)
-                    .font(.custom("DynaPuff-Medium", size: 20))
+                    .font(.custom("DynaPuff-Medium", size: 16))
                     .foregroundStyle(item.isLocal ? Color.lilac : Color.yellow)
                 + Text(": ")
-                    .font(.custom("DynaPuff-Regular", size: 20))
+                    .font(.custom("DynaPuff-Regular", size: 16))
                     .foregroundStyle(.ice)
             )
             .multilineTextAlignment(.leading)
