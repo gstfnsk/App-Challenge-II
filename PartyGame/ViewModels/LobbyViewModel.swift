@@ -55,7 +55,7 @@ final class LobbyViewModel: ObservableObject {
     }
 
     init() {
-        self.players = service.gamePlayers.map { $0.player }
+        self.players = service.gamePlayers.map { $0.player as! GKPlayer }
         self.buildPlayerRows(from: players, ready: service.readyMap)
         self.loadAvatars(for: self.players)
 
@@ -64,10 +64,10 @@ final class LobbyViewModel: ObservableObject {
             .sink { [weak self] gamePlayers, ready in
                 guard let self else { return }
                 let gks = gamePlayers.map { $0.player }
-                self.players = gks
+                self.players = gks as! [GKPlayer]
                 self.readyMap = ready
-                self.buildPlayerRows(from: gks, ready: ready)
-                self.loadAvatars(for: gks)
+                self.buildPlayerRows(from: gks as! [GKPlayer], ready: ready)
+                self.loadAvatars(for: gks as! [GKPlayer])
             }
             .store(in: &cancellables)
 

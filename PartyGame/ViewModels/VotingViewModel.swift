@@ -32,7 +32,7 @@ final class VotingViewModel: ObservableObject {
     }
     
     init() {
-        self.players = service.gamePlayers.map { $0.player }
+        self.players = service.gamePlayers.map { $0.player as! GKPlayer }
         
         service.$readyMap
                     .receive(on: DispatchQueue.main)

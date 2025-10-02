@@ -23,7 +23,7 @@ struct MatchRankingView: View {
                     .resizable()
                     .scaledToFill()
                     .frame(minWidth: 0)
-                
+                    .edgesIgnoringSafeArea(.all)
                 ScrollView {
                     // Topo fixo
                     VStack(spacing: 0) {
@@ -41,7 +41,6 @@ struct MatchRankingView: View {
                                 .fontWeight(.bold)
                                 .foregroundStyle(.ice.shadow(.inner(color: .lilac, radius: 2, y: 3)))
                         }
-                        .padding(.top, 130)
                         .padding(.horizontal)
                         
                         VStack(spacing: 48) {
@@ -197,7 +196,7 @@ struct HighlightsView: View {
             ScrollView(.horizontal, showsIndicators: false) {
                 HStack(spacing: 16) {
                     TabView(selection: $currentPage){
-                    ForEach(imagesHighlights) { highlight in
+                    ForEach(Array(imagesHighlights.enumerated()), id: \.0) { index, highlight in
                         VStack {
                             if let data = highlight.playerSubmission.imageSubmission.uiImage {
                                 Image(uiImage: data)
@@ -226,6 +225,7 @@ struct HighlightsView: View {
                                     .font(.system(size: 15))
                             }
                         }
+                        .tag(index)
                         .background(RoundedRectangle(cornerRadius: 16).fill(Color.lighterPurple))
                         .padding()
                         
@@ -234,6 +234,7 @@ struct HighlightsView: View {
                     .tabViewStyle(.page(indexDisplayMode: .never))
                     PageIndicator(numberOfPages: imagesHighlights.count, currentPage: currentPage)
                 }
+                
                 
             }
         }
@@ -267,11 +268,90 @@ struct MockPlayer: PlayerRepresentable {
     var gamePlayerID: String
 }
 
-struct Pages {
-    let author: String
-    let image: String
-    let avatar: String
-    let votes: String
+// MARK: - Mock ImageSubmission
+extension ImageSubmission {
+    static var mock: ImageSubmission {
+        ImageSubmission(
+            playerID: "1",
+            image: UIImage(named: "img-teste")?.pngData(),
+            submissionTime: Date()
+        )
+    }
+}
+
+// MARK: - Mock PlayerSubmission
+extension PlayerSubmission {
+    static func mock(playerID: String, votes: Int, round: Int) -> PlayerSubmission {
+        PlayerSubmission(
+            playerID: playerID,
+            phrase: "Mock phrase for player \(playerID)",
+            imageSubmission: .mock,
+            votes: votes,
+            round: round
+        )
+    }
+}
+
+// MARK: - Mock Player
+extension Player {
+    static func mock(id: String, name: String, submissions: [PlayerSubmission]) -> Player {
+        let mockGKPlayer = MockGKPlayer(gamePlayerID: id, displayName: name)
+        return Player(player: mockGKPlayer, submissions: submissions)
+    }
+}
+
+// MARK: - Mock GKPlayer
+struct MockGKPlayer: PlayerRepresentable {
+    var gamePlayerID: String
+    var displayName: String
+}
+
+// MARK: - Mock ViewModel
+final class MockMatchRankingViewModel: MatchRankingViewModel {
+    var mockHighlights: [RoundHighlight]
+    
+    init() {
+        let player1 = Player.mock(id: "1", name: "Alice", submissions: [
+            .mock(playerID: "1", votes: 5, round: 1),
+            .mock(playerID: "1", votes: 3, round: 2)
+        ])
+        
+        let player2 = Player.mock(id: "2", name: "Bob", submissions: [
+            .mock(playerID: "2", votes: 8, round: 1),
+            .mock(playerID: "2", votes: 2, round: 2)
+        ])
+        
+        let player3 = Player.mock(id: "3", name: "Carol", submissions: [
+            .mock(playerID: "3", votes: 4, round: 1),
+            .mock(playerID: "3", votes: 7, round: 2)
+        ])
+        
+        let mockPlayers = [player1, player2, player3]
+        
+        let mockImageSubmission = ImageSubmission.mock
+        let mockPlayerSubmission = PlayerSubmission.mock(playerID: "1", votes: 10, round: 1)
+        
+        let mockHighlight = RoundHighlight(
+            round: 1,
+            playerSubmission: mockPlayerSubmission,
+            playerName: "Alice"
+        )
+        self.mockHighlights = [mockHighlight]
+        
+        super.init(gamePlayers: mockPlayers)
+    }
+    
+    override func getRoundHighlights() -> [RoundHighlight] {
+        return mockHighlights
+    }
+}
+
+// MARK: - Preview
+struct MatchRankingView_Previews: PreviewProvider {
+    static var previews: some View {
+        MatchRankingView(viewModel: MockMatchRankingViewModel())
+            .environmentObject(AppResetManagerViewModel())
+    }
 }
 
 //#Preview {
