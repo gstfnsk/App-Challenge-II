@@ -41,6 +41,7 @@ let pages = [
 
 struct OnboardingView: View {
     @State var goToHomeView: Bool = false
+    @State var currentPage = 0
     @AppStorage("hasSeenOnboarding") var hasSeenOnboarding: Bool = false
     
     var body: some View {
@@ -63,7 +64,7 @@ struct OnboardingView: View {
                                 goToHomeView = true
                                 hasSeenOnboarding = true
                             } label: {
-                                Text("skip").font(.system(size: 15, weight: .medium, design: .rounded))
+                                Text(currentPage == pages.count - 1 ? "done" : "skip").font(.system(size: 15, weight: .medium, design: .rounded))
                                     .foregroundStyle(.lilac)
                             }
                         }
@@ -75,7 +76,7 @@ struct OnboardingView: View {
                     .padding(.top, 30)
                     .padding(.horizontal)
                     OnboardingBackground {
-                        TabView {
+                        TabView (selection: $currentPage) {
                             ForEach(pages.indices, id: \.self) { i in
                                 VStack(alignment: .leading, spacing: 12) {
                                     Text(pages[i].title)
@@ -110,7 +111,10 @@ struct OnboardingView: View {
                     }
                     .padding(.top, 26)
                     .tabViewStyle(PageTabViewStyle(indexDisplayMode: .always))
-                    
+                    .onAppear {
+                        UIPageControl.appearance().currentPageIndicatorTintColor = UIColor.lighterPink
+                        UIPageControl.appearance().pageIndicatorTintColor = UIColor.lighterPink.withAlphaComponent(0.3)
+                    }
                 }
                 .padding(.top, 26)
                 .padding(.horizontal, 16)
