@@ -15,11 +15,13 @@ struct PlayerSubmission: Codable {
     let phrase: String
     let imageSubmission: ImageSubmission
     var votes: Int
+    var round: Int
     
-    init(playerID: String, phrase: String, imageSubmission: ImageSubmission, votes: Int) {
+    init(playerID: String, phrase: String, imageSubmission: ImageSubmission, votes: Int, round: Int) {
         self.playerID = playerID
         self.phrase = phrase
         self.imageSubmission = imageSubmission
         self.votes = votes
+        self.round = round
     }
 }

@@ -153,4 +153,8 @@ final class VotingViewModel: ObservableObject {
             return false
         }
     }
+    
+    func getGamePlayers() -> [Player] {
+        service.gamePlayers
+    }
 }
