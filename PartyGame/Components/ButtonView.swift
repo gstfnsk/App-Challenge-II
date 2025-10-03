@@ -47,6 +47,7 @@ struct ButtonView: View {
                             (Color.lilac)
                                 .shadow(.inner(color: Color.white, radius: 2, y: 3))
                         )
+                        .shadow(color: .black.opacity(0.15), radius: 2, x: 0, y: 3)
                 )
             }
             if state == .inactive {
@@ -65,6 +66,7 @@ struct ButtonView: View {
                             (Color.lighterGray)
                                 .shadow(.inner(color: Color.white, radius: 2, y: 3))
                         )
+                        .shadow(color: .black.opacity(0.15), radius: 2, x: 0, y: 3)
                 )
             }
             if state == .done {
@@ -83,6 +85,7 @@ struct ButtonView: View {
                             (Color.lighterPink)
                                 .shadow(.inner(color: Color.white, radius: 2, y: 3))
                         )
+                        .shadow(color: .black.opacity(0.15), radius: 2, x: 0, y: 3)
                 )
             }
         }

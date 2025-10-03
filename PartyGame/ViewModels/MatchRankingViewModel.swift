@@ -58,19 +58,6 @@ class MatchRankingViewModel {
         return Array(ranking.dropFirst(limit))
     }
 
-//    private func loadAvatars(for players: [PlayerRepresentable]) {
-//        for p in players {
-//            p.loadPhoto(for: .small) { [weak self] img, _ in
-//                guard let self = self else { return }
-//                DispatchQueue.main.async {
-//                    if let img = img {
-//                        self.avatarByID[p.gamePlayerID] = img
-//                    }
-//                }
-//            }
-//        }
-//    }
-
     func getRoundHighlights() -> [RoundHighlight] {
         let allSubmissions = gamePlayers.flatMap { $0.submissions }
 
