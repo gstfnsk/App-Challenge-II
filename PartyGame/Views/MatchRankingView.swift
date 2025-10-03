@@ -176,28 +176,37 @@ struct HighlightsView: View {
     @State private var currentPage: Int = 0
     
     var body: some View {
-        VStack(spacing: 28) {
-            Text("highlight pictures")
+        VStack(spacing: 16) {
+            Text("highlight picktures")
                 .font(Font.custom("DynaPuff-Regular", size: 22))
                 .foregroundStyle(.ice)
                 .background(
                     RoundedRectangle(cornerRadius: 26)
                         .frame(width: 329, height: 50)
                         .foregroundStyle(.lighterPurple)
+                        
                 )
             
-            VStack(alignment: .center, spacing: 16) {
+            VStack(alignment: .center) {
                 TabView(selection: $currentPage) {
                     ForEach(Array(imagesHighlights.enumerated()), id: \.0) { index, highlight in
                         VStack {
-                            Text("Placeholder: Highlight content should be here.")
-                            if let data = highlight.playerSubmission.imageSubmission.uiImage {
-                                Image(uiImage: data)
-                                    .resizable()
-                                    .scaledToFill()
-                                    .frame(width: 312, height: 275)
-                                    .clipShape(RoundedRectangle(cornerRadius: 20))
+                            VStack(spacing: 8){
+                                if let data = highlight.playerSubmission.imageSubmission.uiImage {
+                                    Image(uiImage: data)
+                                        .resizable()
+                                        .scaledToFill()
+                                        .frame(width: 312, height: 275)
+                                        .clipShape(RoundedRectangle(cornerRadius: 20))
+                                        .padding(.all, 8)
+                                    
+                                }
+                                Text(highlight.playerSubmission.phrase)
+                                    .padding(.bottom, 16)
+                                    .font(Font.custom("DynaPuff-Regular",size: 16))
+                                    .foregroundStyle(.ice)
                             }
+                            .background(RoundedRectangle(cornerRadius: 28).fill(Color.lighterPurple))
                             
                             HStack {
                                 if let avatar = viewModel.avatar(for: highlight.playerSubmission.playerID) {
@@ -217,19 +226,23 @@ struct HighlightsView: View {
                                 Text("\(highlight.playerSubmission.votes) votes")
                                     .font(.system(size: 15))
                             }
+                            .padding(.horizontal)
+                            PageIndicator(numberOfPages: imagesHighlights.count, currentPage: currentPage)
                         }
+                        
+                        .frame(maxWidth: .infinity)
+                        .frame(height: 329)
                         .tag(index)
-                        .background(RoundedRectangle(cornerRadius: 16).fill(Color.lighterPurple))
-                        .padding()
+                        
                     }
                 }
                 .tabViewStyle(.page(indexDisplayMode: .never))
-                PageIndicator(numberOfPages: imagesHighlights.count, currentPage: currentPage)
+                
             }
-            .frame(maxWidth: .infinity)
+            
         }
         .padding(.vertical, 28)
-        .frame(width: 329)
+        .frame(width: 329, height: 517)
         .padding(.horizontal, 16)
         .background(
             RoundedRectangle(cornerRadius: 32)
@@ -237,10 +250,72 @@ struct HighlightsView: View {
                     LinearGradient(
                         gradient: Gradient(colors: [.lilac.opacity(0.5), .lighterPink.opacity(0.5)]),
                         startPoint: .top,
-                        endPoint: .bottom
-                    )
-                    .shadow(.inner(color: .ice, radius: 2, y: 5))
+                        endPoint: .bottom)
+                    .shadow(.inner(color: .lilac, radius: 2, y:3))
                 )
         )
+        
+       
+       
+        
+        
+        
     }
 }
+
+// MARK: - Mock Highlight Data
+struct MockHighlightData {
+    static var highlights: [RoundHighlight] {
+        let imageSubmission = ImageSubmission(
+            playerID: "1",
+            image: UIImage(named: "img-teste")?.pngData(),
+            submissionTime: Date()
+        )
+        
+        let playerSubmission = PlayerSubmission(
+            playerID: "1",
+            phrase: "Mock phrase for highlight",
+            imageSubmission: imageSubmission,
+            votes: 10,
+            round: 1
+        )
+        
+        let highlight = RoundHighlight(
+            round: 1,
+            playerSubmission: playerSubmission,
+            playerName: "Alice"
+        )
+        
+        return [highlight, highlight, highlight] // múltiplos para testar TabView
+    }
+}
+
+// MARK: - Mock ViewModel
+final class MockMatchRankingViewModelForHighlights: MatchRankingViewModel {
+    init() {
+        super.init(gamePlayers: [])
+    }
+
+    override func getRoundHighlights() -> [RoundHighlight] {
+        return MockHighlightData.highlights
+    }
+}
+
+// MARK: - Preview for HighlightsView
+struct FullScreenHighlights_Previews: PreviewProvider {
+    static var previews: some View {
+        ZStack {
+            Image("img-texture2")
+                .resizable()
+                .scaledToFill()
+                .ignoresSafeArea()
+
+            HighlightsView(
+                imagesHighlights: MockHighlightData.highlights,
+                viewModel: MockMatchRankingViewModelForHighlights()
+            )
+            .environmentObject(AppResetManagerViewModel())
+        }
+    }
+}
+
