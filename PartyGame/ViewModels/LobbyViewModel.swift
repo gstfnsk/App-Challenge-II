@@ -65,7 +65,8 @@ final class LobbyViewModel: ObservableObject {
                 guard let self else { return }
                 let gks = gamePlayers.map { $0.player }
                 self.players = gks as! [GKPlayer]
-                self.readyMap = ready
+                // Flatten the lobby phase for local convenience map
+                self.readyMap = ready[.lobby] ?? [:]
                 self.buildPlayerRows(from: gks as! [GKPlayer], ready: ready)
                 self.loadAvatars(for: gks as! [GKPlayer])
             }
@@ -100,7 +101,7 @@ final class LobbyViewModel: ObservableObject {
     }
 
     func toggleReady() {
-        service.toggleReady()
+        service.setReady(gamePhase: .lobby)
     }
 
     func markSliderComplete() {
@@ -113,17 +114,17 @@ final class LobbyViewModel: ObservableObject {
     }
 
     func resetAllPlayersReady() {
-        service.resetReadyForAllPlayers()
+        service.resetReadyForAllPlayers(gamePhase: .lobby)
     }
 
-    private func buildPlayerRows(from gks: [GKPlayer], ready: [String: Bool]) {
+    private func buildPlayerRows(from gks: [GKPlayer], ready: [GamePhase:[String: Bool]]) {
         let meID = localPlayerID
         self.playerRows = gks.map {
             PlayerRow(
                 id: $0.gamePlayerID,
                 name: $0.displayName,
                 isMe: $0.gamePlayerID == meID,
-                isReady: ready[$0.gamePlayerID] ?? false
+                isReady: (ready[.lobby] ?? [:])[$0.gamePlayerID] ?? false
             )
         }
     }

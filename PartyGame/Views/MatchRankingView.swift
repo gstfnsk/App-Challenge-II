@@ -2,8 +2,8 @@ import SwiftUI
 import GameKit
 
 struct MatchRankingView: View {
+   // var gamePlayers: [Player]
     var viewModel: MatchRankingViewModel
-    @EnvironmentObject var resetManager: AppResetManagerViewModel
     @State var goHome = false
     
     let imageSubmission = ImageSubmission(
@@ -31,14 +31,14 @@ struct MatchRankingView: View {
                                 Spacer()
                             }
                             
-                            Text("final results")
+                            Text("phrases array \(viewModel.service.phrases)")
                                 .font(.custom("DynaPuff-Regular", size: 32))
                                 .fontWeight(.bold)
                                 .foregroundStyle(.ice.shadow(.inner(color: .lilac, radius: 2, y: 3)))
                         }
                         
                         // Top 3 players
-                        PodiumComponent()
+                        PodiumComponent(gamePlayers: viewModel.gamePlayers)
                         
                         // Responsivo (sem altura fixa)
                         HighlightsComponent()
@@ -65,7 +65,9 @@ struct MatchRankingView: View {
             )
             
         }
-        
+        .onAppear{
+            viewModel.resetAllPlayersReady()
+        }
         .navigationBarBackButtonHidden(true)
         .navigationDestination(isPresented: $goHome) {
             HomeView()
@@ -286,7 +288,6 @@ final class MockMatchRankingViewModel: MatchRankingViewModel {
 struct MatchRankingView_Previews: PreviewProvider {
     static var previews: some View {
         MatchRankingView(viewModel: MockMatchRankingViewModel())
-            .environmentObject(AppResetManagerViewModel())
     }
 }
 

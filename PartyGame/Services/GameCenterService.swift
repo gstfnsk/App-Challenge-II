@@ -20,12 +20,17 @@ struct LobbyPacket: Codable {
     let senderID: String
     let text: String?
     let ready: Bool?
+    let gamePhase: GamePhase?
     
     static func chat(senderID: String, text: String) -> LobbyPacket {
-        .init(type: .chat, senderID: senderID, text: text, ready: nil)
+        .init(type: .chat, senderID: senderID, text: text, ready: nil, gamePhase: nil)
     }
-    static func ready(senderID: String, ready: Bool) -> LobbyPacket {
-        .init(type: .ready, senderID: senderID, text: nil, ready: ready)
+    static func ready(senderID: String, ready: Bool, gamePhase: GamePhase) -> LobbyPacket {
+        .init(type: .ready, senderID: senderID, text: nil, ready: ready, gamePhase: gamePhase)
+    }
+    
+    static func resetReady(gamePhase: GamePhase) -> LobbyPacket {
+        .init(type: .ready, senderID: "Player", text: nil, ready: nil, gamePhase: gamePhase)
     }
 }
 
@@ -47,7 +52,7 @@ class GameCenterService: NSObject, ObservableObject {
     @Published var isAuthenticated = false
     @Published var isInMatch = false
     @Published var gamePlayers: [Player] = []
-    @Published var readyMap: [String: Bool] = [:]
+    @Published var readyMap: [GamePhase:[String: Bool]] = [:]
     @Published var messages: [String] = []
     @Published var isSinglePlayer = false
     @Published var currentRound: Int = 1
@@ -68,7 +73,7 @@ class GameCenterService: NSObject, ObservableObject {
     
     @Published var isPhrasesEmpty = false
     
-    
+
     // Networking / match
     var match: GKMatch?
     
@@ -501,24 +506,12 @@ class GameCenterService: NSObject, ObservableObject {
     
     
     // Zera o readyMap para todos os jogadores. Se broadcast = true, sincroniza com os demais dispositivos.
-    func resetReadyForAllPlayers(broadcast: Bool = true) {
-       // DispatchQueue.main.async {
-            var map = self.readyMap
-            for key in map.keys {
-                map[key] = false
-            }
-            self.readyMap = map
-       // }
-        
-        guard broadcast, !isSinglePlayer, let match = match else { return }
-        do {
-            let payload: [String: Any] = ["type": "ResetReady"]
-            let data = try JSONSerialization.data(withJSONObject: payload)
-            try match.sendData(toAllPlayers: data, with: .reliable)
-            print("📡 ResetReady enviado para todos os jogadores.")
-        } catch {
-            print("❌ Erro ao enviar ResetReady: \(error)")
+    func resetReadyForAllPlayers(gamePhase: GamePhase) {
+        var phaseMap = readyMap[gamePhase] ?? [:]
+        for key in phaseMap.keys {
+            phaseMap[key] = false
         }
+        readyMap[gamePhase] = phaseMap
     }
     
     internal func trySelectPhraseIfReady() {
@@ -551,8 +544,15 @@ class GameCenterService: NSObject, ObservableObject {
             self.gamePlayers = everyone.map { Player(player: $0) }
             
             var map = self.readyMap
-            for p in everyone {
-                if map[p.gamePlayerID] == nil { map[p.gamePlayerID] = false }
+            
+            for phase in GamePhase.allCases {
+                var phaseMap = map[phase] ?? [:]
+                for p in everyone {
+                    if phaseMap[p.gamePlayerID] == nil {
+                        phaseMap[p.gamePlayerID] = false
+                    }
+                }
+                map[phase] = phaseMap
             }
             self.readyMap = map
         }
@@ -648,7 +648,7 @@ class GameCenterService: NSObject, ObservableObject {
             self.isSinglePlayer = true
             self.match = nil
             self.gamePlayers = [Player(player: GKLocalPlayer.local)]
-            self.readyMap = [GKLocalPlayer.local.gamePlayerID: false]
+           // self.readyMap = [GKLocalPlayer.local.gamePlayerID: false]
             self.messages = ["Welcome to single player mode!"]
             self.phrases = []
             self.resetPhraseState()
@@ -676,26 +676,17 @@ class GameCenterService: NSObject, ObservableObject {
         }
     }
     
-    func toggleReady() {
-        let id = localPlayerID
-        let newValue = !(readyMap[id] ?? false)
-        DispatchQueue.main.async { self.readyMap[id] = newValue }
-        if isSinglePlayer { return }
-        guard let match = match else { return }
-        let packet = LobbyPacket.ready(senderID: id, ready: newValue)
-        do {
-            let data = try JSONEncoder().encode(packet)
-            try match.sendData(toAllPlayers: data, with: .reliable)
-        } catch {
-            print("❌ Erro ao enviar READY: \(error)")
-        }
-    }
+
     
-    private func setReady(_ value: Bool) {
+    func setReady(gamePhase: GamePhase) {
         let id = localPlayerID
-        DispatchQueue.main.async { self.readyMap[id] = value }
+        DispatchQueue.main.async {
+            var phaseMap = self.readyMap[gamePhase] ?? [:]
+            phaseMap[id] = true
+            self.readyMap[gamePhase] = phaseMap
+        }
         guard let match = match else { return }
-        let packet = LobbyPacket.ready(senderID: id, ready: value)
+        let packet = LobbyPacket.ready(senderID: id, ready: true, gamePhase: gamePhase)
         do {
             let data = try JSONEncoder().encode(packet)
             try match.sendData(toAllPlayers: data, with: .reliable)

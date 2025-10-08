@@ -39,8 +39,8 @@ struct ImageSelectionView: View {
                             .frame(maxWidth: .infinity, alignment: .leading)
 
                         HStack (spacing: 42) {
-                            Text("send a pickture")
-                                .font(.custom("DynaPuff-Medium", size: 28))
+                            Text("phrases array: \(viewModel.readyMap)")
+                                .font(.custom("DynaPuff-Medium", size: 10))
                                 .foregroundStyle(.ice
                                     .shadow(.inner(color: .lilac, radius: 2, y: 3)))
                                 .frame(maxWidth: .infinity, alignment: .leading)
@@ -137,7 +137,7 @@ struct ImageSelectionView: View {
                                 titleDone: String(localized: "pickture sent"),
                                 action: {
                                     viewModel.submitSelectedImage(image: selectedImage)
-                                    playerReady = true
+                                    viewModel.toggleReady()
                                 },
                                 state: .enabled
                             )
@@ -172,18 +172,21 @@ struct ImageSelectionView: View {
 
         .onAppear {
             currentPhrase = viewModel.setCurrentRandomPhrase()
-            viewModel.startPhase()
+           // viewModel.startPhase()
         }
         .onReceive(viewModel.$currentPhrase) { currentPhrase in
             self.currentPhrase = currentPhrase
         }
-        .onChange(of: viewModel.haveAllPlayersSubmittedImg) {
-            goToStackView = true
+        .onChange(of: viewModel.allReady) { oldValue, newValue in
+            if newValue {
+                goToStackView = true
+            }
         }
         
-        .onChange(of: viewModel.hasProcessedTimeRunOut){
-            goToStackView = true
+        .onChange(of: goToStackView) {
+            viewModel.resetAllPlayersReady()
         }
+        
         .navigationBarBackButtonHidden(true)
         .navigationDestination(isPresented: $goToStackView) {
             

@@ -185,9 +185,9 @@ struct LobbyView: View {
         .onAppear {
             resetSlider.toggle()
         }
-        .onChange(of: startGame) {
-            viewModel.resetAllPlayersReady()
-        }
+      //  .onChange(of: startGame) {
+      //        viewModel.resetAllPlayersReady()
+      //  }
         .navigationDestination(isPresented: $startGame) {
             CountDownView()
         }

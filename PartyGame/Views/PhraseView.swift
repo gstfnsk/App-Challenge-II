@@ -126,6 +126,7 @@ struct PhraseView: View {
                             print("Submitted phrase: \(selectedPhrase)")
                             if let phrase = selectedPhrase {
                                 viewModel.submitPhrase(phrase: phrase.text)
+                                viewModel.toggleReady()
                             }
                         },
                         state: isButtonInactive ? .inactive : .enabled
@@ -137,11 +138,10 @@ struct PhraseView: View {
         }
         .background(Color.darkerPurple)
         .navigationBarBackButtonHidden(true)
-        .navigationDestination(isPresented: $nextScreen) {
-            ImageSelectionView()
-        }
+
         .onAppear {
             viewModel.startPhase()
+            viewModel.resetAllPlayersReady()
         }
 
 //        .onChange(of: viewModel.haveTimeRunOut) { oldValue, newValue in
@@ -149,10 +149,18 @@ struct PhraseView: View {
 //                nextScreen = true
 //            }
 //        }
-        .onChange(of: viewModel.haveAllPlayersSubmitted) { oldValue, newValue in
+        .onChange(of: viewModel.allReady) { oldValue, newValue in
             if newValue {
                 nextScreen = true
             }
+        }
+        
+//        .onChange(of: nextScreen) {
+//            viewModel.resetAllPlayersReady()
+//        }
+        
+        .navigationDestination(isPresented: $nextScreen) {
+            ImageSelectionView()
         }
     }
 }

@@ -11,7 +11,7 @@ import PinterestLikeGrid
 
 struct VotingView: View {
     @State var phrase: String
-    @State var selectedImage: ImageSubmission?
+    @State var selectedImage: ImageSubmission? = nil
     @State var goToNextRound: Bool = false
     @State var endGame: Bool = false
     
@@ -59,7 +59,7 @@ struct VotingView: View {
                                 .foregroundColor(.ice)
                                 .font(.headline)
                             
-                            Text("\"\(phrase)\"").font(.custom("DynaPuff-Medium", size: 22))
+                            Text("\"\(viewModel.readyMap)\"").font(.custom("DynaPuff-Medium", size: 22))
                                 .foregroundStyle(.ice)
                         }
                         .padding(16)
@@ -122,7 +122,9 @@ struct VotingView: View {
                 if let selectedImage {
                     ButtonView(image: "iconVoteButton", title: String(localized: "confirm vote"), titleDone: String(localized: "vote confirmed"), action: {
                         print("UUID da imagem:", selectedImage.id)
+                        viewModel.voteImage(id: selectedImage.id)
                         viewModel.toggleReady()
+                       // self.selectedImage = nil
                     }, state: .enabled)
                 } else {
                     ButtonView(image: "iconVoteButton", title: String(localized: "confirm vote"), titleDone: String(localized: "vote confirmed"), action: {
@@ -136,46 +138,37 @@ struct VotingView: View {
         
         .onAppear {
             imageSubmissions = viewModel.submissions(for: phrase)
-            viewModel.startPhase()
+           // viewModel.startPhase()
         }
-        .onChange(of: viewModel.allReady) {
-            if !viewModel.players.isEmpty {
-                    if let selectedImage {
-                        viewModel.voteImage(id: selectedImage.id)
-                      //  viewModel.cleanAndStoreSubmissions()
-                        viewModel.nextRound()
-                        self.selectedImage = nil
-                        if viewModel.isPhraseArrayEmpty() {
-                            endGame = true
-                        } else {
-                            goToNextRound = true
-                        }
-                        viewModel.resetAllPlayersReady()
+        .onChange(of: viewModel.allReady) { oldValue, newValue in
+            if newValue {
+                if (selectedImage != nil) {
+                    viewModel.nextRound()
+                    if viewModel.isPhraseArrayEmpty() {
+                        endGame = true
+                    } else {
+                        goToNextRound = true
                     }
+                   // self.selectedImage = nil
+                }
             }
-            
         }
-//        .onChange(of: viewModel.hasProcessedTimeRunOut) {
-//            goToNextRound = true
-//            viewModel.nextRound()
-//          //  viewModel.resetAllPlayersReady()
-//        }
+        
+        .onChange(of: endGame || goToNextRound) {
+            viewModel.resetAllPlayersReady()
+        }
         
         .navigationDestination(isPresented: $goToNextRound) {
-//            if viewModel.isGameOver {
-//                MatchRankingView()
-//            } else {
                 ImageSelectionView()
-//            }
         }
-        .navigationBarBackButtonHidden(true)
-        .background(Color.darkerPurple)
         
         .navigationDestination(isPresented: $endGame) {
             MatchRankingView(viewModel: MatchRankingViewModel(gamePlayers: viewModel.getGamePlayers()))
         }
+        
         .navigationBarBackButtonHidden(true)
         .background(Color.darkerPurple)
+        
     }
     
     struct GradientBackground: View {

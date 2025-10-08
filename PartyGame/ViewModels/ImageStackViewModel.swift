@@ -18,6 +18,6 @@ class ImageStackViewModel: ObservableObject {
     }
     
     func resetAllPlayersReady() {
-        service.resetReadyForAllPlayers()
+      //  service.resetReadyForAllPlayers(gamePhase: .)
     }
 }

@@ -7,9 +7,23 @@
 
 import SwiftUI
 
+struct SubmissionMock {
+    var image: Image
+    var phrase: String
+    var author: String
+    var points: Int
+}
+
 struct SubmissionTabComponent: View {
     
-    var images: [Image] = [Image("img-teste"), Image("img-placeholder16x9"), Image("img-teste")]
+    var submissions: [SubmissionMock] = [
+        SubmissionMock(
+            image: Image("img-riboli"), phrase: "O mentor mais maluco", author: "MrFernandoS", points: 2),
+        SubmissionMock(
+            image: Image("img-happy"), phrase: "A definição de Felicidade", author: "rntoneto", points: 1),
+        SubmissionMock(
+            image: Image("img-dog"), phrase: "tenho medo disso", author: "rntoneto", points: 2),
+        ]
     
     // Dimensões base dos elementos internos (coerentes com o card base 329×520)
     private let baseImageSize = CGSize(width: 312, height: 275)
@@ -17,17 +31,17 @@ struct SubmissionTabComponent: View {
     var body: some View {
         VStack {
             TabView {
-                ForEach(images.indices, id: \.self) { index in
+                ForEach(submissions.indices, id: \.self) { index in
                     VStack {
                         VStack(spacing: 0) {
-                            images[index]
+                            submissions[index].image
                                 .resizable()
                                 .scaledToFill()
                                 .frame(width: baseImageSize.width, height: baseImageSize.height)
                                 .clipped()
                                 .cornerRadius(24)
                             
-                            Text("\"Nome da imagem\"")
+                            Text("\"\(submissions[index].phrase)\"")
                                 .font(Font.custom("DynaPuff-Regular", size: 16))
                                 .foregroundStyle(Color(.white))
                                 .frame(height: 40)
@@ -50,13 +64,13 @@ struct SubmissionTabComponent: View {
                                 Text("author:")
                                 
                                 HStack(alignment: .center, spacing: 16) {
-                                    Text("MrFernandoS")
+                                    Text("\(submissions[index].author)")
                                         .font(Font.custom("DynaPuff-Regular", size: 14))
                                         .foregroundStyle(Color(.black))
                                     
                                     Spacer()
                                     
-                                    Text("7 votes")
+                                    Text("\(submissions[index].points) votes")
                                         .font(Font.custom("DynaPuff-Regular", size: 14))
                                         .foregroundStyle(Color(.black))
                                 }

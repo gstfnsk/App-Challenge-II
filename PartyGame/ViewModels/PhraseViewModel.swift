@@ -13,6 +13,9 @@ final class PhraseViewModel {
     var haveTimeRunOut: Bool = false
     var selectablePhrases: [Phrase] = Array(Phrases.all.shuffled().prefix(3))
     
+    var players: [GKPlayer] = []
+    var readyMap: [String: Bool] = [:]
+    
     private var cancellables = Set<AnyCancellable>()
     private var timer: Timer?
     private var hasProcessedTimeRunOut: Bool = false
@@ -28,7 +31,23 @@ final class PhraseViewModel {
         setupObservers()
     }
     
+    var allReady: Bool {
+        guard !players.isEmpty else { return false }
+        for p in players {
+            if readyMap[p.gamePlayerID] != true { return false }
+        }
+        return true
+    }
+    
+    
+    func resetAllPlayersReady() {
+        service.resetReadyForAllPlayers(gamePhase: .phraseSelection)
+    }
+    
     private func setupObservers() {
+        
+        self.players = service.gamePlayers.map { $0.player as! GKPlayer }
+        
         // Observer para o timer
         service.$timerStart
             .compactMap { $0 }
@@ -37,6 +56,13 @@ final class PhraseViewModel {
                 self?.startCountdown(until: target)
             }
             .store(in: &cancellables)
+        
+        service.$readyMap
+                    .receive(on: DispatchQueue.main)
+                    .sink { [weak self] newMap in
+                        self?.readyMap = newMap[.phraseSelection] ?? [:]
+                    }
+                    .store(in: &cancellables)
         
         // OBSERVER PRINCIPAL - Este é o mais importante!
         service.$submittedPhrasesByPlayer
@@ -150,6 +176,6 @@ final class PhraseViewModel {
     }
     
     func toggleReady() {
-        service.toggleReady()
+        service.setReady(gamePhase: .phraseSelection)
     }
 }

@@ -18,6 +18,9 @@ final class ImageSelectionViewModel: ObservableObject {
     @Published var playerSubmissions: [PlayerSubmission] = []
     @Published private(set) var hasSubmitted = false
     
+    var players: [GKPlayer] = []
+    var readyMap: [String: Bool] = [:]
+    
     private var timer: Timer?
     @Published var hasProcessedTimeRunOut: Bool = false
     @Published var remainingTimeDouble: Double = 60.0
@@ -27,6 +30,15 @@ final class ImageSelectionViewModel: ObservableObject {
     private var cancellables: Set<AnyCancellable> = []
 
     init() {
+        
+        self.players = service.gamePlayers.map { $0.player as! GKPlayer }
+   
+        service.$readyMap
+                    .receive(on: DispatchQueue.main)
+                    .sink { [weak self] newMap in
+                        self?.readyMap = newMap[.imageSelection] ?? [:]
+                    }
+                    .store(in: &cancellables)
         
         service.$phrases
             .receive(on: DispatchQueue.main)
@@ -54,6 +66,22 @@ final class ImageSelectionViewModel: ObservableObject {
     deinit {
         timer?.invalidate()
         cancellables.forEach { $0.cancel() }
+    }
+    
+    var allReady: Bool {
+        guard !players.isEmpty else { return false }
+        for p in players {
+            if readyMap[p.gamePlayerID] != true { return false }
+        }
+        return true
+    }
+    
+    func resetAllPlayersReady() {
+        service.resetReadyForAllPlayers(gamePhase: .imageSelection)
+    }
+    
+    func toggleReady() {
+        service.setReady(gamePhase: .imageSelection)
     }
     
     var haveAllPlayersSubmittedImg: Bool {

@@ -37,7 +37,7 @@ final class VotingViewModel: ObservableObject {
         service.$readyMap
                     .receive(on: DispatchQueue.main)
                     .sink { [weak self] newMap in
-                        self?.readyMap = newMap
+                        self?.readyMap = newMap[.voting] ?? [:]
                     }
                     .store(in: &cancellables)
         
@@ -68,7 +68,7 @@ final class VotingViewModel: ObservableObject {
     
 
     func toggleReady() {
-        service.toggleReady()
+        service.setReady(gamePhase: .voting)
     }
     
     
@@ -92,7 +92,7 @@ final class VotingViewModel: ObservableObject {
     }
     
     func resetAllPlayersReady() {
-        service.resetReadyForAllPlayers()
+        service.resetReadyForAllPlayers(gamePhase: .voting)
     }
 
     private func startCountdown(until target: Date) {
@@ -138,7 +138,7 @@ final class VotingViewModel: ObservableObject {
     }
     
     var isGameOver: Bool {
-//        service.isPhrasesEmpty && isVotingSessionDone
+      //  isPhraseArrayEmpty() && isVotingSessionDone
         return false
     }
     
