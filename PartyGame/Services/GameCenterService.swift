@@ -44,34 +44,34 @@ struct VoteSubmissionPayload: Codable {
     let submission: VoteSubmission
 }
 
-class GameCenterService: NSObject, ObservableObject {
+@Observable
+class GameCenterService: NSObject {
     
     static let shared = GameCenterService()
     
     // MARK: - Published state
-    @Published var isAuthenticated = false
-    @Published var isInMatch = false
-    @Published var gamePlayers: [Player] = []
-    @Published var readyMap: [GamePhase:[String: Bool]] = [:]
-    @Published var messages: [String] = []
-    @Published var isSinglePlayer = false
-    @Published var currentRound: Int = 1
-    @Published var phrases: [String] = []
+    var isAuthenticated = false
+    var isInMatch = false
+    var gamePlayers: [Player] = []
+    var readyMap: [GamePhase:[String: Bool]] = [:]
+    var messages: [String] = []
+    var isSinglePlayer = false
+    var currentRound: Int = 1
+    var phrases: [String] = []
     
-    @Published var currentPhrase = ""
-    @Published var phraseLeaderID: String? = nil
-    @Published var isWaitingForPhrase = false
+    var currentPhrase = ""
+    var phraseLeaderID: String? = nil
+    var isWaitingForPhrase = false
     var localPhraseChoices: [String: [String]] = [:]
     
-    @Published var playerSubmissions: [PlayerSubmission] = []
-    @Published var timerStart: Date? = nil
+    var playerSubmissions: [PlayerSubmission] = []
     
-    @Published var isPhraseSubmittedByAnyPlayer: Bool = false
+    var isPhraseSubmittedByAnyPlayer: Bool = false
 
-    @Published var submittedPhrasesByPlayer: [String: String] = [:] // playerID -> phrase
-    @Published var votes: [String : VoteSubmission] = [:] //
+    var submittedPhrasesByPlayer: [String: String] = [:] // playerID -> phrase
+    var votes: [String : VoteSubmission] = [:] //
     
-    @Published var isPhrasesEmpty = false
+    var isPhrasesEmpty = false
     
 
     // Networking / match
@@ -134,26 +134,7 @@ class GameCenterService: NSObject, ObservableObject {
         }
     }
     
-    // MARK: - Phase start scheduling
-    func schedulePhaseStart(delay: TimeInterval = 1) {
-        let target = Date().addingTimeInterval(delay)
-        timerStart = target
-        broadcastPhaseStart(target)
-    }
-    
-    private func broadcastPhaseStart(_ date: Date) {
-        guard let match else { return }
-        let payload: [String: Any] = [
-            "type": "phaseStart",
-            "date": date.timeIntervalSince1970
-        ]
-        do {
-            let data = try JSONSerialization.data(withJSONObject: payload)
-            try match.sendData(toAllPlayers: data, with: .reliable)
-        } catch {
-            print("❌ Erro ao enviar phaseStart: \(error)")
-        }
-    }
+
     
     //MARK: Submissão de voto
     func submitVote(id: UUID, player: String) {
@@ -218,17 +199,6 @@ class GameCenterService: NSObject, ObservableObject {
         }
     }
     
-    func handleReceivedData(_ data: Data) {
-        guard
-            let dict = try? JSONSerialization.jsonObject(with: data) as? [String: Any],
-            let type = dict["type"] as? String
-        else { return }
-        
-        if type == "phaseStart", let ts = dict["date"] as? TimeInterval {
-            timerStart = Date(timeIntervalSince1970: ts)
-        }
-    }
-    
 
     // MARK: - Phrase submission (local & broadcast)
     func submitPhrase(phrase: String) {
@@ -260,40 +230,6 @@ class GameCenterService: NSObject, ObservableObject {
         trySelectPhraseIfReady()
     }
     
-    // Fallbacks / auto-submit logic
-    func ensureAllPlayersSubmittedFallback() {
-        // Para cada jogador que ainda não submeteu, tenta pegar uma frase do pool local e submeter
-        for player in gamePlayers {
-            let playerID = player.player.gamePlayerID
-            if submittedPhrasesByPlayer[playerID] != nil { continue }
-            
-            if let randomPhrase = localPhraseChoices[playerID]?.randomElement() {
-                print("⚠️ Auto-submit forçado para \(player.player.displayName): \(randomPhrase)")
-                submittedPhrasesByPlayer[playerID] = randomPhrase
-            //    if !phrases.contains(randomPhrase) { phrases.append(randomPhrase) }
-              //  submitPhrase(phrase: randomPhrase)
-            } else if let backup = Phrases.all.randomElement()?.text {
-                print("⚡ Fallback global para \(player.player.displayName): \(backup)")
-                submittedPhrasesByPlayer[playerID] = backup
-             //   if !phrases.contains(backup) { phrases.append(backup) }
-              //  submitPhrase(phrase: backup)
-            }
-        }
-    }
-    
-    // Alternate auto-submit that was present historically (kept but not used by default)
-    func autoSubmitMissingPhrases() {
-        let submittedPlayerIDs = Set(playerSubmissions.map { $0.playerID })
-        for player in gamePlayers {
-            let playerID = player.player.gamePlayerID
-            if !submittedPlayerIDs.contains(playerID) {
-                if let randomPhrase = Phrases.all.randomElement() {
-                    print("⚡ Auto-submit para jogador \(player.player.displayName): \(randomPhrase)")
-                 //   submitPhrase(phrase: randomPhrase.text)
-                }
-            }
-        }
-    }
 
     
     // Função para eleger o líder da frase (jogador com menor ID)
@@ -308,8 +244,6 @@ class GameCenterService: NSObject, ObservableObject {
     // MARK: - Início da seleção de frase
     func initiatePhraseSelection() {
         // Antes de qualquer coisa, garantir que todos os jogadores têm uma frase
-
-        ensureAllPlayersSubmittedFallback()
         
         if Phrases.all.isEmpty {
             print("⚠️ As frases disponíveis estão vazias em Phrases.all!")
@@ -399,12 +333,6 @@ class GameCenterService: NSObject, ObservableObject {
     
     func getCurrentRandomPhrase() -> String {
         return self.currentPhrase
-    }
-    
-    // Check if all players submitted images
-    func haveAllPlayersSubmittedImage() -> Bool {
-        print(playerSubmissions)
-        return ((gamePlayers.count == playerSubmissions.count && gamePlayers.count != 0) ? true : false)
     }
     
     
@@ -518,15 +446,6 @@ class GameCenterService: NSObject, ObservableObject {
         guard currentPhrase.isEmpty else { return }
         guard let leaderID = phraseLeaderID else { return }
         
-        // Determine expected participant count
-        let expected = expectedPlayersCount
-        guard expected > 0 else { return }
-        
-        // Have all players submitted? Use submittedPhrasesByPlayer as source of truth.
-        let haveAll = submittedPhrasesByPlayer.count >= expected
-        guard haveAll else { return }
-        
-        // If this device is the leader -> select and broadcast
         if localPlayerID == leaderID {
             selectRandomPhrase()
         } else {
@@ -578,7 +497,6 @@ class GameCenterService: NSObject, ObservableObject {
             self.isWaitingForPhrase = false
             self.localPhraseChoices.removeAll()
             self.playerSubmissions.removeAll()
-            self.timerStart = nil
             self.isPhraseSubmittedByAnyPlayer = false
             self.submittedPhrasesByPlayer.removeAll()
             self.votes.removeAll()

@@ -8,7 +8,7 @@
 import SwiftUI
 
 struct LobbyView: View {
-    @ObservedObject var viewModel = LobbyViewModel()
+    @State var viewModel = LobbyViewModel()
     @Environment(\.dismiss) private var dismiss
     @State private var scrollTrigger = 0
     @State private var startGame: Bool = false

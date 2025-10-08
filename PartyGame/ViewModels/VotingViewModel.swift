@@ -11,17 +11,16 @@ import GameKit
 import Combine
 
 @Observable
-final class VotingViewModel: ObservableObject {
+final class VotingViewModel {
     let service = GameCenterService.shared
-    private var cancellables = Set<AnyCancellable>()
-
+    
     private var timer: Timer?
     var hasProcessedTimeRunOut: Bool = false
     var remainingTimeDouble: Double = 30.0
     var timeRemaining: Int = 30
     
-    var players: [GKPlayer] = []
-    var readyMap: [String: Bool] = [:]
+    var players: [GKPlayer] { service.gamePlayers.map { $0.player } }
+    var readyMap: [String: Bool] { service.readyMap[.voting] ?? [:] }
     
     var allReady: Bool {
         guard !players.isEmpty else { return false }
@@ -32,35 +31,12 @@ final class VotingViewModel: ObservableObject {
     }
     
     init() {
-        self.players = service.gamePlayers.map { $0.player as! GKPlayer }
-        
-        service.$readyMap
-                    .receive(on: DispatchQueue.main)
-                    .sink { [weak self] newMap in
-                        self?.readyMap = newMap[.voting] ?? [:]
-                    }
-                    .store(in: &cancellables)
-        
-         service.$timerStart
-            .removeDuplicates()
-               .compactMap { $0 }
-               .receive(on: DispatchQueue.main)
-               .sink { [weak self] target in
-                   self?.startCountdown(until: target)
-               }
-               .store(in: &cancellables)
-        
     }
     
     deinit {
         timer?.invalidate()
         timer = nil
-        cancellables.forEach { $0.cancel() }
     }
-
-//    var players: [GKPlayer] {
-//        service.gamePlayers.map { $0.player }
-//    }
     
     var voter: GKPlayer {
         GKLocalPlayer.local
@@ -119,13 +95,6 @@ final class VotingViewModel: ObservableObject {
         }
     }
     
-    func startPhase() {
-        print("🚀 Starting phase - resetting all states")
-        hasProcessedTimeRunOut = false
-        
-        service.schedulePhaseStart(delay: 30)
-    }
-    
 
     func voteImage(id: UUID) {
         let playerID = GKLocalPlayer.local.gamePlayerID
@@ -152,9 +121,5 @@ final class VotingViewModel: ObservableObject {
         } else {
             return false
         }
-    }
-    
-    func getGamePlayers() -> [Player] {
-        service.gamePlayers
     }
 }

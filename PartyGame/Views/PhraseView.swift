@@ -49,10 +49,10 @@ struct PhraseView: View {
                                 .foregroundStyle(.ice
                                     .shadow(.inner(color: .lilac, radius: 2, y: 3)))
                                 .frame(maxWidth: .infinity, alignment: .leading)
-                            TimerComponent(remainingTime: viewModel.timeRemaining, duration: 30.0)
+                            TimerComponent(remainingTime: Int(30.0), duration: 30.0)
                         }
                     }
-                    ProgressBarComponent(progress: .constant(1.0 - (viewModel.remainingTimeDouble/30.0)))
+                    ProgressBarComponent(progress: .constant(1.0))
                 }
                 .padding(.horizontal)
                 

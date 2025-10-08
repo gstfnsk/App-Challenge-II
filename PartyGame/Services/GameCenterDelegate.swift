@@ -151,11 +151,11 @@ extension GameCenterService: GKMatchmakerViewControllerDelegate, GKMatchDelegate
             case .ready:
                 // Unwrap the optional gamePhase and safely update readyMap
                 if let phase = packet.gamePhase {
-                    DispatchQueue.main.async {
+                   // DispatchQueue.main.async {
                         var phaseMap = self.readyMap[phase] ?? [:]
                         phaseMap[player.gamePlayerID] = true
                         self.readyMap[phase] = phaseMap
-                    }
+                  //  }
                 } else {
                     print("⚠️ Received .ready without a gamePhase")
                 }

@@ -10,7 +10,6 @@ import SwiftUI
 @main
 struct PicktureApp: App {
     @AppStorage("hasSeenOnboarding") var hasSeenOnboarding: Bool = false
-    @StateObject var service = GameCenterService.shared
     
     var body: some Scene {
         WindowGroup {

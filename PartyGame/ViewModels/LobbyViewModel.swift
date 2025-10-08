@@ -7,10 +7,10 @@
 
 import Foundation
 import SwiftUI
-import Combine
 import GameKit
 
-final class LobbyViewModel: ObservableObject {
+@Observable
+final class LobbyViewModel {
 
     struct ChatItem: Identifiable, Equatable {
         let id = UUID()
@@ -27,21 +27,21 @@ final class LobbyViewModel: ObservableObject {
         let isReady: Bool
     }
 
-    @Published var chat: [ChatItem] = []
-    @Published var messages: [String] = []
-    @Published var typedMessage: String = ""
+    var chat: [ChatItem] = []
+    var messages: [String] = []
+    var typedMessage: String = ""
 
-    @Published var playerRows: [PlayerRow] = []
-    @Published var isInMatch: Bool = false
-    @Published var readyMap: [String: Bool] = [:]
+    var playerRows: [PlayerRow] = []
+    var isInMatch: Bool = false
+    var readyMap: [String: Bool] = [:]
 
-    @Published var isSliderComplete: Bool = false
+    var isSliderComplete: Bool = false
 
-    @Published var avatarByID: [String: UIImage] = [:]
+    var avatarByID: [String: UIImage] = [:]
     func avatar(for id: String) -> UIImage? { avatarByID[id] }
 
     private let service = GameCenterService.shared
-    private var cancellables: Set<AnyCancellable> = []
+    private var observationTimer: Timer?
 
     private var players: [GKPlayer] = []
 
@@ -59,34 +59,38 @@ final class LobbyViewModel: ObservableObject {
         self.buildPlayerRows(from: players, ready: service.readyMap)
         self.loadAvatars(for: self.players)
 
-        Publishers.CombineLatest(service.$gamePlayers, service.$readyMap)
-            .receive(on: DispatchQueue.main)
-            .sink { [weak self] gamePlayers, ready in
-                guard let self else { return }
-                let gks = gamePlayers.map { $0.player }
-                self.players = gks as! [GKPlayer]
-                // Flatten the lobby phase for local convenience map
-                self.readyMap = ready[.lobby] ?? [:]
-                self.buildPlayerRows(from: gks as! [GKPlayer], ready: ready)
-                self.loadAvatars(for: gks as! [GKPlayer])
-            }
-            .store(in: &cancellables)
-
-        service.$messages
-            .receive(on: DispatchQueue.main)
-            .assign(to: &$messages)
-
-        service.$messages
-            .receive(on: DispatchQueue.main)
-            .map { [weak self] raws in
-                guard let self else { return [] }
-                return raws.map(self.parseMessage)
-            }
-            .assign(to: &$chat)
-
-        service.$isInMatch
-            .receive(on: DispatchQueue.main)
-            .assign(to: &$isInMatch)
+        // 🔥 Com @Observable, use withObservationTracking ou Timer
+        startObservingService()
+    }
+    
+    private func startObservingService() {
+        // Opção 1: Timer (mais simples e confiável para multiplayer)
+        Timer.scheduledTimer(withTimeInterval: 0.2, repeats: true) { [weak self] _ in
+            guard let self else { return }
+            self.syncFromService()
+        }
+    }
+    
+    deinit {
+        observationTimer?.invalidate()
+    }
+    
+    private func syncFromService() {
+        let gks = service.gamePlayers.map { $0.player as! GKPlayer }
+        self.players = gks
+        self.readyMap = service.readyMap[.lobby] ?? [:]
+        self.buildPlayerRows(from: gks, ready: service.readyMap)
+        self.loadAvatars(for: gks)
+        
+        // Atualiza mensagens
+        let newMessages = service.messages
+        if self.messages != newMessages {
+            self.messages = newMessages
+            self.chat = newMessages.map(self.parseMessage)
+        }
+        
+        // Atualiza status da partida
+        self.isInMatch = service.isInMatch
     }
 
     func sendMessage() {
@@ -102,6 +106,13 @@ final class LobbyViewModel: ObservableObject {
 
     func toggleReady() {
         service.setReady(gamePhase: .lobby)
+        
+        // 🔥 Atualização local imediata para feedback instantâneo
+        var localMap = readyMap
+        localMap[localPlayerID] = true
+        readyMap = localMap
+        
+        // A atualização do broadcast virá via Combine depois
     }
 
     func markSliderComplete() {
@@ -133,6 +144,8 @@ final class LobbyViewModel: ObservableObject {
         for p in players {
             p.loadPhoto(for: .small) { [weak self] img, _ in
                 guard let self else { return }
+                // 🔥 Com @Observable, não precisa DispatchQueue.main.async
+                // mas mantemos por segurança com API de callback
                 DispatchQueue.main.async {
                     self.avatarByID[p.gamePlayerID] = img
                 }

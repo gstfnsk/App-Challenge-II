@@ -230,13 +230,7 @@ extension PlayerSubmission {
     }
 }
 
-// MARK: - Mock Player
-extension Player {
-    static func mock(id: String, name: String, submissions: [PlayerSubmission]) -> Player {
-        let mockGKPlayer = MockGKPlayer(gamePlayerID: id, displayName: name)
-        return Player(player: mockGKPlayer, submissions: submissions)
-    }
-}
+
 
 // MARK: - Mock GKPlayer
 struct MockGKPlayer: PlayerRepresentable {
@@ -245,51 +239,8 @@ struct MockGKPlayer: PlayerRepresentable {
 }
 
 // MARK: - Mock ViewModel
-final class MockMatchRankingViewModel: MatchRankingViewModel {
-    var mockHighlights: [RoundHighlight]
-    
-    init() {
-        let player1 = Player.mock(id: "1", name: "Alice", submissions: [
-            .mock(playerID: "1", votes: 5, round: 1),
-            .mock(playerID: "1", votes: 3, round: 2)
-        ])
-        
-        let player2 = Player.mock(id: "2", name: "Bob", submissions: [
-            .mock(playerID: "2", votes: 8, round: 1),
-            .mock(playerID: "2", votes: 2, round: 2)
-        ])
-        
-        let player3 = Player.mock(id: "3", name: "Carol", submissions: [
-            .mock(playerID: "3", votes: 4, round: 1),
-            .mock(playerID: "3", votes: 7, round: 2)
-        ])
-        
-        let mockPlayers = [player1, player2, player3]
-        
-        let mockImageSubmission = ImageSubmission.mock
-        let mockPlayerSubmission = PlayerSubmission.mock(playerID: "1", votes: 10, round: 1)
-        
-        let mockHighlight = RoundHighlight(
-            round: 1,
-            playerSubmission: mockPlayerSubmission,
-            playerName: "Alice"
-        )
-        self.mockHighlights = [mockHighlight]
-        
-        super.init(gamePlayers: mockPlayers)
-    }
-    
-    override func getRoundHighlights() -> [RoundHighlight] {
-        return mockHighlights
-    }
-}
 
 // MARK: - Preview
-struct MatchRankingView_Previews: PreviewProvider {
-    static var previews: some View {
-        MatchRankingView(viewModel: MockMatchRankingViewModel())
-    }
-}
 
 #Preview {
     MatchRankingView(viewModel: MatchRankingViewModel(gamePlayers: []))

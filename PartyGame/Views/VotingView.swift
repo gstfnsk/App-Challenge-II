@@ -10,18 +10,19 @@ import UIKit
 import PinterestLikeGrid
 
 struct VotingView: View {
+    @State var viewModel = VotingViewModel()
+    
     @State var phrase: String
     @State var selectedImage: ImageSubmission? = nil
     @State var goToNextRound: Bool = false
     @State var endGame: Bool = false
     
-    @StateObject var viewModel: VotingViewModel = VotingViewModel()
     let columns = [
         GridItem(.flexible()),
         GridItem(.flexible()),
     ]
-    @State var imageSubmissions: [ImageSubmission] = [
-    ]
+    
+    @State var imageSubmissions: [ImageSubmission] = []
     
     var body: some View {
         ZStack {
@@ -42,10 +43,10 @@ struct VotingView: View {
                             .font(.custom("DynaPuff-Medium", size: 28))
                             .foregroundStyle(.ice
                                 .shadow(.inner(color: .lilac, radius: 2, y: 3)))
-                        TimerComponent(remainingTime: viewModel.timeRemaining, duration: 30.0)
+                        TimerComponent(remainingTime: Int(30.0), duration: 30.0)
                     }
                     
-                    ProgressBarComponent(progress: .constant(1.0 - (viewModel.remainingTimeDouble/30.0)))
+                    ProgressBarComponent(progress: .constant(1.0))
                     
 
                 }
@@ -140,22 +141,21 @@ struct VotingView: View {
             imageSubmissions = viewModel.submissions(for: phrase)
            // viewModel.startPhase()
         }
+        
         .onChange(of: viewModel.allReady) { oldValue, newValue in
+            handleAllReadyChange(newValue: newValue)
+        }
+        
+        .onChange(of: endGame) { oldValue, newValue in
             if newValue {
-                if (selectedImage != nil) {
-                    viewModel.nextRound()
-                    if viewModel.isPhraseArrayEmpty() {
-                        endGame = true
-                    } else {
-                        goToNextRound = true
-                    }
-                   // self.selectedImage = nil
-                }
+                viewModel.resetAllPlayersReady()
             }
         }
         
-        .onChange(of: endGame || goToNextRound) {
-            viewModel.resetAllPlayersReady()
+        .onChange(of: goToNextRound) { oldValue, newValue in
+            if newValue {
+                viewModel.resetAllPlayersReady()
+            }
         }
         
         .navigationDestination(isPresented: $goToNextRound) {
@@ -163,12 +163,25 @@ struct VotingView: View {
         }
         
         .navigationDestination(isPresented: $endGame) {
-            MatchRankingView(viewModel: MatchRankingViewModel(gamePlayers: viewModel.getGamePlayers()))
+            MatchRankingView(viewModel: MatchRankingViewModel(gamePlayers: viewModel.service.gamePlayers))
         }
         
         .navigationBarBackButtonHidden(true)
         .background(Color.darkerPurple)
         
+    }
+    
+    private func handleAllReadyChange(newValue: Bool) {
+        if newValue {
+            if (selectedImage != nil) {
+                viewModel.nextRound()
+                if viewModel.isPhraseArrayEmpty() {
+                    endGame = true
+                } else {
+                    goToNextRound = true
+                }
+            }
+        }
     }
     
     struct GradientBackground: View {

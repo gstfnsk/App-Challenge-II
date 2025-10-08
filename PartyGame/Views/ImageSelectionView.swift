@@ -9,7 +9,8 @@ import SwiftUI
 import GameKit
 
 struct ImageSelectionView: View {
-    @StateObject var viewModel = ImageSelectionViewModel()
+    
+    @State var viewModel = ImageSelectionViewModel()
     @State private var isShowingCamera = false
     @State private var isShowingLibrary = false
     @State private var showSourceMenu = false
@@ -169,13 +170,12 @@ struct ImageSelectionView: View {
         .background(Color.darkerPurple)
         .navigationBarBackButtonHidden(true)
 
-
         .onAppear {
             currentPhrase = viewModel.setCurrentRandomPhrase()
-           // viewModel.startPhase()
         }
-        .onReceive(viewModel.$currentPhrase) { currentPhrase in
-            self.currentPhrase = currentPhrase
+        
+        .onChange(of: viewModel.currentPhrase) { _, newValue in
+            self.currentPhrase = newValue
         }
         .onChange(of: viewModel.allReady) { oldValue, newValue in
             if newValue {
@@ -189,7 +189,6 @@ struct ImageSelectionView: View {
         
         .navigationBarBackButtonHidden(true)
         .navigationDestination(isPresented: $goToStackView) {
-            
             ImageStackView(viewModel: ImageStackViewModel(), submittedPhrase: currentPhrase, imageSubmissions: viewModel.getSubmittedImages())
         }
         .sheet(isPresented: $isShowingCamera) {
