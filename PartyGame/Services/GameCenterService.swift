@@ -137,9 +137,18 @@ class GameCenterService: NSObject {
 
     
     //MARK: Submissão de voto
-    func submitVote(id: UUID, player: String) {
-        let vote = VoteSubmission(from: player, toPhoto: id, round: self.currentRound)
-        self.votes[vote.from] = vote
+    func submitVote(imageSubmission: ImageSubmission) {
+        let fromPlayer = GKLocalPlayer.local.gamePlayerID
+        
+        //Local vote
+        if let playerIndex = gamePlayers.firstIndex(where: { $0.player.gamePlayerID == imageSubmission.playerID }) {
+            if let submissionIndex = gamePlayers[playerIndex].submissions.firstIndex(where: { $0.round == self.currentRound }) {
+                gamePlayers[playerIndex].submissions[submissionIndex].votes += 1
+            }
+        }
+        
+        let vote = VoteSubmission(from: fromPlayer, player: imageSubmission.playerID, toPhoto: imageSubmission.id, round: self.currentRound)
+
         guard let match else { return }
         do {
             let payload = VoteSubmissionPayload(type: "newVote", submission: vote)
@@ -151,52 +160,19 @@ class GameCenterService: NSObject {
         }
         print("Novo voto adicionado:", vote)
     }
-    
-    func storeVote (vote: VoteSubmission) {
-        self.votes[vote.from] = vote
-        attributeVotes(broadcasted: true)
-    }
-    
-    func attributeVotes(broadcasted: Bool) {
-        if broadcasted {
-            // Quando disparado por broadcast: garantir que submissions estejam em gamePlayers,
-            // aplicar votos diretamente em gamePlayers e só então limpar/broadcastar limpeza
-            let votesSnapshot = votes
-            addSubmissionToPlayers()
+        
+    func attributeVotes(vote: VoteSubmission) {
             
-            for vote in votesSnapshot.values {
-                if let playerIndex = gamePlayers.firstIndex(where: { player in
-                    player.submissions.contains(where: { $0.imageSubmission.id == vote.toPhoto })
-                }) {
-                    if let submissionIndex = gamePlayers[playerIndex]
-                        .submissions
-                        .firstIndex(where: { $0.imageSubmission.id == vote.toPhoto }) {
-                        gamePlayers[playerIndex].submissions[submissionIndex].votes += 1
-                        print("✅ (broadcast) Voto atribuído: \(vote.from) → jogador: \(gamePlayers[playerIndex].player.displayName)")
-                    }
-                } else {
-                    print("⚠️ (broadcast) Nenhuma submissão encontrada para UUID \(vote.toPhoto)")
+        if let playerIndex = gamePlayers.firstIndex(where: {$0.player.gamePlayerID == vote.toPlayer}) {
+                if let submissionIndex = gamePlayers[playerIndex]
+                    .submissions
+                    .firstIndex(where: { $0.imageSubmission.id == vote.toPhoto }) {
+                    gamePlayers[playerIndex].submissions[submissionIndex].votes += 1
+                    print("✅ (broadcast) Voto atribuído: \(vote.from) → jogador: \(gamePlayers[playerIndex].player.displayName)")
                 }
+            } else {
+                print("⚠️ (broadcast) Nenhuma submissão encontrada para UUID \(vote.toPhoto)")
             }
-            // agora podemos limpar os arrays locais e notificar os outros
-            cleanPlayerSubmissions(broadcast: true)
-        } else {
-            // Quando local: atribui nos playerSubmissions e depois persiste/limpa
-            for i in playerSubmissions.indices {
-                playerSubmissions[i].votes = 0
-            }
-            
-            for vote in votes.values {
-                if let index = playerSubmissions.firstIndex(where: { $0.imageSubmission.id == vote.toPhoto }) {
-                    playerSubmissions[index].votes += 1
-                    print("✅ Voto atribuído: \(vote.from) → \(playerSubmissions[index].playerID)")
-                } else {
-                    print("⚠️ Nenhuma submissão encontrada para UUID \(vote.toPhoto)")
-                }
-            }
-            
-            cleanAndStorePlayerSubmissions()
-        }
     }
     
 
@@ -374,7 +350,11 @@ class GameCenterService: NSObject {
     //MARK: submissão de imagem do jogador para a frase atual
     func addSubmission(playerID: String, phrase: String, image: ImageSubmission) {
         let submission = PlayerSubmission(playerID: playerID, phrase: phrase, imageSubmission: image, votes: 0, round: currentRound)
-        playerSubmissions.append(submission)
+        let playerIndex = gamePlayers.firstIndex(where: {$0.player.gamePlayerID == playerID})
+        if let index = playerIndex {
+            gamePlayers[index].submissions.append(submission)
+        }
+       // playerSubmissions.append(submission)
         
         guard let match else { return }
         do {
@@ -398,15 +378,26 @@ class GameCenterService: NSObject {
     }
     
 
-    func getSubmittedImages() -> [PlayerSubmission] {
-        return self.playerSubmissions
+//    func getSubmittedImages() -> [PlayerSubmission] {
+//        return self.playerSubmissions
+//    }
+    
+    func getSubmittedImages() -> [ImageSubmission] {
+        let localID = GKLocalPlayer.local.gamePlayerID
+        var result: [ImageSubmission] = []
+        
+        for gamePlayer in gamePlayers {
+            if let currentRoundSubmission = gamePlayer.submissions.first(where: { $0.round == currentRound }) {
+                result.append(currentRoundSubmission.imageSubmission)
+            }
+        }
+        return result
     }
     
     // Rounds
     var maxRounds: Int { gamePlayers.count }
     
     func goToNextRound() {
-        attributeVotes(broadcasted: false)
         //            print("nova rodada")
         // Resetar estado da frase para a nova rodada
         resetPhraseState()

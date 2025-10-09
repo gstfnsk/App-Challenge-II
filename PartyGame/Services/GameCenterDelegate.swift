@@ -119,7 +119,7 @@ extension GameCenterService: GKMatchmakerViewControllerDelegate, GKMatchDelegate
                 let vote = votePacket.submission
                 print("📡 voto recebido de \(vote.from)")
                     DispatchQueue.main.async {
-                        self.storeVote(vote: vote)
+                        self.attributeVotes(vote: vote)
                     }
             default:
                 break
@@ -131,7 +131,11 @@ extension GameCenterService: GKMatchmakerViewControllerDelegate, GKMatchDelegate
             case "newImage":
                 let submission = payload.submission
                 DispatchQueue.main.async {
-                    self.playerSubmissions.append(submission)
+                    let playerIndex = self.gamePlayers.firstIndex(where: {$0.player.gamePlayerID == submission.playerID})
+                    if let index = playerIndex {
+                        self.gamePlayers[index].submissions.append(submission)
+                    }
+                   // self.playerSubmissions.append(submission)
                     print("Nova submissão recebida e adicionada: \(submission)")
                     print("Printar todos jogadores: \(self.gamePlayers)")
                 }

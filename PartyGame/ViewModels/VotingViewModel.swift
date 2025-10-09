@@ -48,21 +48,24 @@ final class VotingViewModel {
     }
     
     
-
-
-     // Todas as submissões para a frase atual, menos a minha
     func submissions(for phrase: String) -> [ImageSubmission] {
-        service.playerSubmissions
-            .filter { $0.phrase == phrase && $0.playerID != GKLocalPlayer.local.gamePlayerID }
-            .map { $0.imageSubmission }
+        let localID = GKLocalPlayer.local.gamePlayerID
+        var result: [ImageSubmission] = []
+        
+        for gamePlayer in service.gamePlayers {
+            if let currentRoundSubmission = gamePlayer.submissions.first(where: { $0.round == service.currentRound }) {
+                if currentRoundSubmission.playerID != localID {
+                    result.append(currentRoundSubmission.imageSubmission)
+                }
+            }
+        }
+        return result
     }
     
     func finishVoting() {
         print("🗯🏻 Votação terminada - computando votos")
     }
     
-    
-
     func cleanAndStoreSubmissions() {
         service.cleanAndStorePlayerSubmissions()
     }
@@ -79,8 +82,6 @@ final class VotingViewModel {
         timer = Timer.scheduledTimer(withTimeInterval: 0.1, repeats: true) { [weak self] _ in
             self?.updateRemaining(target: target)
         }
-        
-        
     }
     
     private func updateRemaining(target: Date) {
@@ -95,11 +96,9 @@ final class VotingViewModel {
         }
     }
     
-
-    func voteImage(id: UUID) {
-        let playerID = GKLocalPlayer.local.gamePlayerID
+    func voteImage(imageSubmission: ImageSubmission) {
         print("votando")
-        service.submitVote(id: id, player: playerID)
+        service.submitVote(imageSubmission: imageSubmission)
     }
     
     func nextRound() {

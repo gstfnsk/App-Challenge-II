@@ -40,8 +40,8 @@ struct ImageSelectionView: View {
                             .frame(maxWidth: .infinity, alignment: .leading)
 
                         HStack (spacing: 42) {
-                            Text("phrases array: \(viewModel.readyMap)")
-                                .font(.custom("DynaPuff-Medium", size: 10))
+                            Text("send a pickture")
+                                .font(.custom("DynaPuff-Medium", size: 28))
                                 .foregroundStyle(.ice
                                     .shadow(.inner(color: .lilac, radius: 2, y: 3)))
                                 .frame(maxWidth: .infinity, alignment: .leading)
@@ -58,7 +58,7 @@ struct ImageSelectionView: View {
                     VStack(spacing: 16) {
                         VStack(alignment: .leading, spacing: 16) {
                             Text("the phrase is:")
-                                .font(.system(size: 20, weight: .semibold, design: .rounded))
+                                .font(.custom("DynaPuff-Regular", size: 20))
                                 .foregroundStyle(.ice)
                                 .frame(maxWidth: .infinity, alignment: .leading)
                             

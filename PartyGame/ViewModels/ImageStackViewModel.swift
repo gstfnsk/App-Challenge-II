@@ -12,9 +12,16 @@ class ImageStackViewModel: ObservableObject {
     private let service = GameCenterService.shared
 
     func submissions(for phrase: String) -> [ImageSubmission] {
-        service.playerSubmissions
-            .filter { $0.phrase == phrase }
-            .map { $0.imageSubmission }
+        let localID = GKLocalPlayer.local.gamePlayerID
+        var result: [ImageSubmission] = []
+        
+        for gamePlayer in service.gamePlayers {
+          //  if let currentRoundSubmission = gamePlayer.submissions.first(where: { $0.round == service.currentRound }) {
+            if let currentRoundSubmission = gamePlayer.submissions.first {
+                result.append(currentRoundSubmission.imageSubmission)
+            }
+        }
+        return result
     }
     
     func resetAllPlayersReady() {

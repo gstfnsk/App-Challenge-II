@@ -100,7 +100,7 @@ class ImageSelectionViewModel {
     }
     
     func getSubmittedImages() -> [ImageSubmission] {
-        return service.playerSubmissions.map { $0.imageSubmission }
+        return service.getSubmittedImages()
     }
     
     private func startCountdown(until target: Date) {
