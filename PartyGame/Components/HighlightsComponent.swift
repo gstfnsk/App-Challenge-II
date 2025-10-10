@@ -1,5 +1,5 @@
 //
-//  HighlightsView.swift
+//  HighlightsComponent.swift
 //  Pickture
 //
 //  Created by Fernando Sulzbach on 02/10/25.
@@ -8,7 +8,7 @@ import SwiftUI
 
 struct HighlightsComponent: View {
     
-    let imagesHighlights: [Image] = [Image("img-teste"), Image("img-teste"), Image("img-teste")]
+    let highlights: [HighlightDisplay]
     
     var body: some View {
         VStack(spacing: 28) {
@@ -26,7 +26,7 @@ struct HighlightsComponent: View {
             }
             .padding(.horizontal)
                 
-            SubmissionTabComponent()
+            SubmissionTabComponent(highlights: highlights)
         }
         .padding(.top, 28)
       //  .padding(.bottom, 50)
@@ -48,5 +48,5 @@ struct HighlightsComponent: View {
 }
 
 #Preview {
-    HighlightsComponent()
+//    HighlightsComponent()
 }

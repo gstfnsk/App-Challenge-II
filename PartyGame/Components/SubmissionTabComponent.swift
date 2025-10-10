@@ -7,23 +7,9 @@
 
 import SwiftUI
 
-struct SubmissionMock {
-    var image: Image
-    var phrase: String
-    var author: String
-    var points: Int
-}
 
 struct SubmissionTabComponent: View {
-    
-    var submissions: [SubmissionMock] = [
-        SubmissionMock(
-            image: Image("img-riboli"), phrase: "O mentor mais maluco", author: "MrFernandoS", points: 2),
-        SubmissionMock(
-            image: Image("img-happy"), phrase: "A definição de Felicidade", author: "rntoneto", points: 1),
-        SubmissionMock(
-            image: Image("img-dog"), phrase: "tenho medo disso", author: "rntoneto", points: 2),
-        ]
+    var highlights: [HighlightDisplay]
     
     // Dimensões base dos elementos internos (coerentes com o card base 329×520)
     private let baseImageSize = CGSize(width: 312, height: 275)
@@ -31,17 +17,17 @@ struct SubmissionTabComponent: View {
     var body: some View {
         VStack {
             TabView {
-                ForEach(submissions.indices, id: \.self) { index in
+                ForEach(highlights.indices, id: \.self) { index in
                     VStack {
                         VStack(spacing: 0) {
-                            submissions[index].image
+                                highlights[index].image
                                 .resizable()
                                 .scaledToFill()
                                 .frame(width: baseImageSize.width, height: baseImageSize.height)
                                 .clipped()
                                 .cornerRadius(24)
                             
-                            Text("\"\(submissions[index].phrase)\"")
+                            Text("\"\(highlights[index].phrase)\"")
                                 .font(Font.custom("DynaPuff-Regular", size: 16))
                                 .foregroundStyle(Color(.white))
                                 .frame(height: 40)
@@ -64,13 +50,13 @@ struct SubmissionTabComponent: View {
                                 Text("author:")
                                 
                                 HStack(alignment: .center, spacing: 16) {
-                                    Text("\(submissions[index].author)")
+                                    Text("\(highlights[index].author)")
                                         .font(Font.custom("DynaPuff-Regular", size: 14))
                                         .foregroundStyle(Color(.black))
                                     
                                     Spacer()
                                     
-                                    Text("\(submissions[index].points) votes")
+                                    Text("\(highlights[index].points) votes")
                                         .font(Font.custom("DynaPuff-Regular", size: 14))
                                         .foregroundStyle(Color(.black))
                                 }
@@ -90,5 +76,5 @@ struct SubmissionTabComponent: View {
 }
 
 #Preview {
-    SubmissionTabComponent()
+//    SubmissionTabComponent()
 }

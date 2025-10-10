@@ -2,26 +2,18 @@ import SwiftUI
 import GameKit
 
 struct MatchRankingView: View {
-   // var gamePlayers: [Player]
     var viewModel: MatchRankingViewModel
     @State var goHome = false
     
-    let imageSubmission = ImageSubmission(
-        playerID: "1",
-        image: UIImage(systemName: "square.and.arrow.up")!.pngData(),
-        submissionTime: Date()
-    )
-    
     var body: some View {
-        let top3 = viewModel.topPlayers()
-        let remainingPlayers = viewModel.remainingPlayers()
-        let imagesHighlights = viewModel.getRoundHighlights()
+        let rankedPlayers = viewModel.topPlayers()
+        let gameHighlights = viewModel.getGameHighlights()
+        let highlightsToShow = viewModel.convertHighlights(gameHighlights)
         
         NavigationStack {
             ZStack(alignment: .bottom) {
                 
                 ScrollView {
-                    
                     VStack(spacing: 16) {
                         VStack(alignment: .leading, spacing: 5) {
                             HStack {
@@ -30,24 +22,20 @@ struct MatchRankingView: View {
                                     .foregroundStyle(.lilac)
                                 Spacer()
                             }
-                            
-                            Text("phrases array \(viewModel.service.phrases)")
-                                .font(.custom("DynaPuff-Regular", size: 32))
-                                .fontWeight(.bold)
-                                .foregroundStyle(.ice.shadow(.inner(color: .lilac, radius: 2, y: 3)))
+//                            Text("phrases array \(viewModel.service.phrases)")
+//                                .font(.custom("DynaPuff-Regular", size: 32))
+//                                .fontWeight(.bold)
+//                                .foregroundStyle(.ice.shadow(.inner(color: .lilac, radius: 2, y: 3)))
                         }
                         
                         // Top 3 players
-                        PodiumComponent(topPlayers: top3)
-                        PodiumComponent(gamePlayers: viewModel.gamePlayers)
+                        PodiumComponent(topPlayers: rankedPlayers)
                         
                         // Responsivo (sem altura fixa)
-                        HighlightsComponent()
+                        HighlightsComponent(highlights: highlightsToShow)
                             .frame(height: 520)
                     }
-                    
-                    
-                }
+                                    }
                 .scrollIndicators(.hidden)
                 
                 // Botão de encerrar
@@ -92,108 +80,6 @@ struct PageIndicator: View {
     }
 }
 
-// MARK: - Remaining Players
-struct RemainingPlayers: View {
-    var remaining: [(Player, Int)]
-    var viewModel: MatchRankingViewModel
-    
-    var body: some View {
-        VStack(spacing: 8) {
-            ForEach(Array(remaining.enumerated()), id: \.1.0.id) { index, element in
-                let player = element.0
-                let points = element.1
-                
-                PlayerRankingComponent(
-                    position: index + 4,
-                    player: player,
-                    avatar: viewModel.avatar(for: player.player.gamePlayerID)
-                )
-            }
-        }
-    }
-}
-
-// MARK: - Highlights
-struct HighlightsView: View {
-    let imagesHighlights: [RoundHighlight]
-    let viewModel: MatchRankingViewModel
-    
-    @State private var currentPage: Int = 0
-    
-    var body: some View {
-        VStack(spacing: 28) {
-            Text("highlight pictures")
-                .font(Font.custom("DynaPuff-Regular", size: 22))
-                .foregroundStyle(.ice)
-                .background(
-                    RoundedRectangle(cornerRadius: 26)
-                        .frame(width: 329, height: 50)
-                        .foregroundStyle(.lighterPurple)
-                )
-               
-            
-            ScrollView(.horizontal, showsIndicators: false) {
-                HStack(spacing: 16) {
-                    TabView(selection: $currentPage){
-                    ForEach(Array(imagesHighlights.enumerated()), id: \.0) { index, highlight in
-                        VStack {
-                            if let data = highlight.playerSubmission.imageSubmission.uiImage {
-                                Image(uiImage: data)
-                                    .resizable()
-                                    .scaledToFill()
-                                    .frame(width: 312, height: 275)
-                                    .clipShape(RoundedRectangle(cornerRadius: 20))
-                            }
-                            
-                            HStack {
-                                if let avatar = viewModel.avatar(for: highlight.playerSubmission.playerID) {
-                                    Image(uiImage: avatar)
-                                        .resizable()
-                                        .clipShape(Circle())
-                                        .frame(width: 30, height: 30)
-                                }
-                                VStack(alignment: .leading) {
-                                    Text("author:")
-                                        .font(.system(size: 13))
-                                    Text(highlight.playerName)
-                                        .font(.system(size: 15, weight: .semibold, design: .rounded))
-                                        .foregroundStyle(Color(.ice))
-                                }
-                                Spacer()
-                                Text("\(highlight.playerSubmission.votes) votes")
-                                    .font(.system(size: 15))
-                            }
-                        }
-                        .tag(index)
-                        .background(RoundedRectangle(cornerRadius: 16).fill(Color.lighterPurple))
-                        .padding()
-                        
-                    }
-                }
-                    .tabViewStyle(.page(indexDisplayMode: .never))
-                    PageIndicator(numberOfPages: imagesHighlights.count, currentPage: currentPage)
-                }
-                
-                
-            }
-        }
-        .padding(.vertical, 28)
-        .frame(width: 329)
-        .padding(.horizontal, 16)
-        .background(
-            RoundedRectangle(cornerRadius: 32)
-                .foregroundStyle(
-                    LinearGradient(
-                        gradient: Gradient(colors: [.lilac.opacity(0.5), .red.opacity(0.5)]),
-                        startPoint: .top,
-                        endPoint: .bottom
-                    )
-                    .shadow(.inner(color: .ice, radius: 2, y: 5))
-                )
-        )
-    }
-}
-
 // MARK: - Protocols & Mocks
 protocol PlayerRepresentable {
     var displayName: String { get }
@@ -202,47 +88,6 @@ protocol PlayerRepresentable {
 
 extension GKPlayer: PlayerRepresentable {}
 
-struct MockPlayer: PlayerRepresentable {
-    var displayName: String
-    var gamePlayerID: String
-}
-
-// MARK: - Mock ImageSubmission
-extension ImageSubmission {
-    static var mock: ImageSubmission {
-        ImageSubmission(
-            playerID: "1",
-            image: UIImage(named: "img-teste")?.pngData(),
-            submissionTime: Date()
-        )
-    }
-}
-
-// MARK: - Mock PlayerSubmission
-extension PlayerSubmission {
-    static func mock(playerID: String, votes: Int, round: Int) -> PlayerSubmission {
-        PlayerSubmission(
-            playerID: playerID,
-            phrase: "Mock phrase for player \(playerID)",
-            imageSubmission: .mock,
-            votes: votes,
-            round: round
-        )
-    }
-}
-
-
-
-// MARK: - Mock GKPlayer
-struct MockGKPlayer: PlayerRepresentable {
-    var gamePlayerID: String
-    var displayName: String
-}
-
-// MARK: - Mock ViewModel
-
-// MARK: - Preview
-
 #Preview {
-    MatchRankingView(viewModel: MatchRankingViewModel(gamePlayers: []))
+//    MatchRankingView(viewModel: MatchRankingViewModel(gamePlayers: []))
 }
