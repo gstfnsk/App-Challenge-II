@@ -43,7 +43,7 @@ struct VotingView: View {
                             .font(.custom("DynaPuff-Medium", size: 28))
                             .foregroundStyle(.ice
                                 .shadow(.inner(color: .lilac, radius: 2, y: 3)))
-                        TimerComponent(remainingTime: Int(30.0), duration: 30.0)
+                        TimerComponent(remainingTime: 30.0, duration: 30.0)
                     }
                     
                     ProgressBarComponent(progress: .constant(1.0))

@@ -92,7 +92,6 @@ struct HomeView: View {
                     ZStack{
                         Image("img-textureI")
                             .resizable()
-                            .scaledToFill()
                             .opacity(0.7)
                         ForEach(floatingImages.indices, id: \.self) { index in
                             Image(floatingImages[index].name)

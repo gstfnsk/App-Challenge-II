@@ -8,7 +8,7 @@
 import SwiftUI
 
 struct TimerComponent: View {
-    var remainingTime: Int
+    var remainingTime: Double
     let duration: TimeInterval
     
     var textColor: Color = .darkerPurple

@@ -25,7 +25,7 @@ class ImageSelectionViewModel {
     private var timer: Timer?
     var hasProcessedTimeRunOut: Bool = false
     var remainingTimeDouble: Double = 60.0
-    var timeRemaining: Int = 60
+    var timeRemaining: Double = 60
     
     let service = GameCenterService.shared
     
@@ -119,7 +119,7 @@ class ImageSelectionViewModel {
     private func updateRemaining(target: Date) {
         let remainingSecondsDouble = target.timeIntervalSinceNow
         
-        timeRemaining = max(0, Int(ceil(remainingSecondsDouble)))
+        timeRemaining = max(0, ceil(remainingSecondsDouble))
         remainingTimeDouble = max(0.0, remainingSecondsDouble)
         
         if timeRemaining == 0  {

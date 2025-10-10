@@ -9,17 +9,56 @@ import GameKit
 final class PhraseViewModel {
     let service = GameCenterService.shared
     
+    
     var selectablePhrases: [Phrase] = Array(Phrases.all.shuffled().prefix(3))
     
     var players: [GKPlayer] { service.gamePlayers.map { $0.player } }
     var readyMap: [String: Bool] { service.readyMap[.phraseSelection] ?? [:] }
     
-    // Propriedades publicadas para a View
     var hasSubmittedPhrase: Bool = false
     var isSelectionDisabled: Bool = false
     var hasInitiatedPhraseSelection: Bool = false
     
+    var timerDone: Bool = false
+    
+    var isRunning: Bool = false
+    
+    private var ticker: AnyCancellable?
+    var startValue: Double = 20.0
+    var remaining: Double = 0
+    
     init() {
+      self.remaining = startValue
+    }
+    
+    func start() {
+        guard !isRunning else { return }
+        isRunning = true
+
+        ticker = Timer.publish(every: 0.5, on: .main, in: .common)
+            .autoconnect()
+            .sink { [weak self] _ in
+                guard let self else { return }
+                if self.remaining > 0 {
+                    self.remaining -= 1
+                } else {
+                    self.timerDone = true
+                    self.stop()
+                }
+            }
+    }
+    
+    func stop() {
+        isRunning = false
+        ticker?.cancel()
+        ticker = nil
+    }
+    
+    func reset(to seconds: Double? = nil, autostart: Bool = false) {
+        if let seconds { startValue = max(0.0, seconds) }
+        remaining = startValue
+        stop()
+        if autostart { start() }
     }
     
     var allReady: Bool {
@@ -67,4 +106,6 @@ final class PhraseViewModel {
     func toggleReady() {
         service.setReady(gamePhase: .phraseSelection)
     }
+    
+    deinit { stop() }
 }
