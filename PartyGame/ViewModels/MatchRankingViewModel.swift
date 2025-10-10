@@ -38,6 +38,10 @@ class MatchRankingViewModel {
         self.service = service
 //        loadAvatars(for: gamePlayers.map { $0.player })
     }
+    
+    func resetAllPlayersReady() {
+        service.resetReadyForAllPlayers(gamePhase: .voting)
+    }
 
     func avatar(for id: String) -> UIImage? {
         avatarByID[id]

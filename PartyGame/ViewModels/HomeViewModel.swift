@@ -8,10 +8,11 @@
 import SwiftUI
 import GameKit
 
-class HomeViewModel: ObservableObject {
+@Observable
+class HomeViewModel {
     
-    @Published var isAuthenticated: Bool = false
-    @Published var isInMatch: Bool = false
+    var isAuthenticated: Bool { service.isAuthenticated }
+    var isInMatch: Bool { service.isInMatch }
     
     private var pendingInvite: GKInvite?
     private var pendingPlayersToInvite: [GKPlayer]?
@@ -19,14 +20,8 @@ class HomeViewModel: ObservableObject {
     private let service = GameCenterService.shared
     
     init() {
-        
-        service.$isAuthenticated
-            .receive(on: DispatchQueue.main)
-            .assign(to: &$isAuthenticated)
-        
-        service.$isInMatch
-            .receive(on: DispatchQueue.main)
-            .assign(to: &$isInMatch)
+        // Remove a atribuição direta, agora as propriedades são computed properties.
+        // A observação é automática via @Observable.
     }
         
     func startSinglePlayerGame() {

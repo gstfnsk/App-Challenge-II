@@ -10,17 +10,18 @@ import UIKit
 import PinterestLikeGrid
 
 struct VotingView: View {
+    @State var viewModel = VotingViewModel()
+    
     @State var phrase: String
-    @State var selectedImage: ImageSubmission?
+    @State var selectedImage: ImageSubmission? = nil
+    @State var imageSubmissions: [ImageSubmission] = []
+    
     @State var goToNextRound: Bool = false
     @State var endGame: Bool = false
     
-    @StateObject var viewModel: VotingViewModel = VotingViewModel()
     let columns = [
         GridItem(.flexible()),
         GridItem(.flexible()),
-    ]
-    @State var imageSubmissions: [ImageSubmission] = [
     ]
     
     var body: some View {
@@ -42,10 +43,10 @@ struct VotingView: View {
                             .font(.custom("DynaPuff-Medium", size: 28))
                             .foregroundStyle(.ice
                                 .shadow(.inner(color: .lilac, radius: 2, y: 3)))
-                        TimerComponent(remainingTime: viewModel.timeRemaining, duration: 30.0)
+                        TimerComponent(remainingTime: Int(30.0), duration: 30.0)
                     }
                     
-                    ProgressBarComponent(progress: .constant(1.0 - (viewModel.remainingTimeDouble/30.0)))
+                    ProgressBarComponent(progress: .constant(1.0))
                     
 
                 }
@@ -56,10 +57,13 @@ struct VotingView: View {
                     VStack(alignment: .leading, spacing: 16) {
                         VStack (spacing: 16){
                             Text("the phrase is:")
-                                .foregroundColor(.ice)
-                                .font(.headline)
+                                .font(.custom("DynaPuff-Regular", size: 20))
+                                .foregroundStyle(.ice)
+                                .frame(maxWidth: .infinity, alignment: .leading)
+
                             
-                            Text("\"\(phrase)\"").font(.custom("DynaPuff-Medium", size: 22))
+                            Text("\"\(phrase)\"")
+                                .font(.custom("DynaPuff-Medium", size: 22))
                                 .foregroundStyle(.ice)
                         }
                         .padding(16)
@@ -122,6 +126,7 @@ struct VotingView: View {
                 if let selectedImage {
                     ButtonView(image: "iconVoteButton", title: String(localized: "confirm vote"), titleDone: String(localized: "vote confirmed"), action: {
                         print("UUID da imagem:", selectedImage.id)
+                        viewModel.voteImage(imageSubmission: selectedImage)
                         viewModel.toggleReady()
                     }, state: .enabled)
                 } else {
@@ -136,46 +141,49 @@ struct VotingView: View {
         
         .onAppear {
             imageSubmissions = viewModel.submissions(for: phrase)
-            viewModel.startPhase()
+           // viewModel.startPhase()
         }
-        .onChange(of: viewModel.allReady) {
-            if !viewModel.players.isEmpty {
-                    if let selectedImage {
-                        viewModel.voteImage(id: selectedImage.id)
-                      //  viewModel.cleanAndStoreSubmissions()
-                        viewModel.nextRound()
-                        self.selectedImage = nil
-                        if viewModel.isPhraseArrayEmpty() {
-                            endGame = true
-                        } else {
-                            goToNextRound = true
-                        }
-                        viewModel.resetAllPlayersReady()
-                    }
+        
+        .onChange(of: viewModel.allReady) { oldValue, newValue in
+            handleAllReadyChange(newValue: newValue)
+        }
+        
+        .onChange(of: endGame) { oldValue, newValue in
+            if newValue {
+                viewModel.resetAllPlayersReady()
             }
-            
         }
-//        .onChange(of: viewModel.hasProcessedTimeRunOut) {
-//            goToNextRound = true
-//            viewModel.nextRound()
-//          //  viewModel.resetAllPlayersReady()
-//        }
+        
+        .onChange(of: goToNextRound) { oldValue, newValue in
+            if newValue {
+                viewModel.resetAllPlayersReady()
+            }
+        }
         
         .navigationDestination(isPresented: $goToNextRound) {
-//            if viewModel.isGameOver {
-//                MatchRankingView()
-//            } else {
                 ImageSelectionView()
-//            }
         }
+        
+        .navigationDestination(isPresented: $endGame) {
+            MatchRankingView(viewModel: MatchRankingViewModel(gamePlayers: viewModel.service.gamePlayers))
+        }
+        
         .navigationBarBackButtonHidden(true)
         .background(Color.darkerPurple)
         
-        .navigationDestination(isPresented: $endGame) {
-            MatchRankingView(viewModel: MatchRankingViewModel(gamePlayers: viewModel.getGamePlayers()))
+    }
+    
+    private func handleAllReadyChange(newValue: Bool) {
+        if newValue {
+            if (selectedImage != nil) {
+                viewModel.nextRound()
+                if viewModel.isPhraseArrayEmpty() {
+                    endGame = true
+                } else {
+                    goToNextRound = true
+                }
+            }
         }
-        .navigationBarBackButtonHidden(true)
-        .background(Color.darkerPurple)
     }
     
     struct GradientBackground: View {

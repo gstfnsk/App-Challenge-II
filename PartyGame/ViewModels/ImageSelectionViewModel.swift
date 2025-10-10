@@ -9,56 +9,45 @@ import SwiftUI
 import GameKit
 import Combine
 
-final class ImageSelectionViewModel: ObservableObject {
-    @Published var errorMessage: String?
+@Observable
+class ImageSelectionViewModel {
+    var errorMessage: String?
 
-    @Published var selectedPhrase: [String] = []
-    @Published var currentPhrase: String = ""
+    var selectedPhrase: [String] { service.phrases }
+    var currentPhrase: String { service.currentPhrase }
     
-    @Published var playerSubmissions: [PlayerSubmission] = []
-    @Published private(set) var hasSubmitted = false
+    var playerSubmissions: [PlayerSubmission] { service.playerSubmissions }
+    private(set) var hasSubmitted = false
+    
+    var players: [GKPlayer] { service.gamePlayers.map { $0.player } }
+    var readyMap: [String: Bool] { service.readyMap[.imageSelection] ?? [:] }
     
     private var timer: Timer?
-    @Published var hasProcessedTimeRunOut: Bool = false
-    @Published var remainingTimeDouble: Double = 60.0
-    @Published var timeRemaining: Int = 60
+    var hasProcessedTimeRunOut: Bool = false
+    var remainingTimeDouble: Double = 60.0
+    var timeRemaining: Int = 60
     
     let service = GameCenterService.shared
-    private var cancellables: Set<AnyCancellable> = []
-
+    
     init() {
-        
-        service.$phrases
-            .receive(on: DispatchQueue.main)
-            .assign(to: &$selectedPhrase)
-        
-        service.$currentPhrase
-            .receive(on: DispatchQueue.main)
-            .assign(to: &$currentPhrase)
-        
-        service.$playerSubmissions
-            .receive(on: DispatchQueue.main)
-            .assign(to: &$playerSubmissions)
-        
-        service.$timerStart
-            .compactMap { $0 }
-            .removeDuplicates()
-            .receive(on: DispatchQueue.main)
-            .sink { [weak self] target in
-                self?.startCountdown(until: target)
-            }
-            .store(in: &cancellables)
-        
     }
     
-    deinit {
-        timer?.invalidate()
-        cancellables.forEach { $0.cancel() }
+    var allReady: Bool {
+        guard !players.isEmpty else { return false }
+        for p in players {
+            if readyMap[p.gamePlayerID] != true { return false }
+        }
+        return true
     }
     
-    var haveAllPlayersSubmittedImg: Bool {
-        service.haveAllPlayersSubmittedImage()
+    func resetAllPlayersReady() {
+        service.resetReadyForAllPlayers(gamePhase: .imageSelection)
     }
+    
+    func toggleReady() {
+        service.setReady(gamePhase: .imageSelection)
+    }
+    
 
 //    func chooseCamera() {
 //        guard UIImagePickerController.isSourceTypeAvailable(.camera) else {
@@ -111,7 +100,7 @@ final class ImageSelectionViewModel: ObservableObject {
     }
     
     func getSubmittedImages() -> [ImageSubmission] {
-        return service.playerSubmissions.map { $0.imageSubmission }
+        return service.getSubmittedImages()
     }
     
     private func startCountdown(until target: Date) {
@@ -142,15 +131,7 @@ final class ImageSelectionViewModel: ObservableObject {
             }
         }
     }
-    
-    func startPhase() {
-        print("🚀 Starting phase - resetting all states")
-        hasProcessedTimeRunOut = false
-        remainingTimeDouble = 60.0
-        timeRemaining = 60
-        
-        service.schedulePhaseStart(delay: 60)
-    }
+
     
    
 

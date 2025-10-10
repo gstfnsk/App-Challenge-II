@@ -49,10 +49,10 @@ struct PhraseView: View {
                                 .foregroundStyle(.ice
                                     .shadow(.inner(color: .lilac, radius: 2, y: 3)))
                                 .frame(maxWidth: .infinity, alignment: .leading)
-                            TimerComponent(remainingTime: viewModel.timeRemaining, duration: 30.0)
+                            TimerComponent(remainingTime: Int(30.0), duration: 30.0)
                         }
                     }
-                    ProgressBarComponent(progress: .constant(1.0 - (viewModel.remainingTimeDouble/30.0)))
+                    ProgressBarComponent(progress: .constant(1.0))
                 }
                 .padding(.horizontal)
                 
@@ -126,6 +126,7 @@ struct PhraseView: View {
                             print("Submitted phrase: \(selectedPhrase)")
                             if let phrase = selectedPhrase {
                                 viewModel.submitPhrase(phrase: phrase.text)
+                                viewModel.toggleReady()
                             }
                         },
                         state: isButtonInactive ? .inactive : .enabled
@@ -137,11 +138,10 @@ struct PhraseView: View {
         }
         .background(Color.darkerPurple)
         .navigationBarBackButtonHidden(true)
-        .navigationDestination(isPresented: $nextScreen) {
-            ImageSelectionView()
-        }
+
         .onAppear {
             viewModel.startPhase()
+            viewModel.resetAllPlayersReady()
         }
 
 //        .onChange(of: viewModel.haveTimeRunOut) { oldValue, newValue in
@@ -149,10 +149,18 @@ struct PhraseView: View {
 //                nextScreen = true
 //            }
 //        }
-        .onChange(of: viewModel.haveAllPlayersSubmitted) { oldValue, newValue in
+        .onChange(of: viewModel.allReady) { oldValue, newValue in
             if newValue {
                 nextScreen = true
             }
+        }
+        
+//        .onChange(of: nextScreen) {
+//            viewModel.resetAllPlayersReady()
+//        }
+        
+        .navigationDestination(isPresented: $nextScreen) {
+            ImageSelectionView()
         }
     }
 }

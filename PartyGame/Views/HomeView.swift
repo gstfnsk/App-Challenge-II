@@ -2,7 +2,7 @@ import SwiftUI
 import GameKit
 
 struct HomeView: View {
-    @ObservedObject var viewModel = HomeViewModel()
+    @State var viewModel = HomeViewModel()
     @State var showPopover = false
     @State var goToLobby = false
     

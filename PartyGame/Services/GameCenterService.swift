@@ -20,12 +20,17 @@ struct LobbyPacket: Codable {
     let senderID: String
     let text: String?
     let ready: Bool?
+    let gamePhase: GamePhase?
     
     static func chat(senderID: String, text: String) -> LobbyPacket {
-        .init(type: .chat, senderID: senderID, text: text, ready: nil)
+        .init(type: .chat, senderID: senderID, text: text, ready: nil, gamePhase: nil)
     }
-    static func ready(senderID: String, ready: Bool) -> LobbyPacket {
-        .init(type: .ready, senderID: senderID, text: nil, ready: ready)
+    static func ready(senderID: String, ready: Bool, gamePhase: GamePhase) -> LobbyPacket {
+        .init(type: .ready, senderID: senderID, text: nil, ready: ready, gamePhase: gamePhase)
+    }
+    
+    static func resetReady(gamePhase: GamePhase) -> LobbyPacket {
+        .init(type: .ready, senderID: "Player", text: nil, ready: nil, gamePhase: gamePhase)
     }
 }
 
@@ -39,36 +44,36 @@ struct VoteSubmissionPayload: Codable {
     let submission: VoteSubmission
 }
 
-class GameCenterService: NSObject, ObservableObject {
+@Observable
+class GameCenterService: NSObject {
     
     static let shared = GameCenterService()
     
     // MARK: - Published state
-    @Published var isAuthenticated = false
-    @Published var isInMatch = false
-    @Published var gamePlayers: [Player] = []
-    @Published var readyMap: [String: Bool] = [:]
-    @Published var messages: [String] = []
-    @Published var isSinglePlayer = false
-    @Published var currentRound: Int = 1
-    @Published var phrases: [String] = []
+    var isAuthenticated = false
+    var isInMatch = false
+    var gamePlayers: [Player] = []
+    var readyMap: [GamePhase:[String: Bool]] = [:]
+    var messages: [String] = []
+    var isSinglePlayer = false
+    var currentRound: Int = 1
+    var phrases: [String] = []
     
-    @Published var currentPhrase = ""
-    @Published var phraseLeaderID: String? = nil
-    @Published var isWaitingForPhrase = false
+    var currentPhrase = ""
+    var phraseLeaderID: String? = nil
+    var isWaitingForPhrase = false
     var localPhraseChoices: [String: [String]] = [:]
     
-    @Published var playerSubmissions: [PlayerSubmission] = []
-    @Published var timerStart: Date? = nil
+    var playerSubmissions: [PlayerSubmission] = []
     
-    @Published var isPhraseSubmittedByAnyPlayer: Bool = false
+    var isPhraseSubmittedByAnyPlayer: Bool = false
 
-    @Published var submittedPhrasesByPlayer: [String: String] = [:] // playerID -> phrase
-    @Published var votes: [String : VoteSubmission] = [:] //
+    var submittedPhrasesByPlayer: [String: String] = [:] // playerID -> phrase
+    var votes: [String : VoteSubmission] = [:] //
     
-    @Published var isPhrasesEmpty = false
+    var isPhrasesEmpty = false
     
-    
+
     // Networking / match
     var match: GKMatch?
     
@@ -129,31 +134,21 @@ class GameCenterService: NSObject, ObservableObject {
         }
     }
     
-    // MARK: - Phase start scheduling
-    func schedulePhaseStart(delay: TimeInterval = 1) {
-        let target = Date().addingTimeInterval(delay)
-        timerStart = target
-        broadcastPhaseStart(target)
-    }
-    
-    private func broadcastPhaseStart(_ date: Date) {
-        guard let match else { return }
-        let payload: [String: Any] = [
-            "type": "phaseStart",
-            "date": date.timeIntervalSince1970
-        ]
-        do {
-            let data = try JSONSerialization.data(withJSONObject: payload)
-            try match.sendData(toAllPlayers: data, with: .reliable)
-        } catch {
-            print("❌ Erro ao enviar phaseStart: \(error)")
-        }
-    }
+
     
     //MARK: Submissão de voto
-    func submitVote(id: UUID, player: String) {
-        let vote = VoteSubmission(from: player, toPhoto: id, round: self.currentRound)
-        self.votes[vote.from] = vote
+    func submitVote(imageSubmission: ImageSubmission) {
+        let fromPlayer = GKLocalPlayer.local.gamePlayerID
+        
+        //Local vote
+        if let playerIndex = gamePlayers.firstIndex(where: { $0.player.gamePlayerID == imageSubmission.playerID }) {
+            if let submissionIndex = gamePlayers[playerIndex].submissions.firstIndex(where: { $0.round == self.currentRound }) {
+                gamePlayers[playerIndex].submissions[submissionIndex].votes += 1
+            }
+        }
+        
+        let vote = VoteSubmission(from: fromPlayer, player: imageSubmission.playerID, toPhoto: imageSubmission.id, round: self.currentRound)
+
         guard let match else { return }
         do {
             let payload = VoteSubmissionPayload(type: "newVote", submission: vote)
@@ -165,63 +160,19 @@ class GameCenterService: NSObject, ObservableObject {
         }
         print("Novo voto adicionado:", vote)
     }
-    
-    func storeVote (vote: VoteSubmission) {
-        self.votes[vote.from] = vote
-        attributeVotes(broadcasted: true)
-    }
-    
-    func attributeVotes(broadcasted: Bool) {
-        if broadcasted {
-            // Quando disparado por broadcast: garantir que submissions estejam em gamePlayers,
-            // aplicar votos diretamente em gamePlayers e só então limpar/broadcastar limpeza
-            let votesSnapshot = votes
-            addSubmissionToPlayers()
-            
-            for vote in votesSnapshot.values {
-                if let playerIndex = gamePlayers.firstIndex(where: { player in
-                    player.submissions.contains(where: { $0.imageSubmission.id == vote.toPhoto })
-                }) {
-                    if let submissionIndex = gamePlayers[playerIndex]
-                        .submissions
-                        .firstIndex(where: { $0.imageSubmission.id == vote.toPhoto }) {
-                        gamePlayers[playerIndex].submissions[submissionIndex].votes += 1
-                        print("✅ (broadcast) Voto atribuído: \(vote.from) → jogador: \(gamePlayers[playerIndex].player.displayName)")
-                    }
-                } else {
-                    print("⚠️ (broadcast) Nenhuma submissão encontrada para UUID \(vote.toPhoto)")
-                }
-            }
-            // agora podemos limpar os arrays locais e notificar os outros
-            cleanPlayerSubmissions(broadcast: true)
-        } else {
-            // Quando local: atribui nos playerSubmissions e depois persiste/limpa
-            for i in playerSubmissions.indices {
-                playerSubmissions[i].votes = 0
-            }
-            
-            for vote in votes.values {
-                if let index = playerSubmissions.firstIndex(where: { $0.imageSubmission.id == vote.toPhoto }) {
-                    playerSubmissions[index].votes += 1
-                    print("✅ Voto atribuído: \(vote.from) → \(playerSubmissions[index].playerID)")
-                } else {
-                    print("⚠️ Nenhuma submissão encontrada para UUID \(vote.toPhoto)")
-                }
-            }
-            
-            cleanAndStorePlayerSubmissions()
-        }
-    }
-    
-    func handleReceivedData(_ data: Data) {
-        guard
-            let dict = try? JSONSerialization.jsonObject(with: data) as? [String: Any],
-            let type = dict["type"] as? String
-        else { return }
         
-        if type == "phaseStart", let ts = dict["date"] as? TimeInterval {
-            timerStart = Date(timeIntervalSince1970: ts)
-        }
+    func attributeVotes(vote: VoteSubmission) {
+            
+        if let playerIndex = gamePlayers.firstIndex(where: {$0.player.gamePlayerID == vote.toPlayer}) {
+                if let submissionIndex = gamePlayers[playerIndex]
+                    .submissions
+                    .firstIndex(where: { $0.imageSubmission.id == vote.toPhoto }) {
+                    gamePlayers[playerIndex].submissions[submissionIndex].votes += 1
+                    print("✅ (broadcast) Voto atribuído: \(vote.from) → jogador: \(gamePlayers[playerIndex].player.displayName)")
+                }
+            } else {
+                print("⚠️ (broadcast) Nenhuma submissão encontrada para UUID \(vote.toPhoto)")
+            }
     }
     
 
@@ -255,40 +206,6 @@ class GameCenterService: NSObject, ObservableObject {
         trySelectPhraseIfReady()
     }
     
-    // Fallbacks / auto-submit logic
-    func ensureAllPlayersSubmittedFallback() {
-        // Para cada jogador que ainda não submeteu, tenta pegar uma frase do pool local e submeter
-        for player in gamePlayers {
-            let playerID = player.player.gamePlayerID
-            if submittedPhrasesByPlayer[playerID] != nil { continue }
-            
-            if let randomPhrase = localPhraseChoices[playerID]?.randomElement() {
-                print("⚠️ Auto-submit forçado para \(player.player.displayName): \(randomPhrase)")
-                submittedPhrasesByPlayer[playerID] = randomPhrase
-            //    if !phrases.contains(randomPhrase) { phrases.append(randomPhrase) }
-              //  submitPhrase(phrase: randomPhrase)
-            } else if let backup = Phrases.all.randomElement()?.text {
-                print("⚡ Fallback global para \(player.player.displayName): \(backup)")
-                submittedPhrasesByPlayer[playerID] = backup
-             //   if !phrases.contains(backup) { phrases.append(backup) }
-              //  submitPhrase(phrase: backup)
-            }
-        }
-    }
-    
-    // Alternate auto-submit that was present historically (kept but not used by default)
-    func autoSubmitMissingPhrases() {
-        let submittedPlayerIDs = Set(playerSubmissions.map { $0.playerID })
-        for player in gamePlayers {
-            let playerID = player.player.gamePlayerID
-            if !submittedPlayerIDs.contains(playerID) {
-                if let randomPhrase = Phrases.all.randomElement() {
-                    print("⚡ Auto-submit para jogador \(player.player.displayName): \(randomPhrase)")
-                 //   submitPhrase(phrase: randomPhrase.text)
-                }
-            }
-        }
-    }
 
     
     // Função para eleger o líder da frase (jogador com menor ID)
@@ -303,8 +220,6 @@ class GameCenterService: NSObject, ObservableObject {
     // MARK: - Início da seleção de frase
     func initiatePhraseSelection() {
         // Antes de qualquer coisa, garantir que todos os jogadores têm uma frase
-
-        ensureAllPlayersSubmittedFallback()
         
         if Phrases.all.isEmpty {
             print("⚠️ As frases disponíveis estão vazias em Phrases.all!")
@@ -396,12 +311,6 @@ class GameCenterService: NSObject, ObservableObject {
         return self.currentPhrase
     }
     
-    // Check if all players submitted images
-    func haveAllPlayersSubmittedImage() -> Bool {
-        print(playerSubmissions)
-        return ((gamePlayers.count == playerSubmissions.count && gamePlayers.count != 0) ? true : false)
-    }
-    
     
     // MARK: - Image submission
     func cleanAndStorePlayerSubmissions() {
@@ -441,7 +350,11 @@ class GameCenterService: NSObject, ObservableObject {
     //MARK: submissão de imagem do jogador para a frase atual
     func addSubmission(playerID: String, phrase: String, image: ImageSubmission) {
         let submission = PlayerSubmission(playerID: playerID, phrase: phrase, imageSubmission: image, votes: 0, round: currentRound)
-        playerSubmissions.append(submission)
+        let playerIndex = gamePlayers.firstIndex(where: {$0.player.gamePlayerID == playerID})
+        if let index = playerIndex {
+            gamePlayers[index].submissions.append(submission)
+        }
+       // playerSubmissions.append(submission)
         
         guard let match else { return }
         do {
@@ -465,15 +378,26 @@ class GameCenterService: NSObject, ObservableObject {
     }
     
 
-    func getSubmittedImages() -> [PlayerSubmission] {
-        return self.playerSubmissions
+//    func getSubmittedImages() -> [PlayerSubmission] {
+//        return self.playerSubmissions
+//    }
+    
+    func getSubmittedImages() -> [ImageSubmission] {
+        let localID = GKLocalPlayer.local.gamePlayerID
+        var result: [ImageSubmission] = []
+        
+        for gamePlayer in gamePlayers {
+            if let currentRoundSubmission = gamePlayer.submissions.first(where: { $0.round == currentRound }) {
+                result.append(currentRoundSubmission.imageSubmission)
+            }
+        }
+        return result
     }
     
     // Rounds
     var maxRounds: Int { gamePlayers.count }
     
     func goToNextRound() {
-        attributeVotes(broadcasted: false)
         //            print("nova rodada")
         // Resetar estado da frase para a nova rodada
         resetPhraseState()
@@ -501,39 +425,18 @@ class GameCenterService: NSObject, ObservableObject {
     
     
     // Zera o readyMap para todos os jogadores. Se broadcast = true, sincroniza com os demais dispositivos.
-    func resetReadyForAllPlayers(broadcast: Bool = true) {
-       // DispatchQueue.main.async {
-            var map = self.readyMap
-            for key in map.keys {
-                map[key] = false
-            }
-            self.readyMap = map
-       // }
-        
-        guard broadcast, !isSinglePlayer, let match = match else { return }
-        do {
-            let payload: [String: Any] = ["type": "ResetReady"]
-            let data = try JSONSerialization.data(withJSONObject: payload)
-            try match.sendData(toAllPlayers: data, with: .reliable)
-            print("📡 ResetReady enviado para todos os jogadores.")
-        } catch {
-            print("❌ Erro ao enviar ResetReady: \(error)")
+    func resetReadyForAllPlayers(gamePhase: GamePhase) {
+        var phaseMap = readyMap[gamePhase] ?? [:]
+        for key in phaseMap.keys {
+            phaseMap[key] = false
         }
+        readyMap[gamePhase] = phaseMap
     }
     
     internal func trySelectPhraseIfReady() {
         guard currentPhrase.isEmpty else { return }
         guard let leaderID = phraseLeaderID else { return }
         
-        // Determine expected participant count
-        let expected = expectedPlayersCount
-        guard expected > 0 else { return }
-        
-        // Have all players submitted? Use submittedPhrasesByPlayer as source of truth.
-        let haveAll = submittedPhrasesByPlayer.count >= expected
-        guard haveAll else { return }
-        
-        // If this device is the leader -> select and broadcast
         if localPlayerID == leaderID {
             selectRandomPhrase()
         } else {
@@ -551,8 +454,15 @@ class GameCenterService: NSObject, ObservableObject {
             self.gamePlayers = everyone.map { Player(player: $0) }
             
             var map = self.readyMap
-            for p in everyone {
-                if map[p.gamePlayerID] == nil { map[p.gamePlayerID] = false }
+            
+            for phase in GamePhase.allCases {
+                var phaseMap = map[phase] ?? [:]
+                for p in everyone {
+                    if phaseMap[p.gamePlayerID] == nil {
+                        phaseMap[p.gamePlayerID] = false
+                    }
+                }
+                map[phase] = phaseMap
             }
             self.readyMap = map
         }
@@ -578,7 +488,6 @@ class GameCenterService: NSObject, ObservableObject {
             self.isWaitingForPhrase = false
             self.localPhraseChoices.removeAll()
             self.playerSubmissions.removeAll()
-            self.timerStart = nil
             self.isPhraseSubmittedByAnyPlayer = false
             self.submittedPhrasesByPlayer.removeAll()
             self.votes.removeAll()
@@ -648,7 +557,7 @@ class GameCenterService: NSObject, ObservableObject {
             self.isSinglePlayer = true
             self.match = nil
             self.gamePlayers = [Player(player: GKLocalPlayer.local)]
-            self.readyMap = [GKLocalPlayer.local.gamePlayerID: false]
+           // self.readyMap = [GKLocalPlayer.local.gamePlayerID: false]
             self.messages = ["Welcome to single player mode!"]
             self.phrases = []
             self.resetPhraseState()
@@ -676,26 +585,17 @@ class GameCenterService: NSObject, ObservableObject {
         }
     }
     
-    func toggleReady() {
-        let id = localPlayerID
-        let newValue = !(readyMap[id] ?? false)
-        DispatchQueue.main.async { self.readyMap[id] = newValue }
-        if isSinglePlayer { return }
-        guard let match = match else { return }
-        let packet = LobbyPacket.ready(senderID: id, ready: newValue)
-        do {
-            let data = try JSONEncoder().encode(packet)
-            try match.sendData(toAllPlayers: data, with: .reliable)
-        } catch {
-            print("❌ Erro ao enviar READY: \(error)")
-        }
-    }
+
     
-    private func setReady(_ value: Bool) {
+    func setReady(gamePhase: GamePhase) {
         let id = localPlayerID
-        DispatchQueue.main.async { self.readyMap[id] = value }
+        DispatchQueue.main.async {
+            var phaseMap = self.readyMap[gamePhase] ?? [:]
+            phaseMap[id] = true
+            self.readyMap[gamePhase] = phaseMap
+        }
         guard let match = match else { return }
-        let packet = LobbyPacket.ready(senderID: id, ready: value)
+        let packet = LobbyPacket.ready(senderID: id, ready: true, gamePhase: gamePhase)
         do {
             let data = try JSONEncoder().encode(packet)
             try match.sendData(toAllPlayers: data, with: .reliable)

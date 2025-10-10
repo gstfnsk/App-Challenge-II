@@ -9,7 +9,8 @@ import SwiftUI
 import GameKit
 
 struct ImageSelectionView: View {
-    @StateObject var viewModel = ImageSelectionViewModel()
+    
+    @State var viewModel = ImageSelectionViewModel()
     @State private var isShowingCamera = false
     @State private var isShowingLibrary = false
     @State private var showSourceMenu = false
@@ -57,7 +58,7 @@ struct ImageSelectionView: View {
                     VStack(spacing: 16) {
                         VStack(alignment: .leading, spacing: 16) {
                             Text("the phrase is:")
-                                .font(.system(size: 20, weight: .semibold, design: .rounded))
+                                .font(.custom("DynaPuff-Regular", size: 20))
                                 .foregroundStyle(.ice)
                                 .frame(maxWidth: .infinity, alignment: .leading)
                             
@@ -137,7 +138,7 @@ struct ImageSelectionView: View {
                                 titleDone: String(localized: "pickture sent"),
                                 action: {
                                     viewModel.submitSelectedImage(image: selectedImage)
-                                    playerReady = true
+                                    viewModel.toggleReady()
                                 },
                                 state: .enabled
                             )
@@ -169,24 +170,25 @@ struct ImageSelectionView: View {
         .background(Color.darkerPurple)
         .navigationBarBackButtonHidden(true)
 
-
         .onAppear {
             currentPhrase = viewModel.setCurrentRandomPhrase()
-            viewModel.startPhase()
-        }
-        .onReceive(viewModel.$currentPhrase) { currentPhrase in
-            self.currentPhrase = currentPhrase
-        }
-        .onChange(of: viewModel.haveAllPlayersSubmittedImg) {
-            goToStackView = true
         }
         
-        .onChange(of: viewModel.hasProcessedTimeRunOut){
-            goToStackView = true
+        .onChange(of: viewModel.currentPhrase) { _, newValue in
+            self.currentPhrase = newValue
         }
+        .onChange(of: viewModel.allReady) { oldValue, newValue in
+            if newValue {
+                goToStackView = true
+            }
+        }
+        
+        .onChange(of: goToStackView) {
+            viewModel.resetAllPlayersReady()
+        }
+        
         .navigationBarBackButtonHidden(true)
         .navigationDestination(isPresented: $goToStackView) {
-            
             ImageStackView(viewModel: ImageStackViewModel(), submittedPhrase: currentPhrase, imageSubmissions: viewModel.getSubmittedImages())
         }
         .sheet(isPresented: $isShowingCamera) {
