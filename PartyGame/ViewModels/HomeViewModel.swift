@@ -33,7 +33,7 @@ class HomeViewModel: ObservableObject {
         service.startMatchmaking(minPlayers: 1, maxPlayers: 1, singlePlayerMode: true)
     }
 
-    func startMultiplayerGame(minPlayers: Int = 2, maxPlayers: Int = 4) {
+    func startMultiplayerGame(minPlayers: Int = 2, maxPlayers: Int = 8) {
         service.startMatchmaking(minPlayers: minPlayers, maxPlayers: maxPlayers, singlePlayerMode: false)
     }
     

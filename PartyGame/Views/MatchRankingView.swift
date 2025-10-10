@@ -38,7 +38,7 @@ struct MatchRankingView: View {
                         }
                         
                         // Top 3 players
-                        PodiumComponent()
+                        PodiumComponent(topPlayers: top3)
                         
                         // Responsivo (sem altura fixa)
                         HighlightsComponent()
