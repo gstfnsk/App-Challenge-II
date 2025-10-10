@@ -40,7 +40,7 @@ final class LobbyViewModel: ObservableObject {
     @Published var avatarByID: [String: UIImage] = [:]
     func avatar(for id: String) -> UIImage? { avatarByID[id] }
 
-    private let service = GameCenterService.shared
+    private let service: GameCenterServiceProtocol
     private var cancellables: Set<AnyCancellable> = []
 
     private var players: [GKPlayer] = []
@@ -54,12 +54,17 @@ final class LobbyViewModel: ObservableObject {
         return true
     }
 
-    init() {
-        self.players = service.gamePlayers.map { $0.player }
-        self.buildPlayerRows(from: players, ready: service.readyMap)
-        self.loadAvatars(for: self.players)
+    init(service: GameCenterServiceProtocol = GameCenterService.shared) {
+        self.service = service
 
-        Publishers.CombineLatest(service.$gamePlayers, service.$readyMap)
+        self.players = service.gamePlayersSnapshot.map { $0.player }
+        self.readyMap = service.readyMapSnapshot
+        self.buildPlayerRows(from: players, ready: readyMap)
+        self.loadAvatars(for: self.players)
+        self.messages = service.messagesSnapshot
+        self.isInMatch = service.isInMatchSnapshot
+
+        Publishers.CombineLatest(service.gamePlayersPublisher, service.readyMapPublisher)
             .receive(on: DispatchQueue.main)
             .sink { [weak self] gamePlayers, ready in
                 guard let self else { return }
@@ -71,11 +76,11 @@ final class LobbyViewModel: ObservableObject {
             }
             .store(in: &cancellables)
 
-        service.$messages
+        service.messagesPublisher
             .receive(on: DispatchQueue.main)
             .assign(to: &$messages)
 
-        service.$messages
+        service.messagesPublisher
             .receive(on: DispatchQueue.main)
             .map { [weak self] raws in
                 guard let self else { return [] }
@@ -83,7 +88,7 @@ final class LobbyViewModel: ObservableObject {
             }
             .assign(to: &$chat)
 
-        service.$isInMatch
+        service.isInMatchPublisher
             .receive(on: DispatchQueue.main)
             .assign(to: &$isInMatch)
     }
