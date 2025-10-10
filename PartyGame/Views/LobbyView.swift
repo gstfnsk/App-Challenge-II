@@ -314,6 +314,7 @@ private struct ChatCard: View {
             Text("chat with your friends")
                 .font(.custom("DynaPuff-Medium", size: 22))
                 .foregroundStyle(.ice)
+                .multilineTextAlignment(.center)
 
             ScrollViewReader { proxy in
                 ScrollView {
@@ -420,10 +421,10 @@ private struct MessageRow: View {
 
             (
                 Text(item.isLocal ? "\(item.senderName) \(String(localized: "(you)"))" : item.senderName)
-                    .font(.custom("DynaPuff-Medium", size: 20))
+                    .font(.custom("DynaPuff-Medium", size: 16))
                     .foregroundStyle(item.isLocal ? Color.lilac : Color.yellow)
                 + Text(": ")
-                    .font(.custom("DynaPuff-Regular", size: 20))
+                    .font(.custom("DynaPuff-Regular", size: 16))
                     .foregroundStyle(.ice)
             )
             .multilineTextAlignment(.leading)
