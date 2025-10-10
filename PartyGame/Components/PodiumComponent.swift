@@ -1,0 +1,49 @@
+//
+//  PodiumComponent.swift
+//  Pickture
+//
+//  Created by Fernando Sulzbach on 02/10/25.
+//
+import SwiftUI
+
+struct PodiumComponent: View {
+    
+    var gamePlayers: [Player]
+    
+    var body: some View {
+        
+        HStack(alignment: .center, spacing: 16) {
+                CircleComponent(
+                    isWinner: false,
+                    name: gamePlayers[0].player.displayName,
+                    points: gamePlayers[0].votes,
+                    secondImage: "img-second"
+                )
+                // .offset(y: 71)
+
+                CircleComponent(
+                    isWinner: true,
+                    name: gamePlayers[1].player.displayName,
+                    points: gamePlayers[1].votes,
+                    secondImage: "img-winner"
+                )
+            
+                CircleComponent(
+                    isWinner: false,
+                    name: "MrLorenzo1608",
+                    points: 2,
+                    secondImage: "img-third"
+                )
+               // .offset(y: 71)
+        }
+        
+    }
+}
+
+#Preview {
+    
+   // PodiumComponent()
+    
+}
+
+

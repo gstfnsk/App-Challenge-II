@@ -8,7 +8,7 @@
 import SwiftUI
 
 struct LobbyView: View {
-    @ObservedObject var viewModel = LobbyViewModel()
+    @State var viewModel = LobbyViewModel()
     @Environment(\.dismiss) private var dismiss
     @State private var scrollTrigger = 0
     @State private var startGame: Bool = false
@@ -18,240 +18,210 @@ struct LobbyView: View {
     
     @State var resetSlider: Bool = false
     var body: some View {
-        ZStack{
-            Image("img-textureI")
-                .resizable()
-                .scaledToFill()
-                .frame(minWidth: 0)
-                .edgesIgnoringSafeArea(.all)
-
-            VStack(spacing: 26) {
-                ZStack {
-                    Text("match lobby")
-                        .font(.system(size: 17, weight: .medium, design: .rounded))
-                        .foregroundColor(.ice)
-                        .frame(maxWidth: .infinity, alignment: .center)
-
-                    HStack {
-                        Button {
-                            viewModel.leaveLobby()
-                            viewModel.isInMatch = false
-                            dismiss()
-                        } label: {
-                            Image(systemName: "chevron.left")
-                                .font(.system(size: 17, weight: .semibold))
-                                .foregroundStyle(.lilac)
-                                .padding(.leading, 10)
-                        }
-                        Spacer()
-                    }
-                }
-                .frame(maxWidth: .infinity)
-                VStack(spacing: 16) {
-                    HStack (spacing: 16){
-                        Text("\(viewModel.playerRows.count) players")
-                            .font(.custom("Dynapuff-Regular", size: 22))
-                            .foregroundStyle(.ice)
-                            .frame(maxWidth: 205, alignment: .leading)
-                        
-                        Text("ready?")
-                            .font(.custom("Dynapuff-Regular", size: 22))
-                            .foregroundStyle(.ice)
-                    }
-                    .padding()
-                    .background(RoundedRectangle(cornerRadius: 26)
-                        .fill(Color.lighterPurple.shadow(.inner(color: .darkerPurple, radius: 2, y: 3))))
+            ZStack{
+                Image("img-textureI")
+                    .resizable()
+                   // .scaledToFill()
+                    .ignoresSafeArea()
+                    .background(.darkerPurple)
+                
+                VStack(spacing: 26) {
                     
-                    ScrollView(.vertical, showsIndicators: false) {
-                        LazyVStack(alignment: .leading, spacing: 0) {
-                            ForEach(viewModel.playerRows) { row in
-                                HStack(spacing: 14) {
-                                    if let img = viewModel.avatar(for: row.id) {
-                                        Image(uiImage: img)
-                                            .resizable()
-                                            .scaledToFill()
+                    VStack(spacing: 16) {
+                        HStack (spacing: 16){
+                            Text("\(viewModel.playerRows.count) players")
+                                .font(.custom("Dynapuff-Regular", size: 22))
+                                .foregroundStyle(.ice)
+                                .frame(alignment: .leading)
+                            
+                            Spacer()
+                            
+                            Text("ready?")
+                                .font(.custom("Dynapuff-Regular", size: 22))
+                                .foregroundStyle(.ice)
+                                .frame(alignment: .trailing)
+                        }
+                        .frame(maxWidth: .infinity)
+                        .padding()
+                        .background(RoundedRectangle(cornerRadius: 26)
+                            .fill(Color.lighterPurple.shadow(.inner(color: .darkerPurple, radius: 2, y: 3))))
+                        
+                        ScrollView(.vertical, showsIndicators: false) {
+                            LazyVStack(alignment: .leading, spacing: 0) {
+                                ForEach(viewModel.playerRows) { row in
+                                    HStack(spacing: 14) {
+                                        if let img = viewModel.avatar(for: row.id) {
+                                            Image(uiImage: img)
+                                                .resizable()
+                                                .scaledToFill()
+                                                .frame(width: 30, height: 30)
+                                                .clipShape(RoundedRectangle(cornerRadius: 7))
+                                        } else {
+                                            ZStack {
+                                                RoundedRectangle(cornerRadius: 7)
+                                                    .fill(Color.white.opacity(0.12))
+                                                Text(row.name.split(separator: " ")
+                                                    .prefix(2).compactMap { $0.first }
+                                                    .map(String.init).joined().uppercased())
+                                                    .font(.system(size: 11, weight: .bold, design: .rounded))
+                                                    .foregroundStyle(.ice)
+                                            }
                                             .frame(width: 30, height: 30)
                                             .clipShape(RoundedRectangle(cornerRadius: 7))
-                                    } else {
-                                        ZStack {
-                                            RoundedRectangle(cornerRadius: 7)
-                                                .fill(Color.white.opacity(0.12))
-                                            Text(row.name.split(separator: " ")
-                                                .prefix(2).compactMap { $0.first }
-                                                .map(String.init).joined().uppercased())
-                                                .font(.system(size: 11, weight: .bold, design: .rounded))
-                                                .foregroundStyle(.ice)
                                         }
-                                        .frame(width: 30, height: 30)
-                                        .clipShape(RoundedRectangle(cornerRadius: 7))
+                                        
+                                        Text(row.isMe ? "\(row.name) \(String(localized: "(you)"))" : row.name)
+                                            .font(.system(size: 17, weight: .semibold, design: .rounded))
+                                            .frame(maxWidth: 207, alignment: .leading)
+                                            .multilineTextAlignment(.leading)
+                                        
+                                        Spacer(minLength: 0)
+                                        
+                                        Image(row.isReady ? "img-ready" : "img-notReady")
                                     }
-                                    
-                                    Text(row.isMe ? "\(row.name) \(String(localized: "(you)"))" : row.name)
-                                        .font(.system(size: 17, weight: .semibold, design: .rounded))
-                                        .frame(maxWidth: 207, alignment: .leading)
-                                        .multilineTextAlignment(.leading)
-                                    
-                                    Spacer(minLength: 0)
-                                    
-                                    Image(row.isReady ? "img-ready" : "img-notReady")
-                                }
-                                .padding(.horizontal, 16)
-                                .padding(.vertical, 14)
-                                .frame(maxWidth: .infinity, alignment: .leading)
-                                .background(row.isMe ? Color.darkerPurple.opacity(0.6) : .clear)
-                                .overlay(alignment: .bottom) {
-                                    if row.id != viewModel.playerRows.last?.id {
-                                        Rectangle()
-                                            .fill(Color.black.opacity(0.12))
-                                            .frame(height: 1)
+                                    .padding(.horizontal, 16)
+                                    .padding(.vertical, 14)
+                                    .frame(maxWidth: .infinity, alignment: .leading)
+                                    .background(row.isMe ? Color.darkerPurple.opacity(0.6) : .clear)
+                                    .overlay(alignment: .bottom) {
+                                        if row.id != viewModel.playerRows.last?.id {
+                                            Rectangle()
+                                                .fill(Color.black.opacity(0.12))
+                                                .frame(height: 1)
+                                        }
                                     }
                                 }
                             }
                         }
+                       // .frame(width: 329, height: 156)
+                        .background(Color.lighterPurple)
+                        .clipShape(RoundedRectangle(cornerRadius: 26))
                     }
-                    .frame(width: 329, height: 156)
-                    .background(Color.lighterPurple)
-                    .clipShape(RoundedRectangle(cornerRadius: 26))
+                    .padding(.horizontal)
+                    .padding(.vertical)
+                    .background(GradientBackground())
+                    .frame(maxHeight: 256, alignment: .top)
+                    
+                    SliderView(
+                        latchesOn: false,
+                        
+                        onComplete: { isReady in
+                            if isReady != viewModel.isLocalReady {
+                                viewModel.toggleReady()
+                            }
+                            withAnimation(.easeInOut(duration: 0.3)) {
+                                isDragging = false
+                                dragProgress = isReady ? 1.0 : 0.0
+                            }
+                        },
+                        
+                        onDrag: { progress in
+                            dragProgress = progress
+                            isDragging = true
+                        },
+                        shouldReset: $resetSlider,
+                        configuration: SliderViewConfiguration {
+                            ZStack(alignment: .center){
+                                Capsule()
+                                    .fill(smoothBackgroundGradient)
+                                    .frame(height: 53)
+                                    .frame(maxWidth: .infinity)
+                                    .overlay(
+                                        Capsule()
+                                            .stroke(Color.white.opacity(0.35), lineWidth: 10)
+                                            .blur(radius: 10)
+                                            .mask(Capsule().fill(LinearGradient(
+                                                colors: [.black, .clear],
+                                                startPoint: .top,
+                                                endPoint: .bottom
+                                            )))
+                                    )
+                                    .animation(.easeOut(duration: 0.15), value: currentGradientState)
+                                Text(sliderText)
+                                    .foregroundColor(Color.ice)
+                                    .font(Font.custom("DynaPuff-Medium", size: 24))
+                                    .shadow(color: .black.opacity(0.2), radius: 1)
+                                    .animation(.easeInOut(duration: 0.2), value: sliderText)
+                            }
+                        } foreground: {
+                            EmptyView()
+                        } track: {
+                            Circle()
+                                .frame(height: 40)
+                                .foregroundStyle(Color.ice)
+                                .shadow(color: .black.opacity(0.15), radius: 3, x: 0, y: 2)
+                                .padding(6)
+                                .scaleEffect(isDragging ? 1.05 : 1.0)
+                                .animation(.easeInOut(duration: 0.2), value: isDragging)
+                        } knob: {
+                            Image(systemName: knobIcon)
+                                .foregroundStyle(knobColor)
+                                .fontWeight(.black)
+                        }
+                    )
                 }
-                .padding(.horizontal)
-                .padding(.vertical)
-                .background(GradientBackground())
-                .frame(maxHeight: 256, alignment: .top)
                 
-                SliderView(
-                    latchesOn: false,
-                    
-                    onComplete: { isReady in
-                        if isReady != viewModel.isLocalReady {
-                            viewModel.toggleReady()
-                        }
-                        withAnimation(.easeInOut(duration: 0.3)) {
-                            isDragging = false
-                            dragProgress = isReady ? 1.0 : 0.0
-                        }
-                    },
-                    
-                    onDrag: { progress in
-                        dragProgress = progress
-                        isDragging = true
-                    },
-                    shouldReset: $resetSlider,
-                    configuration: SliderViewConfiguration {
-                        ZStack(alignment: .center){
-                            Capsule()
-                                .fill(smoothBackgroundGradient)
-                                .frame(width: 361, height: 53)
-                                .overlay(
-                                    Capsule()
-                                        .stroke(Color.white.opacity(0.35), lineWidth: 10)
-                                        .blur(radius: 10)
-                                        .mask(Capsule().fill(LinearGradient(
-                                            colors: [.black, .clear],
-                                            startPoint: .top,
-                                            endPoint: .bottom
-                                        )))
-                                )
-                                .animation(.easeOut(duration: 0.15), value: currentGradientState)
-                            Text(sliderText)
-                                .foregroundColor(Color.ice)
-                                .font(Font.custom("DynaPuff-Medium", size: 24))
-                                .shadow(color: .black.opacity(0.2), radius: 1)
-                                .animation(.easeInOut(duration: 0.2), value: sliderText)
-                        }
-                    } foreground: {
-                        EmptyView()
-                    } track: {
-                        Circle()
-                            .frame(height: 40)
-                            .foregroundStyle(Color.ice)
-                            .shadow(color: .black.opacity(0.15), radius: 3, x: 0, y: 2)
-                            .padding(6)
-                            .scaleEffect(isDragging ? 1.05 : 1.0)
-                            .animation(.easeInOut(duration: 0.2), value: isDragging)
-                    } knob: {
-                        Image(systemName: knobIcon)
-                            .foregroundStyle(knobColor)
-                            .fontWeight(.black)
-                    }
-                )
-                .padding(.horizontal, 16)
-                .padding(.bottom, 16)
-            }
-            .safeAreaInset(edge: .bottom, spacing: 16) {
-                ChatCard(
-                    messages: viewModel.chat,
-                    scrollTrigger: $scrollTrigger,
-                    draft: $viewModel.typedMessage,
-                    onSend: {
-                        viewModel.sendMessage()
-                        scrollTrigger &+= 1
-                    },
-                    avatarFor: viewModel.avatar(for:)
-                )
                 .padding(.horizontal)
-                .padding(.bottom, keyboardHeight)
-            }
-        }
-        .background(Color.darkerPurple)
-        .navigationBarBackButtonHidden(true)
-        .toolbar(.hidden, for: .navigationBar)
-//        .overlay(alignment: .topLeading) {
-//            Button {
-//                viewModel.leaveLobby()
-//                viewModel.isInMatch = false
-//                dismiss()
-//            } label: {
-//                Image(systemName: "chevron.left")
-//                    .font(.system(size: 17, weight: .semibold))
-//                    .foregroundStyle(.ice)
-//                    .padding(10)
-//                    .background(.ultraThinMaterial, in: Circle())
-//            }
-//            .padding(.top, 10)
-//            .padding(.leading, 16)
-//        }
-        .onChange(of: viewModel.allReady) { _, newValue in
-            if newValue && !viewModel.playerRows.isEmpty {
-                startGame = true
-            }
-        }
-        .onAppear {
-            resetSlider.toggle()
-        }
-        .onChange(of: startGame) {
-            viewModel.resetAllPlayersReady()
-        }
-        .navigationDestination(isPresented: $startGame) {
-            CountDownView()
-        }
-//        .toolbar {
-//            ToolbarItem(placement: .topBarLeading) {
-//                Button(role: .cancel) {
-//                    viewModel.leaveLobby()
-//                    viewModel.isInMatch = false
-//                    dismiss()
-//                } label: { Image(systemName: "chevron.left") }
-//            }
-//        }
-        .onReceive(NotificationCenter.default.publisher(for: UIResponder.keyboardWillChangeFrameNotification)) { note in
-            guard
-                let end = note.userInfo?[UIResponder.keyboardFrameEndUserInfoKey] as? CGRect,
-                let duration = note.userInfo?[UIResponder.keyboardAnimationDurationUserInfoKey] as? Double
-            else { return }
+                
+                .safeAreaInset(edge: .bottom, spacing: 16) {
+                    ChatCard(
+                        messages: viewModel.chat,
+                        scrollTrigger: $scrollTrigger,
+                        draft: $viewModel.typedMessage,
+                        onSend: {
+                            viewModel.sendMessage()
+                            scrollTrigger &+= 1
+                        },
+                        avatarFor: viewModel.avatar(for:)
+                    )
+                    .padding(.horizontal)
+                    .padding(.bottom, keyboardHeight)
+                }
+                
+                .navigationBarBackButtonHidden(true)
+                .onChange(of: viewModel.allReady) { _, newValue in
+                    if newValue && !viewModel.playerRows.isEmpty {
+                        startGame = true
+                    }
+                }
+                .onAppear {
+                    resetSlider.toggle()
+                }
+                .navigationDestination(isPresented: $startGame) {
+                    CountDownView()
+                }
+                .navigationBarTitle("match lobby", displayMode: .inline)
+                .toolbarTitleDisplayMode(.inline)
+                .toolbar {
+                    ToolbarItem(placement: .topBarLeading) {
+                        Button(role: .cancel) {
+                            viewModel.leaveLobby()
+                            viewModel.isInMatch = false
+                            dismiss()
+                        } label: { Image(systemName: "chevron.left") }
+                    }
+                }
+                .onReceive(NotificationCenter.default.publisher(for: UIResponder.keyboardWillChangeFrameNotification)) { note in
+                    guard
+                        let end = note.userInfo?[UIResponder.keyboardFrameEndUserInfoKey] as? CGRect,
+                        let duration = note.userInfo?[UIResponder.keyboardAnimationDurationUserInfoKey] as? Double
+                    else { return }
 
-            let screenH = UIScreen.main.bounds.height
-            let height = max(0, screenH - end.origin.y)
-            withAnimation(.easeOut(duration: duration)) {
-                keyboardHeight = height
+                    let screenH = UIScreen.main.bounds.height
+                    let height = max(0, screenH - end.origin.y)
+                    withAnimation(.easeOut(duration: duration)) {
+                        keyboardHeight = height
+                    }
+                }
+                .onReceive(NotificationCenter.default.publisher(for: UIResponder.keyboardWillHideNotification)) { note in
+                    let duration = (note.userInfo?[UIResponder.keyboardAnimationDurationUserInfoKey] as? Double) ?? 0.25
+                    withAnimation(.easeOut(duration: duration)) {
+                        keyboardHeight = 0
+                    }
+                }
             }
-        }
-        .onReceive(NotificationCenter.default.publisher(for: UIResponder.keyboardWillHideNotification)) { note in
-            let duration = (note.userInfo?[UIResponder.keyboardAnimationDurationUserInfoKey] as? Double) ?? 0.25
-            withAnimation(.easeOut(duration: duration)) {
-                keyboardHeight = 0
-            }
-        }
     }
+    
         
     enum GradientState: Equatable {
         case initial
@@ -340,9 +310,9 @@ private struct ChatCard: View {
     @FocusState private var inputFocused: Bool
 
     var body: some View {
-        VStack(alignment: .leading, spacing: 14) {
+        VStack(alignment: .leading, spacing: 8) {
             Text("chat with your friends")
-                .font(.custom("DynaPuff-Medium", size: 28))
+                .font(.custom("DynaPuff-Medium", size: 22))
                 .foregroundStyle(.ice)
                 .multilineTextAlignment(.center)
 
@@ -396,7 +366,7 @@ private struct ChatCard: View {
                     inputFocused = false
                 } label: {
                     ZStack {
-                        Circle().fill(Color.lilac.shadow(.inner(color: .ice, radius: 2, y: 3))).frame(width: 35, height: 36)
+                        Circle().fill(Color.lilac.shadow(.inner(color: .ice, radius: 2, y: 3))).frame(width: 35, height: 35)
                         Image(systemName: "paperplane.fill")
                             .font(.system(size: 20, weight: .bold))
                             .foregroundStyle(Color.darkerPurple)
@@ -405,8 +375,11 @@ private struct ChatCard: View {
                 }
             }
         }
-        .padding(16)
-        .frame(width: 361, height: 335, alignment: .top)
+        .padding(.horizontal)
+        .padding(.top)
+        .padding(.bottom, 8)
+        .frame(height: 335, alignment: .top)
+        .frame(maxHeight: 335)
         .background(
             RoundedRectangle(cornerRadius: 26)
                 .fill(Color.darkerPurple.shadow(.inner(color: .lighterPurple, radius: 2, y: 3)))

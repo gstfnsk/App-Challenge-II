@@ -11,17 +11,16 @@ import GameKit
 import Combine
 
 @Observable
-final class VotingViewModel: ObservableObject {
+final class VotingViewModel {
     let service = GameCenterService.shared
-    private var cancellables = Set<AnyCancellable>()
-
+    
     private var timer: Timer?
     var hasProcessedTimeRunOut: Bool = false
     var remainingTimeDouble: Double = 30.0
     var timeRemaining: Int = 30
     
-    var players: [GKPlayer] = []
-    var readyMap: [String: Bool] = [:]
+    var players: [GKPlayer] { service.gamePlayers.map { $0.player } }
+    var readyMap: [String: Bool] { service.readyMap[.voting] ?? [:] }
     
     var allReady: Bool {
         guard !players.isEmpty else { return false }
@@ -32,35 +31,12 @@ final class VotingViewModel: ObservableObject {
     }
     
     init() {
-        self.players = service.gamePlayers.map { $0.player }
-        
-        service.$readyMap
-                    .receive(on: DispatchQueue.main)
-                    .sink { [weak self] newMap in
-                        self?.readyMap = newMap
-                    }
-                    .store(in: &cancellables)
-        
-         service.$timerStart
-            .removeDuplicates()
-               .compactMap { $0 }
-               .receive(on: DispatchQueue.main)
-               .sink { [weak self] target in
-                   self?.startCountdown(until: target)
-               }
-               .store(in: &cancellables)
-        
     }
     
     deinit {
         timer?.invalidate()
         timer = nil
-        cancellables.forEach { $0.cancel() }
     }
-
-//    var players: [GKPlayer] {
-//        service.gamePlayers.map { $0.player }
-//    }
     
     var voter: GKPlayer {
         GKLocalPlayer.local
@@ -68,31 +44,34 @@ final class VotingViewModel: ObservableObject {
     
 
     func toggleReady() {
-        service.toggleReady()
+        service.setReady(gamePhase: .voting)
     }
     
     
-
-
-     // Todas as submissões para a frase atual, menos a minha
     func submissions(for phrase: String) -> [ImageSubmission] {
-        service.playerSubmissions
-            .filter { $0.phrase == phrase && $0.playerID != GKLocalPlayer.local.gamePlayerID }
-            .map { $0.imageSubmission }
+        let localID = GKLocalPlayer.local.gamePlayerID
+        var result: [ImageSubmission] = []
+        
+        for gamePlayer in service.gamePlayers {
+            if let currentRoundSubmission = gamePlayer.submissions.first(where: { $0.round == service.currentRound }) {
+                if currentRoundSubmission.playerID != localID {
+                    result.append(currentRoundSubmission.imageSubmission)
+                }
+            }
+        }
+        return result
     }
     
     func finishVoting() {
         print("🗯🏻 Votação terminada - computando votos")
     }
     
-    
-
     func cleanAndStoreSubmissions() {
         service.cleanAndStorePlayerSubmissions()
     }
     
     func resetAllPlayersReady() {
-        service.resetReadyForAllPlayers()
+        service.resetReadyForAllPlayers(gamePhase: .voting)
     }
 
     private func startCountdown(until target: Date) {
@@ -103,8 +82,6 @@ final class VotingViewModel: ObservableObject {
         timer = Timer.scheduledTimer(withTimeInterval: 0.1, repeats: true) { [weak self] _ in
             self?.updateRemaining(target: target)
         }
-        
-        
     }
     
     private func updateRemaining(target: Date) {
@@ -119,18 +96,9 @@ final class VotingViewModel: ObservableObject {
         }
     }
     
-    func startPhase() {
-        print("🚀 Starting phase - resetting all states")
-        hasProcessedTimeRunOut = false
-        
-        service.schedulePhaseStart(delay: 30)
-    }
-    
-
-    func voteImage(id: UUID) {
-        let playerID = GKLocalPlayer.local.gamePlayerID
+    func voteImage(imageSubmission: ImageSubmission) {
         print("votando")
-        service.submitVote(id: id, player: playerID)
+        service.submitVote(imageSubmission: imageSubmission)
     }
     
     func nextRound() {
@@ -138,7 +106,7 @@ final class VotingViewModel: ObservableObject {
     }
     
     var isGameOver: Bool {
-//        service.isPhrasesEmpty && isVotingSessionDone
+      //  isPhraseArrayEmpty() && isVotingSessionDone
         return false
     }
     

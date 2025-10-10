@@ -16,7 +16,7 @@ struct ProgressBarComponent: View {
 
     let height: CGFloat = 16
     let cornerRadius: CGFloat = 20
-    let trackColor: Color = .ice
+    let trackColor: Color = .lilac
 
     init(progress: Binding<Double>) {
         self._progress = progress

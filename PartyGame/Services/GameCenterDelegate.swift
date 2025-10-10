@@ -30,9 +30,21 @@ extension GameCenterService: GKMatchmakerViewControllerDelegate, GKMatchDelegate
         let localID = GKLocalPlayer.local.gamePlayerID
         DispatchQueue.main.async {
             self.isInMatch = true
-            var map: [String: Bool] = [:]
-            map[localID] = false
-            for p in match.players { map[p.gamePlayerID] = false }
+            
+            var map: [GamePhase: [String: Bool]] = [:]
+            
+            for phase in GamePhase.allCases {
+                var phaseMap: [String: Bool] = [:]
+                
+                phaseMap[localID] = false
+                
+                for p in match.players {
+                    phaseMap[p.gamePlayerID] = false
+                }
+                
+                map[phase] = phaseMap
+            }
+            
             self.phrases = []
             self.readyMap = map
         }
@@ -92,19 +104,9 @@ extension GameCenterService: GKMatchmakerViewControllerDelegate, GKMatchDelegate
                 print("📡 PlayerSubmissions limpo com sucesso: \(self.playerSubmissions)")
             }
             
-        case "ResetReady":
-                DispatchQueue.main.async {
-                    var map = self.readyMap
-                    for key in map.keys {
-                        map[key] = false
-                    }
-                    self.readyMap = map
-                    print("ready resetado para todos \(self.readyMap)")
-                }
-            
         case "phasestart":
             if let ts = dict["date"] as? TimeInterval {
-                DispatchQueue.main.async { self.timerStart = Date(timeIntervalSince1970: ts) }
+                //DispatchQueue.main.async { self.timerStart = Date(timeIntervalSince1970: ts) }
             }
             
         default:
@@ -117,7 +119,7 @@ extension GameCenterService: GKMatchmakerViewControllerDelegate, GKMatchDelegate
                 let vote = votePacket.submission
                 print("📡 voto recebido de \(vote.from)")
                     DispatchQueue.main.async {
-                        self.storeVote(vote: vote)
+                        self.attributeVotes(vote: vote)
                     }
             default:
                 break
@@ -129,7 +131,11 @@ extension GameCenterService: GKMatchmakerViewControllerDelegate, GKMatchDelegate
             case "newImage":
                 let submission = payload.submission
                 DispatchQueue.main.async {
-                    self.playerSubmissions.append(submission)
+                    let playerIndex = self.gamePlayers.firstIndex(where: {$0.player.gamePlayerID == submission.playerID})
+                    if let index = playerIndex {
+                        self.gamePlayers[index].submissions.append(submission)
+                    }
+                   // self.playerSubmissions.append(submission)
                     print("Nova submissão recebida e adicionada: \(submission)")
                     print("Printar todos jogadores: \(self.gamePlayers)")
                 }
@@ -147,10 +153,17 @@ extension GameCenterService: GKMatchmakerViewControllerDelegate, GKMatchDelegate
                     }
                 }
             case .ready:
-                let value = packet.ready ?? false
-                DispatchQueue.main.async {
-                    self.readyMap[player.gamePlayerID] = value
+                // Unwrap the optional gamePhase and safely update readyMap
+                if let phase = packet.gamePhase {
+                   // DispatchQueue.main.async {
+                        var phaseMap = self.readyMap[phase] ?? [:]
+                        phaseMap[player.gamePlayerID] = true
+                        self.readyMap[phase] = phaseMap
+                  //  }
+                } else {
+                    print("⚠️ Received .ready without a gamePhase")
                 }
+                
             }
         } else if let text = String(data: data, encoding: .utf8) {
             DispatchQueue.main.async {

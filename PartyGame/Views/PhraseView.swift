@@ -10,7 +10,7 @@ import SwiftUI
 
 struct PhraseView: View {
 
-    var viewModel = PhraseViewModel()
+    @State private var viewModel = PhraseViewModel()
     @State var selectedPhrase: Phrase? = nil
     @State var displayedPhrases: [Phrase] = []
     @State var nextScreen: Bool = false
@@ -32,8 +32,6 @@ struct PhraseView: View {
                 .frame(minWidth: 0)
                 .edgesIgnoringSafeArea(.all)
             
-            
-            
             VStack(spacing: 85){
                 VStack(spacing: 24){
                     VStack(spacing: 5){
@@ -49,10 +47,10 @@ struct PhraseView: View {
                                 .foregroundStyle(.ice
                                     .shadow(.inner(color: .lilac, radius: 2, y: 3)))
                                 .frame(maxWidth: .infinity, alignment: .leading)
-                            TimerComponent(remainingTime: viewModel.timeRemaining, duration: 30.0)
+                            TimerComponent(remainingTime: viewModel.remaining, duration: viewModel.startValue)
                         }
                     }
-                    ProgressBarComponent(progress: .constant(1.0 - (viewModel.remainingTimeDouble/30.0)))
+                    ProgressBarComponent(progress: .constant(1.0 - (Double(viewModel.remaining) / viewModel.startValue)))
                 }
                 .padding(.horizontal)
                 
@@ -126,6 +124,7 @@ struct PhraseView: View {
                             print("Submitted phrase: \(selectedPhrase)")
                             if let phrase = selectedPhrase {
                                 viewModel.submitPhrase(phrase: phrase.text)
+                                viewModel.toggleReady()
                             }
                         },
                         state: isButtonInactive ? .inactive : .enabled
@@ -137,22 +136,33 @@ struct PhraseView: View {
         }
         .background(Color.darkerPurple)
         .navigationBarBackButtonHidden(true)
-        .navigationDestination(isPresented: $nextScreen) {
-            ImageSelectionView()
-        }
+        
         .onAppear {
             viewModel.startPhase()
+            viewModel.resetAllPlayersReady()
+            viewModel.reset(autostart: true)
+        }
+        
+        .onDisappear {
+            viewModel.stop()
         }
 
-//        .onChange(of: viewModel.haveTimeRunOut) { oldValue, newValue in
-//            if newValue {
-//                nextScreen = true
-//            }
-//        }
-        .onChange(of: viewModel.haveAllPlayersSubmitted) { oldValue, newValue in
+        .onChange(of: viewModel.allReady) { oldValue, newValue in
             if newValue {
                 nextScreen = true
             }
+        }
+        
+        .onChange(of: viewModel.timerDone) { oldValue, newValue in
+            if newValue {
+                viewModel.submitPhrase(phrase: displayedPhrases.randomElement()!.text)
+                viewModel.toggleReady()
+            }
+        }
+        
+        
+        .navigationDestination(isPresented: $nextScreen) {
+            ImageSelectionView()
         }
     }
 }
